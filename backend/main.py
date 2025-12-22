@@ -25,7 +25,7 @@ Base.metadata.create_all(bind=engine)
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://192.168.1.3:3000", "https://grainiest-nona-oversqueamishly.ngrok-free.dev"],
+    allow_origins=settings.get_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
