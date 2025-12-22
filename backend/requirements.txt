@@ -20,3 +20,4 @@ supabase>=2.4.0
 psycopg2-binary==2.9.9
 httpx>=0.24.0
 pdfplumber>=0.10.3
+email-validator>=2.1.0
