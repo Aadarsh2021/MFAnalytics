@@ -139,6 +139,51 @@ async def run_optimization(
                             except:
                                 continue
                         
+                        # --- FIX: Ensure Fund exists in DB before inserting NAVs ---
+                        meta = details.get('meta', {})
+                        existing_fund = db.query(Fund).filter(Fund.id == fund_id).first()
+                        
+                        if not existing_fund:
+                            print(f"  Fund {fund_id} missing in DB. Creating record...")
+                            scheme_name = meta.get('scheme_name') or fund_name
+                            category = meta.get('scheme_category', 'Unknown')
+                            amc = meta.get('fund_house', 'Unknown')
+                            
+                            # ISIN handling (Must be unique)
+                            isin = meta.get('isin_code')
+                            if not isin:
+                                isin = f"MFAPI-{fund_id}"
+                            
+                            # Check for ISIN collision
+                            collision = db.query(Fund).filter(Fund.isin == isin).first()
+                            if collision:
+                                print(f"  ⚠️ ISIN collision for {isin}. Appending Fund ID.")
+                                isin = f"{isin}-{fund_id}"
+
+                            new_fund = Fund(
+                                id=fund_id,
+                                name=scheme_name,
+                                category=category,
+                                amc=amc,
+                                asset_class=fund_obj_map[fund_id].asset_class,
+                                isin=isin
+                            )
+                            try:
+                                db.add(new_fund)
+                                db.commit()
+                                print(f"  ✅ Created Fund record for {fund_id}")
+                            except Exception as db_err:
+                                db.rollback()
+                                print(f"  ❌ Failed to create Fund record: {db_err}")
+                                # Try one more time with definitely unique ISIN
+                                try:
+                                    new_fund.isin = f"ERR-{fund_id}-{datetime.now().timestamp()}"
+                                    db.add(new_fund)
+                                    db.commit()
+                                except:
+                                    pass # Detailed error will be caught by outer try/except
+                        # -----------------------------------------------------------
+                        
                         # Fallback to Yahoo if MFAPI is weak
                         if len(api_navs) < 30:
                             print(f"  Insufficient MFAPI data for {fund_id}. Attempting Yahoo Finance fallback...")
