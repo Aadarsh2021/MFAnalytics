@@ -1,5 +1,6 @@
 """
 FastAPI application entry point
+# Force redeploy: Fix null byte error
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
