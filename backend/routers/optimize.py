@@ -299,12 +299,30 @@ async def run_optimization(
             if len(asset_classes_present) >= 2:
                 asset_class_bounds = {}
                 fund_indices = {}
-                for asset_class, allocation in request.constraints['asset_allocation'].items():
-                    asset_class_bounds[asset_class] = (max(0, allocation - 20), min(100, allocation + 20))
-                    indices = [fund_map[f.fund_id] for f in request.selected_funds if f.asset_class.lower() == asset_class.lower()]
-                    if indices: fund_indices[asset_class] = indices
-                opt_constraints['asset_class_bounds'] = asset_class_bounds
-                opt_constraints['fund_indices'] = fund_indices
+                
+                # Map frontend keys (equity_min/max) to Backend Asset Classes
+                aa_constraints = request.constraints['asset_allocation']
+                target_classes = ["Equity", "Debt", "Gold", "Alt"]
+                
+                for ac in target_classes:
+                    ac_lower = ac.lower()
+                    min_key = f"{ac_lower}_min"
+                    max_key = f"{ac_lower}_max"
+                    
+                    if min_key in aa_constraints and max_key in aa_constraints:
+                        # Frontend sends 0-100, optimizer needs 0.0-1.0
+                        low = float(aa_constraints[min_key]) / 100.0
+                        high = float(aa_constraints[max_key]) / 100.0
+                        
+                        asset_class_bounds[ac] = (low, high)
+                        
+                        indices = [fund_map[f.fund_id] for f in request.selected_funds if f.asset_class.lower() == ac_lower]
+                        if indices:
+                            fund_indices[ac] = indices
+                            
+                if asset_class_bounds and fund_indices:
+                    opt_constraints['asset_class_bounds'] = asset_class_bounds
+                    opt_constraints['fund_indices'] = fund_indices
 
         # --- Benchmark & Metrics Section ---
         from models.database import Benchmark
