@@ -73,69 +73,111 @@ async def run_optimization(
             trading_days=settings.trading_days_per_year
         )
         
-        # Fetch NAV data for selected funds from MFAPI
-        from services.mfapi import MFAPIService
-        mfapi = MFAPIService()
-        
-        fund_ids = [f.fund_id for f in request.selected_funds]
-        
-        # Create map for quicker name lookup
-        fund_obj_map = {f.fund_id: f for f in request.selected_funds}
-        
+        # Fetch NAV data (DB First -> MFAPI -> Yahoo)
         nav_data = {}
         fund_map = {}  # Map fund_id to index
         
-        
+        # Helper to upsert NAVs
+        def upsert_navs(fund_id, new_navs):
+            # new_navs is list of (date_str, value)
+            # Merging is safer.
+            existing_dates = {n.date.strftime('%Y-%m-%d') for n in db.query(NAV.date).filter(NAV.fund_id == fund_id).all()}
+            
+            objects_to_add = []
+            for d_str, val in new_navs:
+                if d_str not in existing_dates:
+                    objects_to_add.append(NAV(fund_id=fund_id, date=d_str, nav=val))
+                    existing_dates.add(d_str)
+            
+            if objects_to_add:
+                db.bulk_save_objects(objects_to_add)
+                db.commit()
+                print(f"  Saved {len(objects_to_add)} new NAV records to DB for fund {fund_id}")
+
+        # Initialize MFAPIService once
+        from services.mfapi import MFAPIService
+        mfapi = MFAPIService()
+
         for idx, fund_id in enumerate(fund_ids):
             try:
-                # Fetch from MFAPI
-                details = await mfapi.get_scheme_details(str(fund_id))
-                
                 fund_name = fund_obj_map[fund_id].name or f"Fund {fund_id}"
                 
-                if not details or 'data' not in details:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Data unavailable for '{fund_name}' (ID: {fund_id}) from MFAPI. Please check validation."
-                    )
+                # 1. Check DB First
+                last_nav = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date.desc()).first()
+                db_navs = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date).all()
                 
-                from services.yahoo import YahooFinanceService
-                yahoo = YahooFinanceService()
-
-                # Parse ALL available NAV data (no date filtering yet)
+                # Check if data is fresh enough (e.g., < 2 days old)
+                is_stale = True
+                if last_nav:
+                    days_since = (datetime.now().date() - last_nav.date).days
+                    if days_since <= 2:
+                        is_stale = False
+                
                 navs = []
-                if details and 'data' in details:
-                    for nav_entry in details['data']:
-                        try:
-                            nav_date = datetime.strptime(nav_entry['date'], '%d-%m-%Y')
-                            navs.append((nav_date.strftime('%Y-%m-%d'), float(nav_entry['nav'])))
-                        except:
-                            continue
+                if db_navs and not is_stale and len(db_navs) > 30:
+                    print(f"Fund {fund_id}: ✅ Using cached data from DB ({len(db_navs)} records, last update: {last_nav.date})")
+                    navs = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in db_navs]
                 
-                print(f"Fund {fund_id}: {len(navs)} NAV records from MFAPI")
-                
-                # FALLBACK: Try Yahoo Finance if MFAPI data is insufficient
-                if len(navs) < 30:
-                    print(f"  Insufficient MFAPI data for {fund_id}. Attempting Yahoo Finance fallback...")
-                    meta = details.get('meta', {})
-                    scheme_name = meta.get('scheme_name', '')
-                    isin = meta.get('isin_code', '') # MFAPI explicitly has 'isin_code' often
-                    
-                    if scheme_name:
-                        ticker = await yahoo.search_ticker(scheme_name, isin)
-                        if ticker:
-                            print(f"  Fetching history from Yahoo for ticker: {ticker}")
-                            yahoo_navs = yahoo.get_nav_history(ticker)
-                            if len(yahoo_navs) > len(navs):
-                                print(f"  ✅ Yahoo Finance returned {len(yahoo_navs)} records. Using Yahoo data.")
-                                navs = yahoo_navs
-                
-                if len(navs) < 30:  # Still insufficient after fallback
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"Insufficient historical data for '{fund_name}' (only {len(navs)} records). Please remove this fund."
-                    )
-                
+                # 2. If missing or stale, fetch from External API
+                if not navs:
+                    print(f"Fund {fund_id}: ⚠️ Data missing or stale. Fetching from MFAPI...")
+                    try:
+                        # Fetch from MFAPI
+                        
+                        details = await mfapi.get_scheme_details(str(fund_id))
+                        
+                        if not details or 'data' not in details:
+                            raise ValueError("No data from MFAPI")
+
+                        api_navs = []
+                        for nav_entry in details['data']:
+                            try:
+                                d = datetime.strptime(nav_entry['date'], '%d-%m-%Y')
+                                api_navs.append((d.strftime('%Y-%m-%d'), float(nav_entry['nav'])))
+                            except:
+                                continue
+                        
+                        # Fallback to Yahoo if MFAPI is weak
+                        if len(api_navs) < 30:
+                            print(f"  Insufficient MFAPI data for {fund_id}. Attempting Yahoo Finance fallback...")
+                            from services.yahoo import YahooFinanceService
+                            yahoo = YahooFinanceService()
+                            
+                            meta = details.get('meta', {})
+                            scheme_name = meta.get('scheme_name', '')
+                            isin = meta.get('isin_code', '')
+                            
+                            if scheme_name:
+                                ticker = await yahoo.search_ticker(scheme_name, isin)
+                                if ticker:
+                                    print(f"  Fetching history from Yahoo for ticker: {ticker}")
+                                    yahoo_navs = yahoo.get_nav_history(ticker)
+                                    if len(yahoo_navs) > len(api_navs):
+                                        print(f"  ✅ Yahoo Finance returned {len(yahoo_navs)} records.")
+                                        api_navs = yahoo_navs
+
+                        if len(api_navs) < 30:
+                             raise HTTPException(
+                                status_code=400,
+                                detail=f"Insufficient historical data for '{fund_name}' (only {len(api_navs)} records). Please remove this fund."
+                            )
+                        
+                        navs = api_navs
+                        # Update DB
+                        upsert_navs(fund_id, navs)
+                        
+                    except Exception as e:
+                        print(f"  External fetch failed for {fund_id}: {e}")
+                        # Final fallback: Use whatever is in DB even if stale
+                        if db_navs and len(db_navs) > 30:
+                            print(f"  ⚠️ Using stale DB data as fallback.")
+                            navs = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in db_navs]
+                        else:
+                            raise HTTPException(
+                                status_code=400,
+                                detail=f"Error fetching data for '{fund_name}': {str(e)}"
+                            )
+
                 nav_data[fund_id] = navs
                 fund_map[fund_id] = idx
                 
@@ -481,31 +523,58 @@ async def recalculate_portfolio(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-@ r o u t e r . g e t ( " / { o p t i m i z a t i o n _ i d } " ,   r e s p o n s e _ m o d e l = O p t i m i z a t i o n R e s p o n s e )  
- d e f   g e t _ o p t i m i z a t i o n _ r e s u l t (  
-         o p t i m i z a t i o n _ i d :   i n t ,  
-         d b :   S e s s i o n   =   D e p e n d s ( g e t _ d b )  
- ) :  
-         " " "  
-         G e t   s p e c i f i c   o p t i m i z a t i o n   r e s u l t   b y   I D  
-         " " "  
-         o p t i m i z a t i o n   =   d b . q u e r y ( O p t i m i z a t i o n ) . f i l t e r ( O p t i m i z a t i o n . i d   = =   o p t i m i z a t i o n _ i d ) . f i r s t ( )  
-          
-         i f   n o t   o p t i m i z a t i o n :  
-                 r a i s e   H T T P E x c e p t i o n ( s t a t u s _ c o d e = 4 0 4 ,   d e t a i l = " O p t i m i z a t i o n   r e c o r d   n o t   f o u n d " )  
-                  
-         #   R e c o n s t r u c t   r e s p o n s e   f r o m   s t o r e d   J S O N  
-         #   N o t e :   i n p u t s   a n d   o u t p u t   a r e   s t o r e d   a s   J S O N  
-         o u t p u t   =   o p t i m i z a t i o n . o u t p u t  
-          
-         r e t u r n   O p t i m i z a t i o n R e s p o n s e (  
-                 m v p _ w e i g h t s = o u t p u t . g e t ( ' m v p ' ,   { } ) . g e t ( ' w e i g h t s ' ,   { } ) ,  
-                 m a x _ s h a r p e _ w e i g h t s = o u t p u t . g e t ( ' m a x _ s h a r p e ' ,   { } ) . g e t ( ' w e i g h t s ' ,   { } ) ,  
-                 m v p _ m e t r i c s = o u t p u t . g e t ( ' m v p ' ,   { } ) . g e t ( ' m e t r i c s ' ,   { } ) ,  
-                 m a x _ s h a r p e _ m e t r i c s = o u t p u t . g e t ( ' m a x _ s h a r p e ' ,   { } ) . g e t ( ' m e t r i c s ' ,   { } ) ,  
-                 e f f i c i e n t _ f r o n t i e r = o u t p u t . g e t ( ' f r o n t i e r ' ,   [ ] ) ,  
-                 m o n t e _ c a r l o _ p o r t f o l i o s = o u t p u t . g e t ( ' m o n t e _ c a r l o ' ,   [ ] ) ,  
-                 b e n c h m a r k _ m e t r i c s = o u t p u t . g e t ( ' b e n c h m a r k _ m e t r i c s ' ) ,     #   H a n d l e   o l d e r   r e c o r d s  
-                 b e n c h m a r k _ n a m e = o u t p u t . g e t ( ' b e n c h m a r k _ n a m e ' )  
-         )  
+@ r o u t e r . g e t ( " / { o p t i m i z a t i o n _ i d } " ,   r e s p o n s e _ m o d e l = O p t i m i z a t i o n R e s p o n s e ) 
+ 
+ d e f   g e t _ o p t i m i z a t i o n _ r e s u l t ( 
+ 
+         o p t i m i z a t i o n _ i d :   i n t , 
+ 
+         d b :   S e s s i o n   =   D e p e n d s ( g e t _ d b ) 
+ 
+ ) : 
+ 
+         " " " 
+ 
+         G e t   s p e c i f i c   o p t i m i z a t i o n   r e s u l t   b y   I D 
+ 
+         " " " 
+ 
+         o p t i m i z a t i o n   =   d b . q u e r y ( O p t i m i z a t i o n ) . f i l t e r ( O p t i m i z a t i o n . i d   = =   o p t i m i z a t i o n _ i d ) . f i r s t ( ) 
+ 
+         
+ 
+         i f   n o t   o p t i m i z a t i o n : 
+ 
+                 r a i s e   H T T P E x c e p t i o n ( s t a t u s _ c o d e = 4 0 4 ,   d e t a i l = " O p t i m i z a t i o n   r e c o r d   n o t   f o u n d " ) 
+ 
+                 
+ 
+         #   R e c o n s t r u c t   r e s p o n s e   f r o m   s t o r e d   J S O N 
+ 
+         #   N o t e :   i n p u t s   a n d   o u t p u t   a r e   s t o r e d   a s   J S O N 
+ 
+         o u t p u t   =   o p t i m i z a t i o n . o u t p u t 
+ 
+         
+ 
+         r e t u r n   O p t i m i z a t i o n R e s p o n s e ( 
+ 
+                 m v p _ w e i g h t s = o u t p u t . g e t ( ' m v p ' ,   { } ) . g e t ( ' w e i g h t s ' ,   { } ) , 
+ 
+                 m a x _ s h a r p e _ w e i g h t s = o u t p u t . g e t ( ' m a x _ s h a r p e ' ,   { } ) . g e t ( ' w e i g h t s ' ,   { } ) , 
+ 
+                 m v p _ m e t r i c s = o u t p u t . g e t ( ' m v p ' ,   { } ) . g e t ( ' m e t r i c s ' ,   { } ) , 
+ 
+                 m a x _ s h a r p e _ m e t r i c s = o u t p u t . g e t ( ' m a x _ s h a r p e ' ,   { } ) . g e t ( ' m e t r i c s ' ,   { } ) , 
+ 
+                 e f f i c i e n t _ f r o n t i e r = o u t p u t . g e t ( ' f r o n t i e r ' ,   [ ] ) , 
+ 
+                 m o n t e _ c a r l o _ p o r t f o l i o s = o u t p u t . g e t ( ' m o n t e _ c a r l o ' ,   [ ] ) , 
+ 
+                 b e n c h m a r k _ m e t r i c s = o u t p u t . g e t ( ' b e n c h m a r k _ m e t r i c s ' ) ,     #   H a n d l e   o l d e r   r e c o r d s 
+ 
+                 b e n c h m a r k _ n a m e = o u t p u t . g e t ( ' b e n c h m a r k _ n a m e ' ) 
+ 
+         ) 
+ 
  

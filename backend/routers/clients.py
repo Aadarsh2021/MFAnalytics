@@ -99,19 +99,33 @@ def list_clients(
     """
     List all clients for the logged-in advisor with latest activity
     """
-    clients = db.query(Client).filter(
+    # Optimize: Fetch latest optimization metadata in a single query using subquery
+    from sqlalchemy import func, case
+    
+    # Subquery to find the latest optimization ID and date per client
+    latest_opt_sub = db.query(
+        Portfolio.client_id,
+        func.max(Optimization.created_at).label('latest_date'),
+        func.max(Optimization.id).label('latest_id') # Approximation if IDs are monotonic with time
+    ).join(Optimization).group_by(Portfolio.client_id).subquery()
+    
+    # Main query joining Client with the subquery
+    results = db.query(
+        Client,
+        latest_opt_sub.c.latest_date,
+        latest_opt_sub.c.latest_id
+    ).outerjoin(
+        latest_opt_sub, Client.id == latest_opt_sub.c.client_id
+    ).filter(
         Client.advisor_id == current_user.id
     ).all()
     
-    # Enrich with latest optimization data
-    results = []
-    for client in clients:
-        latest_opt = db.query(Optimization).join(Portfolio).filter(
-            Portfolio.client_id == client.id
-        ).order_by(Optimization.created_at.desc()).first()
+    # Map results to response schema
+    client_responses = []
+    for client, latest_date, latest_id in results:
+        # Populate transient fields on the ORM object (or create Pydantic model directly)
+        client.latest_optimization_date = latest_date
+        client.latest_optimization_id = latest_id
+        client_responses.append(client)
         
-        client.latest_optimization_date = latest_opt.created_at if latest_opt else None
-        client.latest_optimization_id = latest_opt.id if latest_opt else None
-        results.append(client)
-        
-    return results
+    return client_responses
