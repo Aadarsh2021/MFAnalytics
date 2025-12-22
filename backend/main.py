@@ -31,7 +31,7 @@ app.add_middleware(
     allow_origin_regex=r"https://.*\.web\.app|https://.*\.firebaseapp\.com|http://localhost:.*", 
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With", "ngrok-skip-browser-warning"],
 )
 
 # Add GZip compression for responses > 1KB
