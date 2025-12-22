@@ -79,15 +79,6 @@ class FundSearchRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
-class FundSearchResponse(BaseModel):
-    """Response with total count for accurate pagination"""
-    funds: List["FundInfo"]
-    total: int
-    offset: int
-    limit: int
-
-
-
 class FundInfo(BaseModel):
     """Fund information"""
     id: int
@@ -100,6 +91,14 @@ class FundInfo(BaseModel):
     scheme_type: Optional[str] = "Growth"
     has_nav_data: bool = True
     data_quality: str = "unknown"  # good, warning, error, unknown
+
+
+class FundSearchResponse(BaseModel):
+    """Response with total count for accurate pagination"""
+    funds: List[FundInfo]
+    total: int
+    offset: int
+    limit: int
 
 
 class FundSelectionRequest(BaseModel):
