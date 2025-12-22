@@ -87,7 +87,16 @@ async def get_current_user(
     Dependency to get current authenticated user from Supabase JWT token
     Syncs Supabase user to local DB if not exists
     """
-    email = user_data.get("email")
+    # Handle Supabase User object (Pydantic) vs Dict
+    if hasattr(user_data, "email"):
+        # It's an object
+        email = user_data.email
+        user_metadata = getattr(user_data, "user_metadata", {})
+    else:
+        # It's a dict
+        email = user_data.get("email")
+        user_metadata = user_data.get("user_metadata", {})
+
     if not email:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -103,7 +112,7 @@ async def get_current_user(
         new_user = User(
             email=email,
             hashed_password="SUPABASE_AUTH", # Placeholder
-            full_name=user_data.get("user_metadata", {}).get("full_name", "Supabase User"),
+            full_name=user_metadata.get("full_name", "Supabase User"),
             is_active=True,
             is_advisor=True # Default to True for now
         )
