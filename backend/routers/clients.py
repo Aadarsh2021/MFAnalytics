@@ -16,11 +16,16 @@ router = APIRouter(prefix="/api/clients", tags=["clients"])
 from models.schemas import IntakeRequest, IntakeResponse, RiskProfile, AssetAllocation as WealthAssetAllocation
 
 
+from datetime import datetime
+from models.database import Portfolio, Optimization
+
 class ClientProfileResponse(BaseModel):
     id: int
     name: Optional[str]
     risk_profile: str
     investment_horizon: int
+    latest_optimization_date: Optional[datetime] = None
+    latest_optimization_id: Optional[int] = None
     
     class Config:
         from_attributes = True
@@ -75,6 +80,14 @@ def get_client(
     if not client:
         raise HTTPException(status_code=404, detail="Client not found")
     
+    # Fetch latest optimization
+    latest_opt = db.query(Optimization).join(Portfolio).filter(
+        Portfolio.client_id == client.id
+    ).order_by(Optimization.created_at.desc()).first()
+    
+    client.latest_optimization_date = latest_opt.created_at if latest_opt else None
+    client.latest_optimization_id = latest_opt.id if latest_opt else None
+    
     return client
 
 
@@ -84,9 +97,21 @@ def list_clients(
     current_user: User = Depends(get_current_user)
 ):
     """
-    List all clients for the logged-in advisor
+    List all clients for the logged-in advisor with latest activity
     """
     clients = db.query(Client).filter(
-        Client.advisor_id == current_user.id  # Only get own clients
+        Client.advisor_id == current_user.id
     ).all()
-    return clients
+    
+    # Enrich with latest optimization data
+    results = []
+    for client in clients:
+        latest_opt = db.query(Optimization).join(Portfolio).filter(
+            Portfolio.client_id == client.id
+        ).order_by(Optimization.created_at.desc()).first()
+        
+        client.latest_optimization_date = latest_opt.created_at if latest_opt else None
+        client.latest_optimization_id = latest_opt.id if latest_opt else None
+        results.append(client)
+        
+    return results

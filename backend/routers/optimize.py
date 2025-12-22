@@ -481,3 +481,31 @@ async def recalculate_portfolio(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+@ r o u t e r . g e t ( " / { o p t i m i z a t i o n _ i d } " ,   r e s p o n s e _ m o d e l = O p t i m i z a t i o n R e s p o n s e )  
+ d e f   g e t _ o p t i m i z a t i o n _ r e s u l t (  
+         o p t i m i z a t i o n _ i d :   i n t ,  
+         d b :   S e s s i o n   =   D e p e n d s ( g e t _ d b )  
+ ) :  
+         " " "  
+         G e t   s p e c i f i c   o p t i m i z a t i o n   r e s u l t   b y   I D  
+         " " "  
+         o p t i m i z a t i o n   =   d b . q u e r y ( O p t i m i z a t i o n ) . f i l t e r ( O p t i m i z a t i o n . i d   = =   o p t i m i z a t i o n _ i d ) . f i r s t ( )  
+          
+         i f   n o t   o p t i m i z a t i o n :  
+                 r a i s e   H T T P E x c e p t i o n ( s t a t u s _ c o d e = 4 0 4 ,   d e t a i l = " O p t i m i z a t i o n   r e c o r d   n o t   f o u n d " )  
+                  
+         #   R e c o n s t r u c t   r e s p o n s e   f r o m   s t o r e d   J S O N  
+         #   N o t e :   i n p u t s   a n d   o u t p u t   a r e   s t o r e d   a s   J S O N  
+         o u t p u t   =   o p t i m i z a t i o n . o u t p u t  
+          
+         r e t u r n   O p t i m i z a t i o n R e s p o n s e (  
+                 m v p _ w e i g h t s = o u t p u t . g e t ( ' m v p ' ,   { } ) . g e t ( ' w e i g h t s ' ,   { } ) ,  
+                 m a x _ s h a r p e _ w e i g h t s = o u t p u t . g e t ( ' m a x _ s h a r p e ' ,   { } ) . g e t ( ' w e i g h t s ' ,   { } ) ,  
+                 m v p _ m e t r i c s = o u t p u t . g e t ( ' m v p ' ,   { } ) . g e t ( ' m e t r i c s ' ,   { } ) ,  
+                 m a x _ s h a r p e _ m e t r i c s = o u t p u t . g e t ( ' m a x _ s h a r p e ' ,   { } ) . g e t ( ' m e t r i c s ' ,   { } ) ,  
+                 e f f i c i e n t _ f r o n t i e r = o u t p u t . g e t ( ' f r o n t i e r ' ,   [ ] ) ,  
+                 m o n t e _ c a r l o _ p o r t f o l i o s = o u t p u t . g e t ( ' m o n t e _ c a r l o ' ,   [ ] ) ,  
+                 b e n c h m a r k _ m e t r i c s = o u t p u t . g e t ( ' b e n c h m a r k _ m e t r i c s ' ) ,     #   H a n d l e   o l d e r   r e c o r d s  
+                 b e n c h m a r k _ n a m e = o u t p u t . g e t ( ' b e n c h m a r k _ n a m e ' )  
+         )  
+ 
