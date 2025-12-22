@@ -39,7 +39,13 @@ class Settings(BaseSettings):
     @property
     def get_allowed_origins(self) -> List[str]:
         """Parse allowed origins from comma-separated string"""
-        return [origin.strip() for origin in self.allowed_origins.split(",")]
+        origins = [origin.strip() for origin in self.allowed_origins.split(",")]
+        # Default allow production frontend to avoid env var mishaps
+        prod_origins = ["https://mf-p-13860.web.app", "https://mf-p-13860.firebaseapp.com"]
+        for p in prod_origins:
+            if p not in origins:
+                origins.append(p)
+        return origins
     
     # Environment
     environment: str = "development"
