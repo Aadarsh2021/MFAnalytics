@@ -26,7 +26,9 @@ Base.metadata.create_all(bind=engine)
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
+    # Allow explicit origins from config AND any subdomain of web.app / firebaseapp.com via regex
     allow_origins=settings.get_allowed_origins,
+    allow_origin_regex=r"https://.*\.web\.app|https://.*\.firebaseapp\.com|http://localhost:.*", 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
