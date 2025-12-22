@@ -1,0 +1,39 @@
+{
+  "tunnels": [
+    {
+      "name": "frontend",
+      "ID": "db5ea471d6bf0d3e0de6504129e8aaf3",
+      "uri": "/api/tunnels/frontend",
+      "public_url": "https://grainiest-nona-oversqueamishly.ngrok-free.dev",
+      "proto": "https",
+      "config": {
+        "addr": "http://localhost:3000",
+        "inspect": true
+      },
+      "metrics": {
+        "conns": {
+          "count": 0,
+          "gauge": 0,
+          "rate1": 0,
+          "rate5": 0,
+          "rate15": 0,
+          "p50": 0,
+          "p90": 0,
+          "p95": 0,
+          "p99": 0
+        },
+        "http": {
+          "count": 0,
+          "rate1": 0,
+          "rate5": 0,
+          "rate15": 0,
+          "p50": 0,
+          "p90": 0,
+          "p95": 0,
+          "p99": 0
+        }
+      }
+    }
+  ],
+  "uri": "/api/tunnels"
+}

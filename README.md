@@ -1,73 +1,222 @@
-# Welcome to your Lovable project
+# Portfolio Optimization Platform
 
-## Project info
+EMH-based portfolio optimization system for advisors with two core features: new portfolio creation and existing portfolio analysis via PDF import.
 
-**URL**: https://lovable.dev/projects/44afdcd1-9d02-441d-8690-99cee3ac14fb
+## 🚀 Features
 
-## How can I edit this code?
+- **New Portfolio Creation**: Define risk profile, select funds, and optimize using Modern Portfolio Theory
+- **Existing Portfolio Analysis**: Upload CAS PDF, extract holdings, and compare current vs optimized allocation
+- **Real-time Optimization**: Interactive sliders for volatility, return expectations, and weight constraints
+- **Comprehensive Analytics**: Sharpe ratio, Sortino ratio, Beta, Maximum Drawdown, and more
+- **Efficient Frontier Visualization**: Interactive charts showing optimal risk-return tradeoffs
 
-There are several ways of editing your application.
+## 🛠️ Tech Stack
 
-**Use Lovable**
+### Backend
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/44afdcd1-9d02-441d-8690-99cee3ac14fb) and start prompting.
+- **Framework**: FastAPI
+- **Optimization**: CVXPY, NumPy, Pandas, SciPy
+- **Database**: PostgreSQL
+- **Cache/Queue**: Redis + Celery
+- **PDF Processing**: pdfplumber, pytesseract
 
-Changes made via Lovable will be committed automatically to this repo.
+### Frontend
 
-**Use your preferred IDE**
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: TailwindCSS
+- **Charts**: ECharts
+- **State Management**: React Hooks
+- **WebSocket**: Socket.IO
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 📦 Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
 
-Follow these steps:
+- Docker & Docker Compose
+- Python 3.11+ (for local development)
+- Node.js 20+ (for local development)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Quick Start with Docker
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+1. Clone the repository:
 
-# Step 3: Install the necessary dependencies.
-npm i
+```bash
+git clone <repository-url>
+cd Mf
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+2. Create environment file:
+
+```bash
+cp backend/.env.example backend/.env
+# Edit backend/.env with your configuration
+```
+
+3. Start all services:
+
+```bash
+docker-compose up -d
+```
+
+4. Access the application:
+
+- Frontend: <http://localhost:3000>
+- Backend API: <http://localhost:8000>
+- API Documentation: <http://localhost:8000/api/docs>
+
+### Local Development Setup
+
+#### Backend
+
+1. Create virtual environment:
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+2. Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Set up database:
+
+```bash
+# Start PostgreSQL and Redis (via Docker or locally)
+docker-compose up -d postgres redis
+
+# Run migrations (to be added with Alembic)
+# alembic upgrade head
+```
+
+4. Run development server:
+
+```bash
+python main.py
+# Or: uvicorn main:app --reload
+```
+
+#### Frontend
+
+1. Install dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+2. Run development server:
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 📚 API Documentation
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Once the backend is running, visit:
 
-**Use GitHub Codespaces**
+- Swagger UI: <http://localhost:8000/api/docs>
+- ReDoc: <http://localhost:8000/api/redoc>
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Key Endpoints
 
-## What technologies are used for this project?
+- `POST /api/intake` - Save client risk profile
+- `POST /api/funds/search` - Search fund universe
+- `POST /api/optimize` - Run portfolio optimization
+- `POST /api/portfolio/upload` - Upload PDF for parsing
+- `WS /api/optimize/stream` - WebSocket for real-time updates
 
-This project is built with:
+## 🗄️ Database Schema
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **funds**: Mutual fund master data
+- **navs**: NAV time series
+- **benchmarks**: Benchmark indices with TRI
+- **clients**: Client risk profiles
+- **portfolios**: Portfolio holdings
+- **optimizations**: Optimization results
 
-## How can I deploy this project?
+## 🧪 Testing
 
-Simply open [Lovable](https://lovable.dev/projects/44afdcd1-9d02-441d-8690-99cee3ac14fb) and click on Share -> Publish.
+### Backend Tests
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+cd backend
+pytest tests/ -v
+```
 
-Yes, you can!
+### Frontend Tests
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```bash
+cd frontend
+npm test
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 📊 Optimization Engine
+
+The platform uses **Modern Portfolio Theory (MPT)** with the following algorithms:
+
+1. **Minimum Variance Portfolio (MVP)**: Minimize portfolio variance subject to constraints
+2. **Maximum Sharpe Ratio**: Maximize risk-adjusted returns
+3. **Efficient Frontier**: Generate 40+ optimal portfolios across risk spectrum
+
+### Key Features
+
+- CAPM-based expected returns (EMH)
+- Ledoit-Wolf covariance shrinkage
+- Asset class band constraints
+- No shorting (non-negative weights)
+- Real-time recalculation (< 2 seconds)
+
+## 🔒 Security
+
+- JWT authentication for all endpoints
+- PDF virus scanning (ClamAV)
+- Input validation with Pydantic
+- CORS configuration
+- Environment-based secrets
+
+## 📈 Performance Targets
+
+- Optimization (10 funds): < 1 second
+- Optimization (50 funds): < 3 seconds
+- Efficient frontier (40 points): < 5 seconds
+- Frontend chart render: < 300ms
+- Slider update → backend recompute: < 2 seconds
+- PDF extraction accuracy: 80%+
+
+## 🚧 Roadmap
+
+### V1.0 (Current)
+
+- [x] Project setup
+- [ ] Client intake module
+- [ ] Fund selection module
+- [ ] Data processing pipeline
+- [ ] Optimization engine
+- [ ] Dashboard visualization
+- [ ] PDF import
+- [ ] Portfolio comparison
+
+### V2.0 (Future)
+
+- Black-Litterman model
+- Multi-index support
+- Live NAV ingestion API
+- Tax-loss harvesting
+- ESG factor integration
+- Monte Carlo simulation
+
+## 📝 License
+
+Proprietary - All rights reserved
+
+## 👥 Contributors
+
+- Development Team
+
+## 📞 Support
+
+For issues and questions, please contact the development team.

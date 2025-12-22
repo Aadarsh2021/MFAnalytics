@@ -1,0 +1,3 @@
+# Redis configuration for caching and task queue
+redis==5.0.1
+celery==5.3.4
