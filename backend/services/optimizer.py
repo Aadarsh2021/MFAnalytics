@@ -63,12 +63,17 @@ class PortfolioOptimizer:
         # Drop rows that still have NaNs (where funds don't overlap)
         nav_df = nav_df.dropna()
         
-        if len(nav_df) < 30:
-            raise ValueError(f"Insufficient overlapping history: only {len(nav_df)} common trading days found. This usually happens when combining a very new fund with old funds. Please ensure all funds have at least 1-2 months of overlapping history.")
+        if len(nav_df) < 10:
+            # Attempt to rescue: Only keep funds that have at least 50% data overlap with the "best" fund
+            # This is complex, for now, just informative error
+            min_date = nav_df.index.min()
+            max_date = nav_df.index.max()
+            raise ValueError(f"Insufficient overlapping history for selected funds. Common period: {min_date} to {max_date} ({len(nav_df)} days). Please deselect funds with very short or mismatched histories.")
         
         # Compute log returns
         log_returns = np.log(nav_df / nav_df.shift(1))
-        log_returns = log_returns.dropna()
+        log_returns = log_returns.fillna(0.0) # Fill NaNs with 0 instead of dropping to preserve length if possible
+        log_returns = log_returns.replace([np.inf, -np.inf], 0.0)
         
         return log_returns
     
