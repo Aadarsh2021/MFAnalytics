@@ -132,7 +132,11 @@ async def search_funds(request: FundSearchRequest):
                 plan_type="Direct" if 'direct' in scheme['schemeName'].lower() else "Regular",
                 scheme_type="IDCW" if ('idcw' in scheme['schemeName'].lower() or 'dividend' in scheme['schemeName'].lower()) else "Growth",
                 has_nav_data=True,
-                data_quality="unknown"
+                data_quality=(
+                    "Excellent" if scheme.get('asset_class_cached') not in ['Alt', 'Unknown'] and scheme.get('category_cached') != 'Other'
+                    else "Good" if scheme.get('asset_class_cached') not in ['Alt', 'Unknown']
+                    else "Poor"
+                )
             ))
         
         return FundSearchResponse(

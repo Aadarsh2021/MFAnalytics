@@ -95,13 +95,20 @@ export default function FundsPage() {
         }
     }, [searchQuery, categoryFilter, assetClassFilter, planTypeFilter, schemeTypeFilter, funds.length]);
 
-    // Initial search and filter resets
+    // Debounce Search Query (Typing needs delay)
     useEffect(() => {
         const timer = setTimeout(() => {
             searchFunds(0, true);
         }, 400);
         return () => clearTimeout(timer);
-    }, [searchQuery, categoryFilter, assetClassFilter, planTypeFilter, schemeTypeFilter, searchFunds]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery]); // Only trigger on query change
+
+    // Immediate Trigger for Filters (Dropdowns should be instant)
+    useEffect(() => {
+        searchFunds(0, true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [categoryFilter, assetClassFilter, planTypeFilter, schemeTypeFilter]); // Only trigger on filter changes
 
     const handleLoadMore = () => {
         const nextOffset = offset + PAGE_SIZE;
@@ -201,7 +208,16 @@ export default function FundsPage() {
 
     // Memoize expensive computations
     const sortedFunds = useMemo(() => {
-        return [...funds].sort((a, b) => {
+        // First deduplicate by name to ensure clean list
+        const uniqueFundsMap = new Map();
+        funds.forEach(f => {
+            if (!uniqueFundsMap.has(f.name)) {
+                uniqueFundsMap.set(f.name, f);
+            }
+        });
+        const uniqueFunds = Array.from(uniqueFundsMap.values());
+
+        return uniqueFunds.sort((a, b) => {
             let comparison = 0;
             if (sortBy === 'name') comparison = a.name.localeCompare(b.name);
             else if (sortBy === 'category') comparison = a.category.localeCompare(b.category);
@@ -374,9 +390,15 @@ export default function FundsPage() {
                                                             </span>
                                                         </td>
                                                         <td className="px-3 py-4">
-                                                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border bg-slate-50 text-slate-500 border-slate-100`}>
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                                                <span className="text-[10px] font-black uppercase tracking-wide">Listed</span>
+                                                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-slate-500 ${fund.data_quality === 'Excellent' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                                                                    fund.data_quality === 'Good' ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                                                                        'bg-amber-50 border-amber-100 text-amber-600'
+                                                                }`}>
+                                                                <span className={`w-1.5 h-1.5 rounded-full ${fund.data_quality === 'Excellent' ? 'bg-emerald-500' :
+                                                                        fund.data_quality === 'Good' ? 'bg-blue-500' :
+                                                                            'bg-amber-500'
+                                                                    }`}></span>
+                                                                <span className="text-[10px] font-black uppercase tracking-wide">{fund.data_quality}</span>
                                                             </span>
                                                         </td>
                                                     </tr>
