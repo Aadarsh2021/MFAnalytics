@@ -101,7 +101,8 @@ class MFAPIService:
             'focused', 'dividend yield',
             'value', 'contra', 'elss', 'tax saver',
             'index', 'nifty', 'sensex', 'bluechip', 'blue chip',
-            'opportunities', 'infrastructure', 'pharma', 'tech', 'banking'
+            'opportunities', 'infrastructure', 'pharma', 'tech', 'banking',
+            'etf', 'fo f', 'fund of fund', 'nasdaq', 's&p', 'global', 'international', 'us growth'
         ]
         if any(keyword in name_lower for keyword in equity_keywords):
             return 'Equity'
@@ -112,24 +113,18 @@ class MFAPIService:
             'ultra short', 'short duration', 'medium duration',
             'long duration', 'corporate bond', 'credit risk',
             'banking & psu', 'dynamic bond', 'income',
-            'floating rate', 'low duration', 'overnight', 'fixed term'
+            'floating rate', 'low duration', 'overnight', 'fixed term',
+            'fmp', 'fixed maturity'
         ]
         if any(keyword in name_lower for keyword in debt_keywords):
             return 'Debt'
             
-        # 4. Hybrid/Alternative (Catch-all for Balanced/Aggressive etc if not caught by above)
-        # Note: 'Balanced Advantage' often falls here if not explicitly 'Equity' named
+        # 4. Hybrid/Alternative
         return 'Alt'
     
     def classify_category(self, scheme_name: str) -> str:
         """
         Classify scheme into category
-        
-        Args:
-            scheme_name: Name of the scheme
-            
-        Returns:
-            Category string
         """
         name_lower = scheme_name.lower()
         
@@ -139,13 +134,17 @@ class MFAPIService:
             'Small Cap': ['small cap', 'smallcap'],
             'Multi Cap': ['multi cap', 'multicap', 'flexi cap', 'flexicap'],
             'ELSS': ['elss', 'tax saver'],
-            'Index': ['index', 'nifty', 'sensex'],
+            'Index': ['index', 'nifty', 'sensex', 'etf', 'nasdaq', 's&p'],
             'Liquid': ['liquid', 'money market', 'overnight'],
             'Ultra Short': ['ultra short'],
             'Short Duration': ['short duration', 'short term', 'low duration'],
             'Medium Duration': ['medium duration', 'medium term'],
             'Long Duration': ['long duration', 'long term', 'gilt'],
             'Corporate Bond': ['corporate bond'],
+            'Dynamic Bond': ['dynamic bond'],
+            'Banking & PSU': ['banking & psu', 'psu debt'],
+            'Credit Risk': ['credit risk'],
+            'Floater': ['floating rate'],
             'Gold': ['gold', 'silver', 'precious metal'],
             'Hybrid': ['hybrid', 'balanced', 'aggressive', 'conservative', 'arbitrage'],
         }
