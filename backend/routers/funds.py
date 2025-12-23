@@ -57,12 +57,22 @@ async def search_funds(request: FundSearchRequest):
         
         # Apply asset class filter
         if request.asset_class:
+            print(f"DEBUG: Filtering by Asset Class: '{request.asset_class}'")
             temp_filtered = []
             for scheme in filtered_schemes:
                 asset_class = mfapi_service.classify_asset_class(scheme['schemeName'])
+                
+                # Debug specific problematic fund
+                if "IDFC FMP" in scheme['schemeName'] and request.asset_class == 'Equity':
+                    if asset_class == 'Equity':
+                        print(f"DEBUG: IDFC FMP classified as EQUITY! Name: {scheme['schemeName']}")
+                    else:
+                        pass # Correctly classified as non-Equity
+                
                 if asset_class == request.asset_class:
                     temp_filtered.append(scheme)
             filtered_schemes = temp_filtered
+            print(f"DEBUG: After Asset Class Filter: {len(filtered_schemes)} funds")
         
         # Apply category filter
         if request.category:
