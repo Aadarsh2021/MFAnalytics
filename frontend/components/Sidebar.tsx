@@ -21,6 +21,7 @@ export default function Sidebar() {
         { title: 'Client Intake', icon: '📋', href: '/intake' },
         { title: 'Fund Selection', icon: '🔍', href: '/funds' },
         { title: 'Compare Funds', icon: '⚖️', href: '/compare' },
+        { title: 'History', icon: '📜', href: '/history' },
         { title: 'Results', icon: '⚡', href: '/results' },
         { title: 'Analytics', icon: '📈', href: '/analytics' },
         { title: 'Rebalancing', icon: '📊', href: '/rebalance' },

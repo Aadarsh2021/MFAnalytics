@@ -470,6 +470,16 @@ export default function FundsPage() {
                                             </div>
                                         ) : null;
                                     })}
+                                    {/* Catch-all for unclassified funds */}
+                                    {(() => {
+                                        const otherCount = Array.from(selectedFunds.values()).filter(f => !assetClasses.includes(f.asset_class)).length;
+                                        return otherCount > 0 ? (
+                                            <div className="flex justify-between items-center px-4 py-3 bg-red-50 rounded-2xl border border-red-100">
+                                                <span className="text-xs font-black text-red-500 uppercase tracking-widest">Unclassified</span>
+                                                <span className="font-black text-red-800">{otherCount} Funds</span>
+                                            </div>
+                                        ) : null;
+                                    })()}
                                 </div>
 
                                 {/* Detailed Selected Funds List */}

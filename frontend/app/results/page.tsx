@@ -26,6 +26,20 @@ interface OptimizationResults {
         sharpe: number;
         weights: number[];
     }>;
+    simulation_stats?: {
+        return_min: number;
+        return_max: number;
+        volatility_min: number;
+        volatility_max: number;
+        sharpe_min: number;
+        sharpe_max: number;
+    };
+    max_sharpe_portfolio?: {
+        allocations: Array<{ fund_id: number; fund_name: string; weight: number }>;
+    };
+    min_volatility_portfolio?: {
+        allocations: Array<{ fund_id: number; fund_name: string; weight: number }>;
+    };
     benchmark_metrics?: any;
     benchmark_name?: string;
 }
@@ -179,26 +193,64 @@ export default function ResultsPage() {
     const exportToCSV = useCallback(() => {
         if (!results) return;
 
+        // Get current active portfolio data
         const weights = selectedPortfolio === 'mvp' ? results.mvp_weights :
             selectedPortfolio === 'max_sharpe' ? results.max_sharpe_weights :
                 customWeights;
 
-        const csv = [
-            ['Fund ID', 'Weight', 'Percentage'],
-            ...Object.entries(weights).map(([id, weight]) => [
-                id,
-                weight.toFixed(6),
-                (weight * 100).toFixed(2) + '%'
-            ])
-        ].map(row => row.join(',')).join('\n');
+        const metrics = selectedPortfolio === 'mvp' ? results.mvp_metrics :
+            selectedPortfolio === 'max_sharpe' ? results.max_sharpe_metrics :
+                customMetrics || results.max_sharpe_metrics;
 
-        const blob = new Blob([csv], { type: 'text/csv' });
+        // Section 1: Portfolio Allocation
+        const csvRows = [];
+        csvRows.push(['PORTFOLIO ALLOCATION']);
+        csvRows.push(['Fund ID', 'Fund Name', 'Category', 'Weight', 'Percentage']);
+
+        Object.entries(weights).forEach(([id, weight]) => {
+            if ((weight as number) > 0.001) {
+                const fund = fundDetails.find(f => f.fund_id === Number(id));
+                csvRows.push([
+                    id,
+                    fund ? `"${fund.name}"` : `Fund ${id}`,
+                    fund?.category || 'N/A',
+                    (weight as number).toFixed(6),
+                    ((weight as number) * 100).toFixed(2) + '%'
+                ]);
+            }
+        });
+
+        csvRows.push([]); // Empty line
+
+        // Section 2: Portfolio Metrics
+        csvRows.push(['PORTFOLIO RISK METRICS']);
+        csvRows.push(['Metric', 'Value', 'Annualized']);
+        csvRows.push(['Expected Return', ((metrics?.expected_return || 0) * 100).toFixed(2) + '%', 'Yes']);
+        csvRows.push(['Volatility (Risk)', ((metrics?.volatility || 0) * 100).toFixed(2) + '%', 'Yes']);
+        csvRows.push(['Sharpe Ratio', (metrics?.sharpe_ratio || 0).toFixed(4), 'N/A']);
+        csvRows.push(['Sortino Ratio', (metrics?.sortino_ratio || 0).toFixed(4), 'N/A']);
+        csvRows.push(['Beta', (metrics?.beta || 0).toFixed(3), 'N/A']);
+        csvRows.push(['Alpha', ((metrics?.alpha || 0) * 100).toFixed(2) + '%', 'Yes']);
+        csvRows.push(['Max Drawdown', ((metrics?.max_drawdown || 0) * 100).toFixed(2) + '%', 'N/A']);
+
+        csvRows.push([]); // Empty line
+
+        // Section 3: Simulation Stats (if available)
+        if (results.simulation_stats) {
+            csvRows.push(['MARKET SIMULATION STATS (Monte Carlo)']);
+            csvRows.push(['Metric', 'Min', 'Max']);
+            csvRows.push(['Possible Volatility', (results.simulation_stats.volatility_min * 100).toFixed(2) + '%', (results.simulation_stats.volatility_max * 100).toFixed(2) + '%']);
+            csvRows.push(['Possible Return', (results.simulation_stats.return_min * 100).toFixed(2) + '%', (results.simulation_stats.return_max * 100).toFixed(2) + '%']);
+        }
+
+        const csvString = csvRows.map(row => row.join(',')).join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `portfolio_weights_${selectedPortfolio}.csv`;
+        a.download = `Portfolio_Analysis_${selectedPortfolio}_${new Date().toLocaleDateString()}.csv`;
         a.click();
-    }, [results, selectedPortfolio, customWeights]);
+    }, [results, selectedPortfolio, customWeights, customMetrics, fundDetails]);
 
     // Memoize current weights and metrics
     const currentWeights = useMemo(() => {
@@ -502,8 +554,24 @@ export default function ResultsPage() {
                                 {showConstraints && (
                                     <div className="p-6 border-t border-amber-200/50 space-y-6 animate-in slide-in-from-top-2 duration-200">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                            <Slider label="Min Return (%)" value={constraints.return_expectation} min={5} max={30} step={0.5} onChange={v => setConstraints({ ...constraints, return_expectation: v })} color="green" />
-                                            <Slider label="Max Volatility (%)" value={constraints.volatility_tolerance} min={5} max={50} step={0.5} onChange={v => setConstraints({ ...constraints, volatility_tolerance: v })} color="red" />
+                                            <Slider
+                                                label="Target Return (%)"
+                                                value={constraints.return_expectation}
+                                                min={results?.simulation_stats?.return_min ? Math.floor(results.simulation_stats.return_min * 100) : 5}
+                                                max={results?.simulation_stats?.return_max ? Math.ceil(results.simulation_stats.return_max * 100) : 30}
+                                                step={0.5}
+                                                onChange={v => setConstraints({ ...constraints, return_expectation: v })}
+                                                color="green"
+                                            />
+                                            <Slider
+                                                label="Max Volatility (%)"
+                                                value={constraints.volatility_tolerance}
+                                                min={results?.simulation_stats?.volatility_min ? Math.floor(results.simulation_stats.volatility_min * 100) : 5}
+                                                max={results?.simulation_stats?.volatility_max ? Math.ceil(results.simulation_stats.volatility_max * 100) : 50}
+                                                step={0.5}
+                                                onChange={v => setConstraints({ ...constraints, volatility_tolerance: v })}
+                                                color="red"
+                                            />
                                             <Slider label="Max Weight/Fund (%)" value={constraints.max_weight_per_fund} min={5} max={100} onChange={v => setConstraints({ ...constraints, max_weight_per_fund: v })} color="blue" />
                                             <Slider label="Min Weight/Fund (%)" value={constraints.min_weight_per_fund} min={0} max={20} step={0.5} onChange={v => setConstraints({ ...constraints, min_weight_per_fund: v })} color="orange" />
                                         </div>

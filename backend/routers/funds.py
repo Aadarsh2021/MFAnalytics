@@ -98,6 +98,9 @@ async def search_funds(request: FundSearchRequest):
         # Total count
         total_count = len(filtered_schemes)
         
+        # Sort schemes by name to ensure consistent order
+        filtered_schemes.sort(key=lambda x: x['schemeName'])
+        
         # Paginate results based on request
         start = request.offset
         end = start + request.limit

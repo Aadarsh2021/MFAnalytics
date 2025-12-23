@@ -84,29 +84,42 @@ class MFAPIService:
         """
         name_lower = scheme_name.lower()
         
-        # Equity classification
-        equity_keywords = ['equity', 'stock', 'large cap', 'mid cap', 'small cap', 
-                          'multi cap', 'flexi cap', 'focused', 'dividend yield',
-                          'value', 'contra', 'elss', 'index', 'nifty', 'sensex']
-        
-        # Debt classification
-        debt_keywords = ['debt', 'bond', 'gilt', 'liquid', 'money market', 
-                        'ultra short', 'short duration', 'medium duration',
-                        'long duration', 'corporate bond', 'credit risk',
-                        'banking & psu', 'dynamic bond', 'income']
-        
-        # Gold classification
-        gold_keywords = ['gold', 'silver', 'precious metal']
-        
-        # Check keywords
+        # 1. Gold classification (Most specific)
+        gold_keywords = ['gold', 'silver', 'precious metal', 'commodity']
         if any(keyword in name_lower for keyword in gold_keywords):
             return 'Gold'
-        elif any(keyword in name_lower for keyword in equity_keywords):
+
+        # 2. Equity classification (Broadest category)
+        # Added: midcap, smallcap, largecap (without spaces), flexicap, multicap, tax saver
+        equity_keywords = [
+            'equity', 'stock', 
+            'large cap', 'largecap',
+            'mid cap', 'midcap', 
+            'small cap', 'smallcap',
+            'multi cap', 'multicap', 
+            'flexi cap', 'flexicap', 
+            'focused', 'dividend yield',
+            'value', 'contra', 'elss', 'tax saver',
+            'index', 'nifty', 'sensex', 'bluechip', 'blue chip',
+            'opportunities', 'infrastructure', 'pharma', 'tech', 'banking'
+        ]
+        if any(keyword in name_lower for keyword in equity_keywords):
             return 'Equity'
-        elif any(keyword in name_lower for keyword in debt_keywords):
+            
+        # 3. Debt classification
+        debt_keywords = [
+            'debt', 'bond', 'gilt', 'liquid', 'money market', 
+            'ultra short', 'short duration', 'medium duration',
+            'long duration', 'corporate bond', 'credit risk',
+            'banking & psu', 'dynamic bond', 'income',
+            'floating rate', 'low duration', 'overnight', 'fixed term'
+        ]
+        if any(keyword in name_lower for keyword in debt_keywords):
             return 'Debt'
-        else:
-            return 'Alt'  # Alternative/Hybrid
+            
+        # 4. Hybrid/Alternative (Catch-all for Balanced/Aggressive etc if not caught by above)
+        # Note: 'Balanced Advantage' often falls here if not explicitly 'Equity' named
+        return 'Alt'
     
     def classify_category(self, scheme_name: str) -> str:
         """
@@ -121,20 +134,20 @@ class MFAPIService:
         name_lower = scheme_name.lower()
         
         categories = {
-            'Large Cap': ['large cap', 'blue chip'],
-            'Mid Cap': ['mid cap'],
-            'Small Cap': ['small cap'],
-            'Multi Cap': ['multi cap', 'flexi cap'],
+            'Large Cap': ['large cap', 'largecap', 'blue chip', 'bluechip'],
+            'Mid Cap': ['mid cap', 'midcap'],
+            'Small Cap': ['small cap', 'smallcap'],
+            'Multi Cap': ['multi cap', 'multicap', 'flexi cap', 'flexicap'],
             'ELSS': ['elss', 'tax saver'],
             'Index': ['index', 'nifty', 'sensex'],
-            'Liquid': ['liquid', 'money market'],
+            'Liquid': ['liquid', 'money market', 'overnight'],
             'Ultra Short': ['ultra short'],
-            'Short Duration': ['short duration', 'short term'],
+            'Short Duration': ['short duration', 'short term', 'low duration'],
             'Medium Duration': ['medium duration', 'medium term'],
             'Long Duration': ['long duration', 'long term', 'gilt'],
             'Corporate Bond': ['corporate bond'],
-            'Gold': ['gold'],
-            'Hybrid': ['hybrid', 'balanced', 'aggressive'],
+            'Gold': ['gold', 'silver', 'precious metal'],
+            'Hybrid': ['hybrid', 'balanced', 'aggressive', 'conservative', 'arbitrage'],
         }
         
         for category, keywords in categories.items():

@@ -6,7 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8001';
 const apiClient = axios.create({
     baseURL: API_URL,
     headers: {
-        'ngrok-skip-browser-warning': 'true',
+        'Content-Type': 'application/json',
     },
 });
 
@@ -60,10 +60,17 @@ export const api = {
         list: (params?: any) => apiClient.get('/api/funds', { params }),
     },
 
+    // Client endpoints
+    clients: {
+        list: () => apiClient.get('/api/clients'),
+        get: (id: number) => apiClient.get(`/api/clients/${id}`),
+    },
+
     // Optimization endpoints
     optimize: {
         run: (data: any) => apiClient.post('/api/optimize/run', data),
         recalculate: (weights: Record<number, number>) => apiClient.post('/api/optimize/recalculate', { weights }),
+        get: (id: number) => apiClient.get(`/api/optimize/${id}`),
     },
 
     // Rebalance endpoints

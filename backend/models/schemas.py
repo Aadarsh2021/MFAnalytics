@@ -62,7 +62,7 @@ class IntakeRequest(BaseModel):
 
 
 class IntakeResponse(BaseModel):
-    """Response after saving intake"""
+    """Response after save intake"""
     client_id: int
     message: str
 
@@ -135,6 +135,39 @@ class PortfolioWeights(BaseModel):
     max_drawdown: Optional[float] = None
     skewness: Optional[float] = None
     kurtosis: Optional[float] = None
+
+
+class SimulationStats(BaseModel):
+    """Stats from Monte Carlo simulation for UI sliders"""
+    return_min: float
+    return_max: float
+    volatility_min: float
+    volatility_max: float
+    sharpe_min: float
+    sharpe_max: float
+
+class AllocationItem(BaseModel):
+    """Single fund allocation"""
+    fund_id: int
+    fund_name: str
+    weight: float
+
+class PortfolioMetrics(BaseModel):
+    """Detailed Portfolio Metrics"""
+    return_: float = Field(alias="return") # 'return' is reserved keyword
+    volatility: float
+    sharpe_ratio: float
+    weights: Dict[int, float]
+    allocations: List[AllocationItem] = [] 
+
+class OptimizationResponse(BaseModel):
+    """Response from optimization run"""
+    optimization_id: int
+    efficient_frontier: List[Dict[str, float]] # [{return, volatility, sharpe}]
+    max_sharpe_portfolio: PortfolioMetrics
+    min_volatility_portfolio: PortfolioMetrics
+    monte_carlo_results: List[Dict[str, float]] # [{return, volatility, sharpe}]
+    simulation_stats: Optional[SimulationStats] = None
 
 
 class OptimizationResult(BaseModel):

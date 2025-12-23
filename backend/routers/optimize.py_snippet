@@ -1,0 +1,27 @@
+@router.get("/{optimization_id}", response_model=OptimizationResponse)
+def get_optimization_result(
+    optimization_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Get specific optimization result by ID
+    """
+    optimization = db.query(Optimization).filter(Optimization.id == optimization_id).first()
+    
+    if not optimization:
+        raise HTTPException(status_code=404, detail="Optimization record not found")
+        
+    # Reconstruct response from stored JSON
+    # Note: inputs and output are stored as JSON
+    output = optimization.output
+    
+    return OptimizationResponse(
+        mvp_weights=output.get('mvp', {}).get('weights', {}),
+        max_sharpe_weights=output.get('max_sharpe', {}).get('weights', {}),
+        mvp_metrics=output.get('mvp', {}).get('metrics', {}),
+        max_sharpe_metrics=output.get('max_sharpe', {}).get('metrics', {}),
+        efficient_frontier=output.get('frontier', []),
+        monte_carlo_portfolios=output.get('monte_carlo', []),
+        benchmark_metrics=output.get('benchmark_metrics'),  # Handle older records
+        benchmark_name=output.get('benchmark_name')
+    )
