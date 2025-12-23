@@ -457,6 +457,13 @@ async def run_optimization(
         # Re-raise HTTP exceptions as-is
         db.rollback()
         raise he
+    except ValueError as ve:
+        db.rollback()
+        print(f"Optimization Validation Error: {str(ve)}")
+        raise HTTPException(
+            status_code=400,
+            detail=str(ve)
+        )
     except Exception as e:
         db.rollback()
         # Log the full error for debugging

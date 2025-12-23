@@ -26,6 +26,14 @@ class PortfolioOptimizer:
         self.risk_free_rate = risk_free_rate
         self.trading_days = trading_days
     
+    def compute_portfolio_performance(self, weights: np.ndarray, expected_returns: np.ndarray, cov_matrix: np.ndarray) -> Tuple[float, float]:
+        """
+        Compute portfolio expected return and volatility
+        """
+        ret = float(np.dot(weights, expected_returns))
+        vol = float(np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights))))
+        return ret, vol
+
     def compute_returns(self, nav_data: Dict[int, List[Tuple[str, float]]]) -> pd.DataFrame:
         """
         Compute daily log returns from NAV data
