@@ -241,33 +241,11 @@ async def run_optimization(
         # Close MFAPI client
         await mfapi.close()
         
-        # Find common date range across all funds
-        all_dates = []
-        for fund_id, navs in nav_data.items():
-            dates = set([nav[0] for nav in navs])
-            all_dates.append(dates)
+        # Prepare data for optimizer
+        # We rely on optimizer.compute_returns to handle alignment (Outer Join + FFill)
+        # This prevents dropping data due to minor date mismatches (e.g. different holidays)
         
-        # Get intersection of all date sets
-        common_dates = set.intersection(*all_dates) if all_dates else set()
-        
-        if len(common_dates) < 30:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Insufficient overlapping data across selected funds: only {len(common_dates)} common dates. Please select funds with overlapping historical data (need 30+ days)."
-            )
-        
-        # Filter nav_data to only include common dates
-        filtered_nav_data = {}
-        for fund_id, navs in nav_data.items():
-            filtered_navs = [(date, nav) for date, nav in navs if date in common_dates]
-            # Sort by date
-            filtered_navs.sort(key=lambda x: x[0])
-            filtered_nav_data[fund_id] = filtered_navs
-        
-        print(f"✅ Found {len(common_dates)} overlapping dates across all funds")
-        
-        # Use filtered data for optimization
-        nav_data = filtered_nav_data
+        # Compute returns and covariance
         
         # Compute returns and covariance
         returns_df = optimizer.compute_returns(nav_data)

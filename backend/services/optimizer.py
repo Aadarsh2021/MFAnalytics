@@ -46,16 +46,17 @@ class PortfolioOptimizer:
             dfs.append(df)
         
         # Merge all funds using outer join to keep all dates
+        # Merge all funds using outer join to keep all dates
         nav_df = pd.concat(dfs, axis=1, join='outer')
         
-        # Forward fill missing values (up to 5 days)
-        nav_df = nav_df.ffill(limit=5)
+        # Forward fill missing values (up to 7 days to cover long weekends/holidays)
+        nav_df = nav_df.ffill(limit=7)
         
-        # Only keep dates where ALL funds have data
+        # Drop rows that still have NaNs (where funds don't overlap)
         nav_df = nav_df.dropna()
         
         if len(nav_df) < 30:
-            raise ValueError(f"Insufficient overlapping data: only {len(nav_df)} common dates found. Need at least 30 days.")
+            raise ValueError(f"Insufficient overlapping history: only {len(nav_df)} common trading days found. This usually happens when combining a very new fund with old funds. Please ensure all funds have at least 1-2 months of overlapping history.")
         
         # Compute log returns
         log_returns = np.log(nav_df / nav_df.shift(1))
