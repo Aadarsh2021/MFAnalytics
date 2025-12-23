@@ -94,8 +94,8 @@ async def search_funds(request: FundSearchRequest):
             else:
                 filtered_schemes = [s for s in filtered_schemes if 'idcw' not in s['schemeName'].lower() and 'dividend' not in s['schemeName'].lower()]
         
-        # Total count
-        total_count = len(filtered_schemes)
+        # Total count calculated after deduplication below
+        # total_count = len(filtered_schemes)
         
         # Sort schemes by name to ensure consistent order
         # Optimization: Sort only the slice if total is huge? No, must sort all to paginating correctly.
@@ -109,6 +109,9 @@ async def search_funds(request: FundSearchRequest):
                 unique_schemes.append(scheme)
                 seen_names.add(scheme['schemeName'])
         filtered_schemes = unique_schemes
+        
+        # Total count (Updated after deduplication)
+        total_count = len(filtered_schemes)
         
         # Paginate results based on request
         start = request.offset
