@@ -101,141 +101,142 @@ async def run_optimization(
         from services.mfapi import MFAPIService
         mfapi = MFAPIService()
 
-        for idx, fund_id in enumerate(fund_ids):
+        # Helper function to fetch data for a single fund (DB -> MFAPI -> Yahoo)
+        async def fetch_fund_data(idx, fund_id, fund_obj):
             try:
-                fund_name = fund_obj_map[fund_id].name or f"Fund {fund_id}"
+                fund_name = fund_obj.name or f"Fund {fund_id}"
                 
-                # 1. Check DB First
-                last_nav = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date.desc()).first()
-                db_navs = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date).all()
+                # 1. Check DB First (Synchronous DB access needs care in async, but for read it's okay-ish or we should use new session)
+                # Ideally we pass distinct db sessions or use the main one carefully. 
+                # Since we are reading, common session might work but writing needs care.
+                # simpler to just do the DB check in main thread? 
+                # Actually, for true parallelism of IO (network), we should do the network part async.
                 
-                # Check if data is fresh enough (e.g., < 2 days old)
-                is_stale = True
-                if last_nav:
-                    days_since = (datetime.now().date() - last_nav.date).days
-                    if days_since <= 2:
-                        is_stale = False
-                
-                navs = []
-                if db_navs and not is_stale and len(db_navs) > 30:
-                    print(f"Fund {fund_id}: ✅ Using cached data from DB ({len(db_navs)} records, last update: {last_nav.date})")
-                    navs = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in db_navs]
-                
-                # 2. If missing or stale, fetch from External API
-                if not navs:
-                    print(f"Fund {fund_id}: ⚠️ Data missing or stale. Fetching from MFAPI...")
-                    try:
-                        # Fetch from MFAPI
-                        details = await mfapi.get_scheme_details(str(fund_id))
-                        
-                        if not details or 'data' not in details:
-                            raise ValueError("No data from MFAPI")
+                # Let's keep it simple: We will do DB checks for all funds strictly sequentially first (fast).
+                # Then identify missing ones.
+                # Then fetch missing ones in parallel.
+                return None # Refactored approach below
+            except:
+                return None
 
-                        api_navs = []
-                        for nav_entry in details['data']:
-                            try:
-                                d = datetime.strptime(nav_entry['date'], '%d-%m-%Y')
-                                api_navs.append((d.strftime('%Y-%m-%d'), float(nav_entry['nav'])))
-                            except:
-                                continue
-                        
-                        # --- FIX: Ensure Fund exists in DB before inserting NAVs ---
+        # REFACTORED: 2-Step Process for Maximum Speed
+        
+        # Step 1: Check DB for all funds (Flash fast)
+        funds_to_fetch = [] # list of (idx, fund_id, fund_obj)
+        
+        for idx, fund_id in enumerate(fund_ids):
+            fund_obj = fund_obj_map[fund_id]
+            fund_map[fund_id] = idx
+            
+            # Check DB
+            last_nav = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date.desc()).first()
+            db_navs = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date).all()
+            
+            is_stale = True
+            if last_nav:
+                days_since = (datetime.now().date() - last_nav.date).days
+                if days_since <= 2:
+                    is_stale = False
+            
+            if db_navs and not is_stale and len(db_navs) > 30:
+                # Cache Hit
+                print(f"Fund {fund_id}: ✅ Using cached data ({len(db_navs)} records)")
+                nav_data[fund_id] = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in db_navs]
+            else:
+                # Cache Miss - Needs Fetch
+                print(f"Fund {fund_id}: ⚠️ Needs update (Stale/Missing). Queuing fetch...")
+                funds_to_fetch.append((idx, fund_id, fund_obj))
+
+        # Step 2: Parallel Fetch for missing funds
+        if funds_to_fetch:
+            print(f"🚀 Launching parallel fetch for {len(funds_to_fetch)} funds...")
+            
+            async def fetch_single_fund_live(f_idx, f_id, f_obj):
+                f_name = f_obj.name or f"Fund {f_id}"
+                try:
+                    # MFAPI Fetch
+                    details = await mfapi.get_scheme_details(str(f_id))
+                    
+                    if not details or 'data' not in details:
+                        raise ValueError("No data from MFAPI")
+
+                    api_navs = []
+                    for nav_entry in details['data']:
+                        try:
+                            d = datetime.strptime(nav_entry['date'], '%d-%m-%Y')
+                            api_navs.append((d.strftime('%Y-%m-%d'), float(nav_entry['nav'])))
+                        except:
+                            continue
+
+                    # Fallback to Yahoo
+                    if len(api_navs) < 30:
+                        from services.yahoo import YahooFinanceService
+                        yahoo = YahooFinanceService()
                         meta = details.get('meta', {})
-                        existing_fund = db.query(Fund).filter(Fund.id == fund_id).first()
-                        
-                        if not existing_fund:
-                            print(f"  Fund {fund_id} missing in DB. Creating record...")
-                            scheme_name = meta.get('scheme_name') or fund_name
+                        t_name = meta.get('scheme_name', '')
+                        t_isin = meta.get('isin_code', '')
+                        if t_name:
+                            ticker = await yahoo.search_ticker(t_name, t_isin)
+                            if ticker:
+                                y_navs = yahoo.get_nav_history(ticker)
+                                if len(y_navs) > len(api_navs):
+                                    api_navs = y_navs
+
+                    if len(api_navs) < 30:
+                        raise ValueError(f"Insufficient history ({len(api_navs)} records)")
+
+                    return (f_id, api_navs, details, None) # Success
+                except Exception as e:
+                     return (f_id, None, None, str(e)) # Failure
+
+            # Execute Parallel Tasks
+            tasks = [fetch_single_fund_live(i, fid, fobj) for i, fid, fobj in funds_to_fetch]
+            results = await asyncio.gather(*tasks)
+            
+            # Process Results (Write to DB sequentially to avoid locking issues)
+            for fund_id, fetched_navs, details, error in results:
+                if fetched_navs:
+                    nav_data[fund_id] = fetched_navs
+                    
+                    # Update Fund Info in DB if needed
+                    meta = details.get('meta', {})
+                    existing_fund = db.query(Fund).filter(Fund.id == fund_id).first()
+                    if not existing_fund:
+                        try:
+                            # Create new fund record
+                            scheme_name = meta.get('scheme_name') or fund_obj_map[fund_id].name
                             category = meta.get('scheme_category', 'Unknown')
                             amc = meta.get('fund_house', 'Unknown')
+                            isin = meta.get('isin_code', f"MFAPI-{fund_id}")
                             
-                            # ISIN handling (Must be unique)
-                            isin = meta.get('isin_code')
-                            if not isin:
-                                isin = f"MFAPI-{fund_id}"
-                            
-                            # Check for ISIN collision
-                            collision = db.query(Fund).filter(Fund.isin == isin).first()
-                            if collision:
-                                print(f"  ⚠️ ISIN collision for {isin}. Appending Fund ID.")
+                            # ISIN Collision Check
+                            if db.query(Fund).filter(Fund.isin == isin).first():
                                 isin = f"{isin}-{fund_id}"
-
+                                
                             new_fund = Fund(
-                                id=fund_id,
-                                name=scheme_name,
-                                category=category,
-                                amc=amc,
-                                asset_class=fund_obj_map[fund_id].asset_class,
+                                id=fund_id, 
+                                name=scheme_name, 
+                                category=category, 
+                                amc=amc, 
+                                asset_class=fund_obj_map[fund_id].asset_class, 
                                 isin=isin
                             )
-                            try:
-                                db.add(new_fund)
-                                db.commit()
-                                print(f"  ✅ Created Fund record for {fund_id}")
-                            except Exception as db_err:
-                                db.rollback()
-                                print(f"  ❌ Failed to create Fund record: {db_err}")
-                                # Try one more time with definitely unique ISIN
-                                try:
-                                    new_fund.isin = f"ERR-{fund_id}-{datetime.now().timestamp()}"
-                                    db.add(new_fund)
-                                    db.commit()
-                                except:
-                                    pass # Detailed error will be caught by outer try/except
-                        # -----------------------------------------------------------
-                        
-                        # Fallback to Yahoo if MFAPI is weak
-                        if len(api_navs) < 30:
-                            print(f"  Insufficient MFAPI data for {fund_id}. Attempting Yahoo Finance fallback...")
-                            from services.yahoo import YahooFinanceService
-                            yahoo = YahooFinanceService()
-                            
-                            meta = details.get('meta', {})
-                            scheme_name = meta.get('scheme_name', '')
-                            isin = meta.get('isin_code', '')
-                            
-                            if scheme_name:
-                                ticker = await yahoo.search_ticker(scheme_name, isin)
-                                if ticker:
-                                    print(f"  Fetching history from Yahoo for ticker: {ticker}")
-                                    yahoo_navs = yahoo.get_nav_history(ticker)
-                                    if len(yahoo_navs) > len(api_navs):
-                                        print(f"  ✅ Yahoo Finance returned {len(yahoo_navs)} records.")
-                                        api_navs = yahoo_navs
-
-                        if len(api_navs) < 30:
-                             raise HTTPException(
-                                status_code=400,
-                                detail=f"Insufficient historical data for '{fund_name}' (only {len(api_navs)} records). Please remove this fund."
-                            )
-                        
-                        navs = api_navs
-                        # Update DB
-                        upsert_navs(fund_id, navs)
-                        
-                    except Exception as e:
-                        print(f"  External fetch failed for {fund_id}: {e}")
-                        # Final fallback: Use whatever is in DB even if stale
-                        if db_navs and len(db_navs) > 30:
-                            print(f"  ⚠️ Using stale DB data as fallback.")
-                            navs = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in db_navs]
-                        else:
-                            raise HTTPException(
-                                status_code=400,
-                                detail=f"Error fetching data for '{fund_name}': {str(e)}"
-                            )
-
-                nav_data[fund_id] = navs
-                fund_map[fund_id] = idx
-                
-            except HTTPException:
-                raise
-            except Exception as e:
-                print(f"Error fetching NAV for fund {fund_id}: {e}")
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Error fetching data for '{fund_name}': {str(e)}"
-                )
+                            db.add(new_fund)
+                            db.commit()
+                        except:
+                             db.rollback()
+                    
+                    # Upsert NAVs
+                    upsert_navs(fund_id, fetched_navs)
+                    
+                else:
+                    # Failed to fetch - try DB fallback
+                    print(f"Failed to fetch {fund_id}: {error}. Checking stale DB data...")
+                    db_fallback = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date).all()
+                    if db_fallback and len(db_fallback) > 30:
+                        nav_data[fund_id] = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in db_fallback]
+                    else:
+                        raise HTTPException(status_code=400, detail=f"Failed to fetch data for fund {fund_id}: {error}")
         
         # Close MFAPI client
         await mfapi.close()
