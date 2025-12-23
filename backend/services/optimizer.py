@@ -119,7 +119,7 @@ class PortfolioOptimizer:
             for col in returns.columns:
                 # Calculate CAGR using geometric mean
                 # Since we have log returns, we can use: exp(mean) - 1
-                mean_log_return = returns[col].mean()
+                mean_log_return = np.nan_to_num(returns[col].mean(), nan=0.0, posinf=0.0, neginf=0.0)
                 # Annualize: (1 + daily_return)^252 - 1
                 # For log returns: exp(mean * 252) - 1
                 annual_return = np.exp(mean_log_return * self.trading_days) - 1

@@ -476,7 +476,7 @@ async def run_optimization(
         print(f"Optimization Error: {error_details}")
         raise HTTPException(
             status_code=500, 
-            detail=f"Optimization failed: {str(e)}"
+            detail=f"[{type(e).__name__}] Optimization failed: {str(e)}"
         )
 
 

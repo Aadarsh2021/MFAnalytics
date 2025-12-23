@@ -148,6 +148,7 @@ export default function ClientIntakePage() {
             };
             const response = await apiClient.post('/api/clients', clientPayload);
             sessionStorage.setItem('clientId', response.data.client_id.toString());
+            sessionStorage.setItem('clientName', profile.name);
             sessionStorage.setItem('clientProfile', JSON.stringify(clientPayload.risk_profile));
             router.push('/funds');
         } catch (error) {
@@ -289,7 +290,7 @@ export default function ClientIntakePage() {
                                     <SummaryItem
                                         label="Risk"
                                         value={profile.riskProfile.toUpperCase()}
-                                        color={profile.riskProfile === 'custom' ? 'text-amber-300' : 'text-white'}
+                                        color={profile.riskProfile === 'custom' ? 'text-amber-600' : 'text-slate-900'}
                                     />
                                     <SummaryItem label="Horizon" value={`${profile.investmentHorizon} Yrs`} />
                                     <SummaryItem label="SIP" value={`₹${profile.monthlySavings}`} />
@@ -355,10 +356,10 @@ function Slider({ label, value, min = 0, max = 100, step = 1, onChange, suffix =
     );
 }
 
-function SummaryItem({ label, value, color = 'text-white' }: { label: string, value: string, color?: string }) {
+function SummaryItem({ label, value, color = 'text-slate-900' }: { label: string, value: string, color?: string }) {
     return (
-        <div className="flex justify-between border-b border-white/10 pb-2">
-            <span className="text-blue-100">{label}</span>
+        <div className="flex justify-between border-b border-slate-100 pb-2">
+            <span className="text-slate-500 font-medium">{label}</span>
             <span className={`font-bold ${color}`}>{value}</span>
         </div>
     );

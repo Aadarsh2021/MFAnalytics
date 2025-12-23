@@ -44,7 +44,55 @@ export default function FundsPage() {
     const [hasMore, setHasMore] = useState(true);
     const PAGE_SIZE = 50;
 
+
+    const [clientName, setClientName] = useState<string | null>(null);
+    const [showClientSwitcher, setShowClientSwitcher] = useState(false);
+
+    const handleClientSwitch = (client: any) => {
+        if (window.confirm(`Switch active session to ${client.name}? Current selection will be cleared.`)) {
+            sessionStorage.setItem('clientId', client.id.toString());
+            sessionStorage.setItem('clientName', client.name);
+            window.location.reload();
+        }
+    };
+
     useEffect(() => {
+        // Hydrate client name from session or fetch if missing
+        const storedId = sessionStorage.getItem('clientId');
+        const storedName = sessionStorage.getItem('clientName');
+
+        if (storedName) {
+            setClientName(storedName);
+        } else if (storedId) {
+            // Fetch if ID exists but name doesn't (legacy session fix)
+            api.clients.get(parseInt(storedId))
+                .then(res => {
+                    const name = res.data.client_name || `Client #${storedId}`;
+                    sessionStorage.setItem('clientName', name);
+                    setClientName(name);
+                })
+                .catch(err => console.error('Failed to fetch client context', err));
+        } else {
+            // Auto-restore most recent client context (User Request "Use History Client")
+            api.clients.list().then(res => {
+                const clients = res.data;
+                if (clients && clients.length > 0) {
+                    // Sort by latest activity
+                    const activeClients = clients.filter((c: any) => c.latest_optimization_date);
+                    const sorted = activeClients.sort((a: any, b: any) =>
+                        new Date(b.latest_optimization_date).getTime() - new Date(a.latest_optimization_date).getTime()
+                    );
+
+                    const lastActive = sorted.length > 0 ? sorted[0] : clients[0]; // Fallback to first if no history
+
+                    console.log('Auto-restoring session for:', lastActive.name);
+                    sessionStorage.setItem('clientId', lastActive.id.toString());
+                    sessionStorage.setItem('clientName', lastActive.name);
+                    setClientName(lastActive.name);
+                }
+            }).catch(e => console.log("No history to restore", e));
+        }
+
         fetchFilters();
     }, []);
 
@@ -201,6 +249,9 @@ export default function FundsPage() {
                 errorMessage = JSON.stringify(detail);
             }
 
+            // Critical Debug: Alert the raw error to help diagnosis
+            alert(`Optimization Failed:\n${errorMessage}\n\nReview console for full trace.`);
+
             alert(errorMessage);
             setLoading(false);
         }
@@ -297,9 +348,19 @@ export default function FundsPage() {
                                 <h1 className="text-4xl font-black tracking-tight text-slate-900">
                                     Global Fund <span className="text-blue-600">Universe</span>
                                 </h1>
-                                <p className="text-slate-500 font-medium mt-2">
-                                    Institutional-grade access with optimized performance paging.
-                                </p>
+                                <div className="flex items-center gap-3 mt-2">
+                                    <p className="text-slate-500 font-medium">
+                                        Institutional-grade access with optimized performance paging.
+                                    </p>
+                                    {clientName && (
+                                        <div className="hidden lg:flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-1 rounded-full animate-in fade-in slide-in-from-left duration-700">
+                                            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                                            <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">
+                                                Designing for: <span className="text-blue-900">{clientName}</span>
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div className="flex flex-col items-end gap-3">
                                 <div className="flex bg-slate-100 p-1.5 rounded-2xl">
@@ -391,12 +452,12 @@ export default function FundsPage() {
                                                         </td>
                                                         <td className="px-3 py-4">
                                                             <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-slate-500 ${fund.data_quality === 'Excellent' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
-                                                                    fund.data_quality === 'Good' ? 'bg-blue-50 border-blue-100 text-blue-600' :
-                                                                        'bg-amber-50 border-amber-100 text-amber-600'
+                                                                fund.data_quality === 'Good' ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                                                                    'bg-amber-50 border-amber-100 text-amber-600'
                                                                 }`}>
                                                                 <span className={`w-1.5 h-1.5 rounded-full ${fund.data_quality === 'Excellent' ? 'bg-emerald-500' :
-                                                                        fund.data_quality === 'Good' ? 'bg-blue-500' :
-                                                                            'bg-amber-500'
+                                                                    fund.data_quality === 'Good' ? 'bg-blue-500' :
+                                                                        'bg-amber-500'
                                                                     }`}></span>
                                                                 <span className="text-[10px] font-black uppercase tracking-wide">{fund.data_quality}</span>
                                                             </span>
@@ -456,13 +517,34 @@ export default function FundsPage() {
                                 )}
 
                                 {/* Data Quality Legend */}
-                                <div className="mt-6 px-6 py-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <p className="text-[10px] text-slate-500 leading-relaxed font-medium">
-                                        <span className="font-black text-slate-700 uppercase tracking-wider mr-2">Data Transparency:</span>
-                                        This list reflects the complete AMFI universe (40,000+ schemes).
-                                        <span className="font-bold text-slate-700 mx-1">Historical data is verified on-demand when you select a fund.</span>
-                                        Funds with insufficient history (e.g., closed/new schemes) will be flagged for removal.
-                                    </p>
+                                <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                            <span className="text-xs font-black text-emerald-800 uppercase tracking-wider">Excellent</span>
+                                        </div>
+                                        <p className="text-[10px] text-emerald-700 font-medium leading-relaxed">
+                                            Fund is fully classified with verified <strong>Asset Class</strong> and <strong>Category</strong>. Historical data is robust.
+                                        </p>
+                                    </div>
+                                    <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                            <span className="text-xs font-black text-indigo-800 uppercase tracking-wider">Good</span>
+                                        </div>
+                                        <p className="text-[10px] text-indigo-700 font-medium leading-relaxed">
+                                            Asset Class is verified (e.g., Equity/Debt), but sub-category logic is generic. Safe to use.
+                                        </p>
+                                    </div>
+                                    <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                            <span className="text-xs font-black text-amber-800 uppercase tracking-wider">Poor / Unknown</span>
+                                        </div>
+                                        <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
+                                            Unclassified or New Fund list. Proceed with caution as optimization data might be sparse.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -470,12 +552,44 @@ export default function FundsPage() {
 
                     {/* Professional Sidebar */}
                     <div className="lg:w-[30%] order-1 lg:order-2">
-                        <div className="sticky top-6 space-y-6">
-                            <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-xl shadow-slate-200/30">
+                        <div className="sticky top-0 h-screen overflow-y-auto no-scrollbar pb-10 pt-6 space-y-6">
+                            <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-xl shadow-slate-200/30 min-h-min">
                                 <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center justify-between">
                                     Selection Core
                                     <span className="bg-blue-600 text-white text-[10px] px-3 py-1 rounded-full">{selectedFunds.size} Active</span>
                                 </h3>
+                                {/* Client Context Badge (Sidebar) */}
+                                {clientName ? (
+                                    <div className="mb-6 bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between gap-3 group">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-xl">👤</div>
+                                            <div>
+                                                <p className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Allocating For</p>
+                                                <p className="font-black text-blue-900 text-sm truncate max-w-[120px]">{clientName}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowClientSwitcher(true)}
+                                            className="opacity-100 lg:opacity-0 group-hover:opacity-100 transition-all text-[10px] font-bold bg-white text-blue-600 px-3 py-1.5 rounded-lg shadow-sm border border-blue-100 hover:bg-blue-600 hover:text-white"
+                                        >
+                                            Change
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="mb-6 bg-amber-50 border border-amber-100 p-4 rounded-2xl flex items-center gap-3 animate-pulse">
+                                        <div className="w-10 h-10 rounded-full bg-amber-200 flex items-center justify-center text-xl">⚠️</div>
+                                        <div>
+                                            <p className="text-[10px] uppercase font-bold text-amber-500 tracking-wider">No Context</p>
+                                            <button onClick={() => router.push('/intake')} className="font-bold text-amber-900 text-xs underline decoration-amber-400 underline-offset-2">Select Client First</button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <ClientSwitcher
+                                    isOpen={showClientSwitcher}
+                                    onClose={() => setShowClientSwitcher(false)}
+                                    onSelect={handleClientSwitch}
+                                />
 
                                 <div className="h-[240px] mb-8">
                                     <ReactECharts option={distributionOption} style={{ height: '100%' }} />
@@ -561,6 +675,81 @@ export default function FundsPage() {
                 </div>
             </div>
         </ProtectedRoute>
+    );
+}
+
+
+// Client Switching Modal Component
+function ClientSwitcher({
+    isOpen,
+    onClose,
+    onSelect
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelect: (client: any) => void
+}) {
+    const [clients, setClients] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setLoading(true);
+            api.clients.list()
+                .then(res => setClients(res.data))
+                .catch(err => console.error("Failed to load clients", err))
+                .finally(() => setLoading(false));
+        }
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 className="text-lg font-black text-slate-800">Select Client</h3>
+                    <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 flex items-center justify-center transition-all">✕</button>
+                </div>
+
+                <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                    {loading ? (
+                        <div className="py-10 text-center">
+                            <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Loading Accounts...</p>
+                        </div>
+                    ) : clients.length === 0 ? (
+                        <div className="text-center py-10">
+                            <p className="text-slate-500 mb-4">No clients found.</p>
+                            <a href="/intake" className="inline-block px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all">Create New Client</a>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            {clients.map(client => (
+                                <button
+                                    key={client.id}
+                                    onClick={() => onSelect(client)}
+                                    className="w-full flex items-center p-4 rounded-xl border border-slate-100 hover:border-blue-300 hover:bg-blue-50 transition-all text-left group"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-lg mr-4 shadow-md group-hover:scale-110 transition-transform">
+                                        {client.name?.charAt(0) || '#'}
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-slate-800">{client.name || `Client #${client.id}`}</p>
+                                        <p className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded inline-block mt-1 font-bold uppercase tracking-wide">
+                                            {client.risk_profile} • {client.investment_horizon}y
+                                        </p>
+                                    </div>
+                                    <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-blue-600 font-bold text-sm">
+                                        Select →
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }
 

@@ -14,6 +14,7 @@ const nextConfig = {
 
     // Static Export Config
     output: 'export',
+    trailingSlash: true,
     images: {
         unoptimized: true,
         formats: ['image/webp', 'image/avif'],

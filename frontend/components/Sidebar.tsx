@@ -2,13 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function Sidebar() {
+interface SidebarProps {
+    isCollapsed: boolean;
+    toggle: () => void;
+}
+
+export default function Sidebar({ isCollapsed, toggle }: SidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
-    const [isCollapsed, setIsCollapsed] = useState(false);
     const { user, logout } = useAuth();
 
     const handleLogout = () => {
@@ -38,7 +41,7 @@ export default function Sidebar() {
                     </h1>
                 )}
                 <button
-                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    onClick={toggle}
                     className="p-2 hover:bg-gray-100 rounded-lg text-gray-600"
                 >
                     {isCollapsed ? '→' : '←'}
@@ -67,7 +70,10 @@ export default function Sidebar() {
             {/* Navigation */}
             <nav className="p-3 space-y-1 overflow-y-auto" style={{ height: 'calc(100vh - 220px)' }}>
                 {menuItems.map((item) => {
-                    const isActive = pathname === item.href;
+                    const isActive = item.href === '/'
+                        ? pathname === '/'
+                        : pathname.startsWith(item.href);
+
                     return (
                         <Link
                             key={item.href}
