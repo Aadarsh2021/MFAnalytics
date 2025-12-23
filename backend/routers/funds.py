@@ -36,15 +36,23 @@ async def search_funds(request: FundSearchRequest):
         if not _schemes_cache["data"] or not _schemes_cache["last_updated"] or (now - _schemes_cache["last_updated"]).total_seconds() > 3600:
             print("Fetching all schemes from MFAPI.in (Cache Miss)...")
             all_schemes = await mfapi_service.get_all_schemes()
+            
+            # OPTIMIZATION: Pre-calculate classifications
+            print("Pre-calculating classifications for cache...")
+            for s in all_schemes:
+                s['asset_class_cached'] = mfapi_service.classify_asset_class(s['schemeName'])
+                s['category_cached'] = mfapi_service.classify_category(s['schemeName'])
+                
             _schemes_cache["data"] = all_schemes
             _schemes_cache["last_updated"] = now
+            print(f"Cached {len(all_schemes)} schemes with classification.")
         else:
             all_schemes = _schemes_cache["data"]
         
         if not all_schemes:
             return FundSearchResponse(funds=[], total=0, offset=request.offset, limit=request.limit)
         
-        # Filter schemes based on search query
+        # Start with all schemes
         filtered_schemes = all_schemes
         
         # Apply search query filter
@@ -55,60 +63,42 @@ async def search_funds(request: FundSearchRequest):
                 if query_lower in s['schemeName'].lower()
             ]
         
-        # Apply asset class filter
+        # Apply asset class filter (Using Cached Value)
         if request.asset_class:
-            print(f"DEBUG: Filtering by Asset Class: '{request.asset_class}'")
-            temp_filtered = []
-            for scheme in filtered_schemes:
-                asset_class = mfapi_service.classify_asset_class(scheme['schemeName'])
-                
-                # Debug specific problematic fund
-                if "IDFC FMP" in scheme['schemeName'] and request.asset_class == 'Equity':
-                    if asset_class == 'Equity':
-                        print(f"DEBUG: IDFC FMP classified as EQUITY! Name: {scheme['schemeName']}")
-                    else:
-                        pass # Correctly classified as non-Equity
-                
-                if asset_class == request.asset_class:
-                    temp_filtered.append(scheme)
-            filtered_schemes = temp_filtered
-            print(f"DEBUG: After Asset Class Filter: {len(filtered_schemes)} funds")
+            filtered_schemes = [
+                s for s in filtered_schemes 
+                if s.get('asset_class_cached') == request.asset_class
+            ]
         
-        # Apply category filter
+        # Apply category filter (Using Cached Value)
         if request.category:
-            temp_filtered = []
-            for scheme in filtered_schemes:
-                category = mfapi_service.classify_category(scheme['schemeName'])
-                if category == request.category:
-                    temp_filtered.append(scheme)
-            filtered_schemes = temp_filtered
+            filtered_schemes = [
+                s for s in filtered_schemes 
+                if s.get('category_cached') == request.category
+            ]
 
         # Apply plan type filter
         if request.plan_type:
-            temp_filtered = []
-            for scheme in filtered_schemes:
-                name_lower = scheme['schemeName'].lower()
-                is_direct = 'direct' in name_lower
-                plan = 'Direct' if is_direct else 'Regular'
-                if plan == request.plan_type:
-                    temp_filtered.append(scheme)
-            filtered_schemes = temp_filtered
+            target_plan = request.plan_type
+            # Optimize: check string presence directly
+            if target_plan == 'Direct':
+                filtered_schemes = [s for s in filtered_schemes if 'direct' in s['schemeName'].lower()]
+            else:
+                filtered_schemes = [s for s in filtered_schemes if 'direct' not in s['schemeName'].lower()]
 
         # Apply scheme type filter
         if request.scheme_type:
-            temp_filtered = []
-            for scheme in filtered_schemes:
-                name_lower = scheme['schemeName'].lower()
-                is_idcw = 'idcw' in name_lower or 'dividend' in name_lower
-                scheme_type = 'IDCW' if is_idcw else 'Growth'
-                if scheme_type == request.scheme_type:
-                    temp_filtered.append(scheme)
-            filtered_schemes = temp_filtered
+            target_type = request.scheme_type
+            if target_type == 'IDCW':
+                filtered_schemes = [s for s in filtered_schemes if 'idcw' in s['schemeName'].lower() or 'dividend' in s['schemeName'].lower()]
+            else:
+                filtered_schemes = [s for s in filtered_schemes if 'idcw' not in s['schemeName'].lower() and 'dividend' not in s['schemeName'].lower()]
         
         # Total count
         total_count = len(filtered_schemes)
         
         # Sort schemes by name to ensure consistent order
+        # Optimization: Sort only the slice if total is huge? No, must sort all to paginating correctly.
         filtered_schemes.sort(key=lambda x: x['schemeName'])
         
         # Paginate results based on request
@@ -119,25 +109,18 @@ async def search_funds(request: FundSearchRequest):
         # Convert to FundInfo format
         funds_list = []
         for scheme in limited_schemes:
-            asset_class = mfapi_service.classify_asset_class(scheme['schemeName'])
-            category = mfapi_service.classify_category(scheme['schemeName'])
-            
-            # Classify Plan and Scheme Type
-            name_lower = scheme['schemeName'].lower()
-            plan_type = 'Direct' if 'direct' in name_lower else 'Regular'
-            scheme_type = 'IDCW' if ('idcw' in name_lower or 'dividend' in name_lower) else 'Growth'
-            
+            # Use cached values
             funds_list.append(FundInfo(
-                id=int(scheme['schemeCode']),  # Use scheme code as ID
+                id=int(scheme['schemeCode']),
                 name=scheme['schemeName'],
-                isin=str(scheme['schemeCode']),  # Convert to string for ISIN
-                category=category,
-                asset_class=asset_class,
-                amc="",  # Will be fetched when needed
-                plan_type=plan_type,
-                scheme_type=scheme_type,
-                has_nav_data=True,  # MFAPI always has NAV data
-                data_quality="unknown"  # Data availability verified only on selection
+                isin=str(scheme['schemeCode']),
+                category=scheme.get('category_cached', 'Other'),
+                asset_class=scheme.get('asset_class_cached', 'Alt'),
+                amc="",
+                plan_type="Direct" if 'direct' in scheme['schemeName'].lower() else "Regular",
+                scheme_type="IDCW" if ('idcw' in scheme['schemeName'].lower() or 'dividend' in scheme['schemeName'].lower()) else "Growth",
+                has_nav_data=True,
+                data_quality="unknown"
             ))
         
         return FundSearchResponse(
