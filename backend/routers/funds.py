@@ -101,6 +101,15 @@ async def search_funds(request: FundSearchRequest):
         # Optimization: Sort only the slice if total is huge? No, must sort all to paginating correctly.
         filtered_schemes.sort(key=lambda x: x['schemeName'])
         
+        # DEDUPLICATION: Remove duplicate fund names (keeping the first one found)
+        unique_schemes = []
+        seen_names = set()
+        for scheme in filtered_schemes:
+            if scheme['schemeName'] not in seen_names:
+                unique_schemes.append(scheme)
+                seen_names.add(scheme['schemeName'])
+        filtered_schemes = unique_schemes
+        
         # Paginate results based on request
         start = request.offset
         end = start + request.limit
