@@ -45,20 +45,20 @@ git clone <repository-url>
 cd Mf
 ```
 
-2. Create environment file:
+1. Create environment file:
 
 ```bash
 cp backend/.env.example backend/.env
 # Edit backend/.env with your configuration
 ```
 
-3. Start all services:
+1. Start all services:
 
 ```bash
 docker-compose up -d
 ```
 
-4. Access the application:
+1. Access the application:
 
 - Frontend: <http://localhost:3000>
 - Backend API: <http://localhost:8000>
@@ -76,13 +76,13 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-2. Install dependencies:
+1. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set up database:
+1. Set up database:
 
 ```bash
 # Start PostgreSQL and Redis (via Docker or locally)
@@ -92,7 +92,7 @@ docker-compose up -d postgres redis
 # alembic upgrade head
 ```
 
-4. Run development server:
+1. Run development server:
 
 ```bash
 python main.py
@@ -108,7 +108,7 @@ cd frontend
 npm install
 ```
 
-2. Run development server:
+1. Run development server:
 
 ```bash
 npm run dev
@@ -187,18 +187,32 @@ The platform uses **Modern Portfolio Theory (MPT)** with the following algorithm
 - Slider update → backend recompute: < 2 seconds
 - PDF extraction accuracy: 80%+
 
+## 🔄 Recent Updates
+
+### Performance & Stability
+
+- **Memory Optimization**: Backend optimization engine now uses `float32` precision and optimized dataframe handling, reducing memory usage by ~50%.
+- **Database Efficiency**: Rewrote NAV fetching logic to bypass ORM overhead for large time-series data.
+- **Render Deployment Fix**: Addressed memory limit crashes on Render.com free tier.
+
+### UX Improvements
+
+- **Allocation Visibility**: Fixed an issue where funds with 0% allocation were hidden from results. Now all selected funds are explicitly shown with their weights.
+- **Client Context**: Persistent display of client name throughout the fund selection and optimization journey.
+
 ## 🚧 Roadmap
 
 ### V1.0 (Current)
 
 - [x] Project setup
-- [ ] Client intake module
-- [ ] Fund selection module
-- [ ] Data processing pipeline
-- [ ] Optimization engine
-- [ ] Dashboard visualization
-- [ ] PDF import
+- [x] Client intake module
+- [x] Fund selection module
+- [x] Data processing pipeline
+- [x] Optimization engine (MVP, Max Sharpe, Efficient Frontier)
+- [x] Dashboard visualization
+- [x] PDF import & Analysis
 - [ ] Portfolio comparison
+- [x] Monte Carlo Simulation (Beta)
 
 ### V2.0 (Future)
 
@@ -207,7 +221,6 @@ The platform uses **Modern Portfolio Theory (MPT)** with the following algorithm
 - Live NAV ingestion API
 - Tax-loss harvesting
 - ESG factor integration
-- Monte Carlo simulation
 
 ## 📝 License
 
