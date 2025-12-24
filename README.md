@@ -66,7 +66,7 @@ docker-compose up -d
 
 ### Local Development Setup
 
-#### Backend
+#### Backend Setup
 
 1. Create virtual environment:
 
@@ -99,7 +99,7 @@ python main.py
 # Or: uvicorn main:app --reload
 ```
 
-#### Frontend
+#### Frontend Setup
 
 1. Install dependencies:
 
