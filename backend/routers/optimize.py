@@ -129,21 +129,32 @@ async def run_optimization(
             fund_obj = fund_obj_map[fund_id]
             fund_map[fund_id] = idx
             
-            # Check DB
-            last_nav = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date.desc()).first()
-            db_navs = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date).all()
+            # Check DB (Optimized: Fetch only necessary columns)
+            # last_nav = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date.desc()).first()
+            last_date = db.query(NAV.date).filter(NAV.fund_id == fund_id).order_by(NAV.date.desc()).first()
             
             is_stale = True
-            if last_nav:
-                days_since = (datetime.now().date() - last_nav.date).days
+            if last_date:
+                days_since = (datetime.now().date() - last_date[0]).days
                 if days_since <= 2:
                     is_stale = False
             
-            if db_navs and not is_stale and len(db_navs) > 30:
-                # Cache Hit
-                print(f"Fund {fund_id}: ✅ Using cached data ({len(db_navs)} records)")
-                nav_data[fund_id] = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in db_navs]
-            else:
+            # Fetch counts first to avoid loading data if stale
+            # or just fetch data - usage is inevitable if not stale
+            
+            if not is_stale:
+                # Optimized fetch: Get only date and nav as tuples
+                # This bypasses ORM object creation overhead
+                db_navs = db.query(NAV.date, NAV.nav).filter(NAV.fund_id == fund_id).order_by(NAV.date).all()
+                
+                if db_navs and len(db_navs) > 30:
+                    # Cache Hit
+                    print(f"Fund {fund_id}: ✅ Using cached data ({len(db_navs)} records)")
+                    nav_data[fund_id] = [(d.strftime('%Y-%m-%d'), float(n)) for d, n in db_navs]
+                else:
+                    is_stale = True # Fallback if empty
+            
+            if is_stale:
                 # Cache Miss - Needs Fetch
                 print(f"Fund {fund_id}: ⚠️ Needs update (Stale/Missing). Queuing fetch...")
                 funds_to_fetch.append((idx, fund_id, fund_obj))
@@ -233,9 +244,10 @@ async def run_optimization(
                 else:
                     # Failed to fetch - try DB fallback
                     print(f"Failed to fetch {fund_id}: {error}. Checking stale DB data...")
-                    db_fallback = db.query(NAV).filter(NAV.fund_id == fund_id).order_by(NAV.date).all()
+                    # Optimized fallback fetch
+                    db_fallback = db.query(NAV.date, NAV.nav).filter(NAV.fund_id == fund_id).order_by(NAV.date).all()
                     if db_fallback and len(db_fallback) > 30:
-                        nav_data[fund_id] = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in db_fallback]
+                        nav_data[fund_id] = [(d.strftime('%Y-%m-%d'), float(n)) for d, n in db_fallback]
                     else:
                         raise HTTPException(status_code=400, detail=f"Failed to fetch data for fund {fund_id}: {error}")
         

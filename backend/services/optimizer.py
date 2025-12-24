@@ -8,6 +8,7 @@ from typing import List, Dict, Tuple, Optional
 import cvxpy as cp
 from sklearn.covariance import ledoit_wolf
 from scipy import stats
+import gc
 
 
 class PortfolioOptimizer:
@@ -44,18 +45,27 @@ class PortfolioOptimizer:
         Returns:
             DataFrame with daily returns, funds as columns, dates as index
         """
-        # Convert to DataFrame
-        dfs = []
+        # Optimize DataFrame creation: Use Dict of Series instead of List of DataFrames
+        data_dict = {}
         for fund_id, navs in nav_data.items():
-            df = pd.DataFrame(navs, columns=['date', f'fund_{fund_id}'])
+            # Create series directly
+            df = pd.DataFrame(navs, columns=['date', 'nav'])
             df['date'] = pd.to_datetime(df['date'])
             df = df.set_index('date')
-            df = df.sort_index()  # Ensure sorted by date
-            dfs.append(df)
+            # Ensure unique index
+            if not df.index.is_unique:
+                df = df[~df.index.duplicated(keep='first')]
+            data_dict[f'fund_{fund_id}'] = df['nav'].astype('float32') # Use float32 for memory
+            
+        # Create master dataframe from dict (much faster and less memory than concat)
+        nav_df = pd.DataFrame(data_dict)
         
-        # Merge all funds using outer join to keep all dates
-        # Merge all funds using outer join to keep all dates
-        nav_df = pd.concat(dfs, axis=1, join='outer')
+        # Sort index
+        nav_df = nav_df.sort_index()
+        
+        # Free memory
+        del data_dict
+        gc.collect()
         
         # Forward fill missing values (up to 7 days to cover long weekends/holidays)
         nav_df = nav_df.ffill(limit=7)
