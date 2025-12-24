@@ -390,9 +390,9 @@ async def run_optimization(
         except:
             frontier = []
         
-        # Convert weights
-        mvp_weights_dict = {fund_ids[i]: float(w) for i, w in enumerate(mvp_weights) if w > 0.001}
-        ms_weights_dict = {fund_ids[i]: float(w) for i, w in enumerate(ms_weights) if w > 0.001}
+        # Convert weights (Include all funds, even if 0%)
+        mvp_weights_dict = {fund_ids[i]: float(w) for i, w in enumerate(mvp_weights)}
+        ms_weights_dict = {fund_ids[i]: float(w) for i, w in enumerate(ms_weights)}
         
         # 4. Monte Carlo Simulation (for chart visualization)
         mongo_carlo_points = []
