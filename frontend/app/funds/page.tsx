@@ -190,7 +190,7 @@ export default function FundsPage() {
         Object.values(fundsByAssetClass).forEach(assetFunds => {
             // Quality mapping for sorting
             const qualityOrder: Record<string, number> = { 'Excellent': 0, 'Good': 1, 'Poor': 2 };
-            
+
             // Sort by quality first, then by name for consistency
             const sortedByQuality = [...assetFunds].sort((a, b) => {
                 const qA = qualityOrder[a.data_quality] ?? 3;
@@ -202,7 +202,7 @@ export default function FundsPage() {
             // Pick top 4 from each class, EXCLUDING "Poor" unless necessary
             // High quality selection (Excellent or Good)
             const highQuality = sortedByQuality.filter(f => f.data_quality !== 'Poor');
-            
+
             if (highQuality.length > 0) {
                 highQuality.slice(0, 4).forEach(fund => topFunds.set(fund.id, fund));
             } else {
@@ -565,6 +565,21 @@ export default function FundsPage() {
                                             Unclassified or New Fund list. Proceed with caution as optimization data might be sparse.
                                         </p>
                                     </div>
+                                </div>
+
+                                {/* System Intelligence Note */}
+                                <div className="mt-6 p-6 bg-slate-100/50 border border-slate-200 rounded-[1.5rem] border-dashed">
+                                    <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                                        <span className="text-base">💡</span> Classification Intelligence
+                                    </h4>
+                                    <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
+                                        The system automatically audits <span className="text-slate-900 font-bold">37,300+ funds</span> daily.
+                                        Classification is based on metadata integrity:
+                                        <strong> Excellent</strong> funds have verified risk parameters;
+                                        <strong> Good</strong> funds have verified asset classes;
+                                        <strong> Poor</strong> funds lack sufficient historical depth or classification metadata.
+                                        <em> Note: Auto-selection prioritizes high-integrity funds to ensure mathematical stability in optimization.</em>
+                                    </p>
                                 </div>
                             </div>
                         )}
