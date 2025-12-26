@@ -65,6 +65,16 @@ export default function ComparePage() {
 
     const [fundData, setFundData] = useState<Record<number, { navSeries: { date: string, nav: number }[] }>>({});
     const [performanceMetrics, setPerformanceMetrics] = useState<Record<number, { '1Y': number, '3Y': number, '5Y': number }>>({});
+    const [riskMetrics, setRiskMetrics] = useState<Record<number, {
+        sharpe_ratio?: number,
+        beta?: number,
+        alpha?: number,
+        volatility?: number,
+        expense_ratio?: number,
+        pe_ratio?: number,
+        pb_ratio?: number,
+        benchmark_name?: string
+    }>>({});
 
     // Fetch NAV data when funds are selected
     useEffect(() => {
@@ -92,6 +102,28 @@ export default function ComparePage() {
         };
 
         fetchNavData();
+    }, [selectedFunds]);
+
+    // Fetch Risk Metrics when funds are selected
+    useEffect(() => {
+        const fetchRiskMetrics = async () => {
+            const fundsToFetch = selectedFunds.filter(f => !riskMetrics[f.id]).map(f => f.id);
+            if (fundsToFetch.length === 0) return;
+
+            fundsToFetch.forEach(async (id) => {
+                try {
+                    const response = await api.funds.getMetrics(id);
+                    setRiskMetrics(prev => ({
+                        ...prev,
+                        [id]: response.data
+                    }));
+                } catch (error) {
+                    console.error(`Metrics Fetch failed for fund ${id}:`, error);
+                }
+            });
+        };
+
+        fetchRiskMetrics();
     }, [selectedFunds]);
 
     // Calculate Returns whenever fundData or selectedFunds update
@@ -299,11 +331,59 @@ export default function ComparePage() {
                                                 </td>
                                             ))}
                                         </tr>
-                                        <tr className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">Expense Ratio</td>
+                                        <tr className="hover:bg-gray-50 bg-blue-50/30">
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900 border-b">Expense Ratio</td>
                                             {selectedFunds.map(fund => (
-                                                <td key={fund.id} className="px-6 py-4 text-sm text-gray-400 italic">
-                                                    Not Available
+                                                <td key={fund.id} className="px-6 py-4 text-sm text-gray-900 font-bold border-b">
+                                                    {riskMetrics[fund.id]?.expense_ratio
+                                                        ? `${(riskMetrics[fund.id]!.expense_ratio! * 100).toFixed(2)}%`
+                                                        : <span className="text-gray-400 italic">N/A</span>}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">Alpha</td>
+                                            {selectedFunds.map(fund => (
+                                                <td key={fund.id} className={`px-6 py-4 text-sm font-bold ${riskMetrics[fund.id]?.alpha && riskMetrics[fund.id]!.alpha! > 0 ? 'text-green-600' : 'text-slate-600'}`}>
+                                                    {riskMetrics[fund.id]?.alpha !== undefined
+                                                        ? `${(riskMetrics[fund.id]!.alpha! * 100).toFixed(2)}%`
+                                                        : '...'}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">Beta</td>
+                                            {selectedFunds.map(fund => (
+                                                <td key={fund.id} className="px-6 py-4 text-sm text-slate-700 font-bold">
+                                                    {riskMetrics[fund.id]?.beta !== undefined
+                                                        ? riskMetrics[fund.id]!.beta!.toFixed(2)
+                                                        : '...'}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">Sharpe Ratio</td>
+                                            {selectedFunds.map(fund => (
+                                                <td key={fund.id} className="px-6 py-4 text-sm text-slate-700 font-bold">
+                                                    {riskMetrics[fund.id]?.sharpe_ratio !== undefined
+                                                        ? riskMetrics[fund.id]!.sharpe_ratio!.toFixed(2)
+                                                        : '...'}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr className="hover:bg-gray-50 border-t-2 border-slate-100">
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">P/E Ratio</td>
+                                            {selectedFunds.map(fund => (
+                                                <td key={fund.id} className="px-6 py-4 text-sm text-slate-600 font-bold">
+                                                    {riskMetrics[fund.id]?.pe_ratio ? riskMetrics[fund.id]!.pe_ratio!.toFixed(2) : '-'}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        <tr className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">Benchmark</td>
+                                            {selectedFunds.map(fund => (
+                                                <td key={fund.id} className="px-6 py-4 text-xs text-slate-400 italic">
+                                                    {riskMetrics[fund.id]?.benchmark_name || 'NIFTY 50'}
                                                 </td>
                                             ))}
                                         </tr>

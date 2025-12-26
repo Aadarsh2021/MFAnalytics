@@ -58,6 +58,8 @@ export default function ResultsPage() {
     const [constraints, setConstraints] = useState<any>(null);
     const [isReoptimizing, setIsReoptimizing] = useState(false);
     const [showConstraints, setShowConstraints] = useState(true);
+    const [riskMetrics, setRiskMetrics] = useState<Record<number, any>>({});
+    const [fetchingMetrics, setFetchingMetrics] = useState(false);
 
     useEffect(() => {
         const storedResults = sessionStorage.getItem('optimizationResults');
@@ -156,6 +158,31 @@ export default function ResultsPage() {
             setIsReoptimizing(false);
         }
     };
+
+    // Fetch Risk Metrics for selected funds
+    useEffect(() => {
+        const fetchAllMetrics = async () => {
+            if (!fundDetails.length) return;
+            setFetchingMetrics(true);
+            try {
+                const metricsMap: Record<number, any> = {};
+                await Promise.all(fundDetails.map(async (fund) => {
+                    try {
+                        const fundId = fund.fund_id || fund.id;
+                        const response = await api.funds.getMetrics(fundId);
+                        metricsMap[fundId] = response.data;
+                    } catch (err) {
+                        console.error(`Failed to fetch metrics for fund ${fund.id}:`, err);
+                    }
+                }));
+                setRiskMetrics(metricsMap);
+            } finally {
+                setFetchingMetrics(false);
+            }
+        };
+
+        fetchAllMetrics();
+    }, [fundDetails]);
 
     const exportToPDF = useCallback(async () => {
         // ... (rest of function)
@@ -684,55 +711,72 @@ export default function ResultsPage() {
                     </button>
                 </div>
 
-                {/* Fund Information Collapsible */}
-                <div className="glass rounded-xl overflow-hidden mb-6">
-                    <button
-                        onClick={() => setShowFundInfo(!showFundInfo)}
-                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/50 transition-all"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-800">Fund Information</h3>
-                            <span className="text-sm text-gray-500">({fundDetails.length} funds selected)</span>
-                        </div>
-                        <svg
-                            className={`w-5 h-5 text-gray-600 transition-transform ${showFundInfo ? 'rotate-180' : ''}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
+                {/* Detailed Fund Analysis Table (Included in PDF) */}
 
-                    {showFundInfo && (
-                        <div className="px-6 pb-6 border-t border-gray-200">
-                            <div className="overflow-x-auto mt-4">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="border-b-2 border-gray-300">
-                                            <th className="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Fund Name</th>
-                                            <th className="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Full Name</th>
-                                            <th className="text-left py-3 px-4 font-semibold text-gray-700 bg-gray-50">Category</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {fundDetails.map((fund, index) => (
-                                            <tr key={fund.fund_id} className={`border-b border-gray-200 hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                                                <td className="py-3 px-4 text-gray-800 font-medium">{fund.name?.split('-')[0]?.trim() || fund.name}</td>
-                                                <td className="py-3 px-4 text-gray-700">{fund.name}</td>
-                                                <td className="py-3 px-4 text-gray-600">{fund.category || 'N/A'}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                {/* Detailed Fund Analysis Table (Included in PDF) */}
+                <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden mb-8">
+                    <div className="px-6 py-4 bg-slate-900 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            <h3 className="text-white font-black uppercase tracking-tight">Portfolio Fund Analysis</h3>
                         </div>
-                    )}
+                        {fetchingMetrics && <span className="text-[10px] text-blue-400 animate-pulse font-bold">Refreshing Risk Data...</span>}
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase">Fund Name</th>
+                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Weight</th>
+                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">3Y CAGR</th>
+                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Beta</th>
+                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Alpha</th>
+                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Sharpe</th>
+                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Exp. Ratio</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {fundDetails.map((fund) => {
+                                    const fundId = fund.fund_id || fund.id;
+                                    const metrics = riskMetrics[fundId];
+                                    const weight = currentWeights[fundId] || 0;
+                                    if (weight < 0.001) return null;
+
+                                    return (
+                                        <tr key={fundId} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="px-4 py-3">
+                                                <div className="text-[11px] font-bold text-slate-900 leading-tight">{fund.name.split('-')[0]}</div>
+                                                <div className="text-[9px] text-slate-500 truncate max-w-[200px]">{fund.category}</div>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                <span className="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{(weight * 100).toFixed(1)}%</span>
+                                            </td>
+                                            <td className="px-4 py-3 text-center text-[11px] font-bold text-slate-700">
+                                                {metrics?.cagr_3y ? `${(metrics.cagr_3y * 100).toFixed(1)}%` : '...'}
+                                            </td>
+                                            <td className="px-4 py-3 text-center text-[11px] font-bold text-slate-700">
+                                                {metrics?.beta ? metrics.beta.toFixed(2) : '...'}
+                                            </td>
+                                            <td className="px-4 py-3 text-center text-[11px] font-bold text-green-600">
+                                                {metrics?.alpha ? `${(metrics.alpha * 100).toFixed(1)}%` : '...'}
+                                            </td>
+                                            <td className="px-4 py-3 text-center text-[11px] font-bold text-slate-700">
+                                                {metrics?.sharpe_ratio ? metrics.sharpe_ratio.toFixed(2) : '...'}
+                                            </td>
+                                            <td className="px-4 py-3 text-center text-[11px] font-bold text-slate-900">
+                                                {metrics?.expense_ratio ? `${(metrics.expense_ratio * 100).toFixed(2)}%` : '-'}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="px-6 py-2 bg-slate-50 border-t border-slate-100 italic text-[9px] text-slate-400">
+                        * All risk metrics (Beta, Alpha, Sharpe) are relative to NIFTY 50 TRI for the trailing 3-year period.
+                    </div>
                 </div>
 
                 {/* Portfolio Selector */}

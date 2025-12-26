@@ -13,12 +13,16 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from database import get_db
-from models.database import NAV
+from models.database import NAV, Fund, Benchmark
+from services.yahoo import YahooFinanceService
+import pandas as pd
+import numpy as np
 
 router = APIRouter()
 
 # Global MFAPI service instance
 mfapi_service = MFAPIService()
+yahoo_service = YahooFinanceService()
 
 # Cache version (Bumping this clears the cache)
 CACHE_VERSION = "v3_strict_classification"
@@ -358,4 +362,125 @@ async def audit_fund(fund_id: int, db: Session = Depends(get_db)):
         
     except Exception as e:
         print(f"Audit failed for fund {fund_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+@router.get("/{fund_id}/metrics")
+async def get_fund_metrics(
+    fund_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Calculate risk metrics (Alpha, Beta, Sharpe, Std Dev) for a fund.
+    """
+    try:
+        # 1. Fetch Fund and Benchmark
+        fund = db.query(Fund).filter(Fund.id == fund_id).first()
+        if not fund:
+            raise HTTPException(status_code=404, detail="Fund not found")
+            
+        benchmark_name = "NIFTY 50" # Default
+        if fund.benchmark_id:
+            benchmark = db.query(Benchmark).filter(Benchmark.id == fund.benchmark_id).first()
+            if benchmark:
+                benchmark_name = benchmark.name
+        
+        benchmark = db.query(Benchmark).filter(Benchmark.name == benchmark_name).first()
+        if not benchmark:
+            # Fallback to NIFTY 50 if named benchmark not found
+            benchmark = db.query(Benchmark).filter(Benchmark.name == "NIFTY 50").first()
+            
+        # 2. Fetch NAV Data (last 3 years)
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=3*365)
+        
+        navs = db.query(NAV).filter(
+            NAV.fund_id == fund_id,
+            NAV.date >= start_date
+        ).order_by(NAV.date).all()
+        
+        if not navs or len(navs) < 30:
+            # Try to audit if data is missing
+            from routers.funds import audit_fund
+            await audit_fund(fund_id, db)
+            navs = db.query(NAV).filter(
+                NAV.fund_id == fund_id,
+                NAV.date >= start_date
+            ).order_by(NAV.date).all()
+            
+        if not navs or len(navs) < 10:
+             return {"error": "Insufficient data"}
+
+        # 3. Process Fund Returns
+        fund_df = pd.DataFrame([{"date": n.date, "nav": float(n.nav)} for n in navs])
+        fund_df['date'] = pd.to_datetime(fund_df['date'])
+        fund_df.set_index('date', inplace=True)
+        fund_df = fund_df.sort_index()
+        fund_ret = np.log(fund_df / fund_df.shift(1)).dropna()
+        
+        # 4. Process Benchmark Returns
+        if not benchmark:
+             return {"error": "Benchmark data missing"}
+             
+        bench_df = pd.DataFrame([
+            {"date": datetime.strptime(d, '%Y-%m-%d').date(), "nav": v} 
+            for d, v in benchmark.tri_series.items()
+        ])
+        bench_df['date'] = pd.to_datetime(bench_df['date'])
+        bench_df.set_index('date', inplace=True)
+        bench_df = bench_df.sort_index()
+        bench_ret = np.log(bench_df / bench_df.shift(1)).dropna()
+        
+        # 5. Align returns
+        common_dates = fund_ret.index.intersection(bench_ret.index)
+        if len(common_dates) < 10:
+             return {"error": "Insufficient overlapping history with benchmark"}
+             
+        fund_ret_aligned = fund_ret.loc[common_dates]
+        bench_ret_aligned = bench_ret.loc[common_dates]
+        
+        # 6. Calculate Metrics
+        risk_free_rate = 0.07 # 7% 
+        trading_days = 252
+        
+        # Annualized Returns
+        ann_fund_ret = float(np.exp(fund_ret_aligned.mean() * trading_days) - 1)
+        ann_bench_ret = float(np.exp(bench_ret_aligned.mean() * trading_days) - 1)
+        
+        # Volatility
+        vol = float(fund_ret_aligned.std() * np.sqrt(trading_days))
+        
+        # Beta
+        covariance = np.cov(fund_ret_aligned.iloc[:, 0], bench_ret_aligned.iloc[:, 0])[0][1]
+        variance = np.var(bench_ret_aligned.iloc[:, 0])
+        beta = float(covariance / variance) if variance > 0 else 1.0
+        
+        # Alpha
+        alpha = float(ann_fund_ret - (risk_free_rate + beta * (ann_bench_ret - risk_free_rate)))
+        
+        # Sharpe Ratio
+        sharpe = (ann_fund_ret - risk_free_rate) / vol if vol > 0 else 0
+        
+        # 7. Fetch Yahoo Metadata
+        ticker = await yahoo_service.search_ticker(fund.name, fund.isin)
+        metadata = {}
+        if ticker:
+            metadata = yahoo_service.get_fund_metadata(ticker)
+            
+        return {
+            "fund_id": fund_id,
+            "fund_name": fund.name,
+            "benchmark_name": benchmark_name,
+            "cagr_3y": ann_fund_ret,
+            "volatility": vol,
+            "beta": beta,
+            "alpha": alpha,
+            "sharpe_ratio": sharpe,
+            "expense_ratio": metadata.get("expense_ratio"),
+            "yield": metadata.get("yield"),
+            "pe_ratio": metadata.get("trailing_pe"),
+            "pb_ratio": metadata.get("price_to_book"),
+            "ticker": ticker
+        }
+        
+    except Exception as e:
+        print(f"Error calculating metrics for fund {fund_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))

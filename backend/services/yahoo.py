@@ -127,3 +127,25 @@ class YahooFinanceService:
         except Exception as e:
             print(f"  Error fetching Yahoo history for {ticker}: {e}")
             return []
+
+    def get_fund_metadata(self, ticker: str) -> dict:
+        """
+        Fetch fund metadata like expense ratio, yield, etc.
+        """
+        try:
+            fund = yf.Ticker(ticker)
+            info = fund.info
+            
+            return {
+                "expense_ratio": info.get("annualReportExpenseRatio"),
+                "yield": info.get("yield"),
+                "trailing_pe": info.get("trailingPE"),
+                "price_to_book": info.get("priceToBook"),
+                "total_assets": info.get("totalAssets"),
+                "category": info.get("category"),
+                "beta": info.get("beta"),
+                "sharpe_ratio": info.get("sharpeRatio")
+            }
+        except Exception as e:
+            print(f"  Error fetching Yahoo metadata for {ticker}: {e}")
+            return {}
