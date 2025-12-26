@@ -61,6 +61,13 @@ export default function ResultsPage() {
     const [riskMetrics, setRiskMetrics] = useState<Record<number, any>>({});
     const [fetchingMetrics, setFetchingMetrics] = useState(false);
 
+    // Advanced Analytics State
+    const [activeTab, setActiveTab] = useState<'comparison' | 'projection' | 'backtest'>('comparison');
+    const [projectionData, setProjectionData] = useState<any>(null);
+    const [backtestData, setBacktestData] = useState<any>(null);
+    const [isSimulating, setIsSimulating] = useState(false);
+    const [isBacktesting, setIsBacktesting] = useState(false);
+
     useEffect(() => {
         const storedResults = sessionStorage.getItem('optimizationResults');
         const storedFunds = sessionStorage.getItem('selectedFunds');
@@ -184,6 +191,7 @@ export default function ResultsPage() {
         fetchAllMetrics();
     }, [fundDetails]);
 
+
     const exportToPDF = useCallback(async () => {
         // ... (rest of function)
         const jsPDF = (await import('jspdf')).default;
@@ -297,6 +305,46 @@ export default function ResultsPage() {
             ? customBenchmarkMetrics || results?.benchmark_metrics
             : results?.benchmark_metrics;
     }, [selectedPortfolio, results, customBenchmarkMetrics]);
+
+    // Handle Simulation & Backtest Fetch
+    const runAdvancedAnalytics = useCallback(async () => {
+        if (!results || !currentWeights) return;
+
+        const strategy = selectedPortfolio === 'mvp' ? results.mvp_metrics : results.max_sharpe_metrics;
+
+        setIsSimulating(true);
+        setIsBacktesting(true);
+
+        try {
+            const simRes = await api.optimize.simulate({
+                weights: currentWeights,
+                expected_return: strategy.expected_return,
+                volatility: strategy.volatility,
+                horizon_years: 5,
+                initial_value: 100000
+            });
+            setProjectionData(simRes.data);
+
+            const btRes = await api.optimize.backtest({
+                fund_ids: fundDetails.map(f => f.fund_id || f.id),
+                weights: currentWeights,
+                initial_value: 100000
+            });
+            setBacktestData(btRes.data);
+        } catch (err) {
+            console.error("Advanced Analytics failed:", err);
+        } finally {
+            setIsSimulating(false);
+            setIsBacktesting(false);
+        }
+    }, [results, currentWeights, selectedPortfolio, fundDetails]);
+
+    // Trigger on result load
+    useEffect(() => {
+        if (results && currentWeights) {
+            runAdvancedAnalytics();
+        }
+    }, [results, currentWeights, runAdvancedAnalytics]);
 
     // Memoize chart options
     const frontierOption = useMemo(() => {
@@ -500,6 +548,53 @@ export default function ResultsPage() {
         };
     }, [currentWeights, fundDetails]);
 
+    // Memoize Monte Carlo Projection Chart
+    const projectionOption = useMemo(() => {
+        if (!projectionData) return {};
+
+        return {
+            title: { text: 'Future Wealth Projection', left: 'center', textStyle: { fontSize: 18, fontWeight: 'black' } },
+            tooltip: {
+                trigger: 'axis', formatter: (params: any) => {
+                    let res = `Year ${params[0].axisValue}<br/>`;
+                    params.forEach((p: any) => {
+                        res += `${p.marker} ${p.seriesName}: ₹${Math.round(p.value).toLocaleString()}<br/>`;
+                    });
+                    return res;
+                }
+            },
+            grid: { top: '15%', bottom: '15%', left: '12%', right: '8%' },
+            xAxis: { type: 'category', data: projectionData.time.map((t: number) => t.toFixed(1)), name: 'Years' },
+            yAxis: { type: 'value', name: 'Portfolio Value (₹)', axisLabel: { formatter: (v: number) => `₹${(v / 100000).toFixed(1)}L` } },
+            series: [
+                { name: 'Best Case (95%)', type: 'line', data: projectionData.p95, lineStyle: { opacity: 0.3, width: 1 }, itemStyle: { color: '#10b981' }, areaStyle: { color: '#10b981', opacity: 0.1 }, symbol: 'none' },
+                { name: 'Optimistic (75%)', type: 'line', data: projectionData.p75, lineStyle: { opacity: 0.5, width: 2 }, itemStyle: { color: '#4f46e5' }, areaStyle: { color: '#4f46e5', opacity: 0.2 }, symbol: 'none' },
+                { name: 'Median (50%)', type: 'line', data: projectionData.p50, lineStyle: { width: 4, color: '#0f172a' }, itemStyle: { color: '#0f172a' }, symbol: 'none' },
+                { name: 'Conservative (25%)', type: 'line', data: projectionData.p25, lineStyle: { opacity: 0.5, width: 2 }, itemStyle: { color: '#f59e0b' }, areaStyle: { color: '#f59e0b', opacity: 0.2 }, symbol: 'none' },
+                { name: 'Worst Case (5%)', type: 'line', data: projectionData.p5, lineStyle: { opacity: 0.3, width: 1 }, itemStyle: { color: '#ef4444' }, areaStyle: { color: '#ef4444', opacity: 0.1 }, symbol: 'none' }
+            ]
+        };
+    }, [projectionData]);
+
+    // Memoize Backtest Comparison Chart
+    const backtestOption = useMemo(() => {
+        if (!backtestData) return {};
+
+        return {
+            title: { text: 'Historical Performance Backtest', left: 'center', textStyle: { fontSize: 18, fontWeight: 'black' } },
+            tooltip: { trigger: 'axis' },
+            legend: { bottom: 0, data: ['Optimized Portfolio', 'Equal Weighted', 'Benchmark'] },
+            grid: { top: '15%', bottom: '15%', left: '12%', right: '8%' },
+            xAxis: { type: 'category', data: backtestData.dates, axisLabel: { rotate: 45, interval: Math.floor(backtestData.dates.length / 10) } },
+            yAxis: { type: 'value', name: 'Growth of ₹100,000', axisLabel: { formatter: (v: number) => `₹${(v / 1000).toFixed(0)}k` } },
+            series: [
+                { name: 'Optimized Portfolio', type: 'line', data: backtestData.portfolio_values, lineStyle: { width: 4, color: '#6366f1' }, itemStyle: { color: '#6366f1' }, symbol: 'none' },
+                { name: 'Equal Weighted', type: 'line', data: backtestData.equal_weighted_values, lineStyle: { width: 2, color: '#94a3b8', type: 'dashed' }, itemStyle: { color: '#94a3b8' }, symbol: 'none' },
+                backtestData.benchmark_values && { name: 'Benchmark', type: 'line', data: backtestData.benchmark_values, lineStyle: { width: 2, color: '#10b981' }, itemStyle: { color: '#10b981' }, symbol: 'none' }
+            ].filter(Boolean)
+        };
+    }, [backtestData]);
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -528,7 +623,14 @@ export default function ResultsPage() {
     }
 
     if (!currentWeights || !currentMetrics) {
-        return null;
+        return (
+            <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600 font-medium">Assembled Portfolio Data...</p>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -730,7 +832,7 @@ export default function ResultsPage() {
                                 <tr>
                                     <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase">Fund Name</th>
                                     <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Weight</th>
-                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">3Y CAGR</th>
+                                    <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">10Y CAGR</th>
                                     <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Beta</th>
                                     <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Alpha</th>
                                     <th className="px-4 py-3 text-[10px] font-black text-slate-500 uppercase text-center">Sharpe</th>
@@ -754,7 +856,7 @@ export default function ResultsPage() {
                                                 <span className="text-[11px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{(weight * 100).toFixed(1)}%</span>
                                             </td>
                                             <td className="px-4 py-3 text-center text-[11px] font-bold text-slate-700">
-                                                {metrics?.cagr_3y ? `${(metrics.cagr_3y * 100).toFixed(1)}%` : '...'}
+                                                {metrics?.cagr_10y ? `${(metrics.cagr_10y * 100).toFixed(1)}%` : '...'}
                                             </td>
                                             <td className="px-4 py-3 text-center text-[11px] font-bold text-slate-700">
                                                 {metrics?.beta ? metrics.beta.toFixed(2) : '...'}
@@ -899,31 +1001,71 @@ export default function ResultsPage() {
                         </div>
                     </div>
 
-                    {/* Detailed Analytics CTA */}
-                    <div className="glass rounded-xl p-8 mb-6 text-center border border-indigo-100 bg-gradient-to-r from-indigo-50/50 to-blue-50/50">
-                        <div className="w-16 h-16 bg-white rounded-2xl shadow-sm mx-auto flex items-center justify-center text-3xl mb-4">
-                            📊
+                    {/* Deep Analytics Tabs */}
+                    <div className="mb-8 border-b border-slate-200">
+                        <div className="flex gap-8">
+                            {[
+                                { id: 'comparison', label: 'Risk Comparison', icon: '🎯' },
+                                { id: 'projection', label: 'Future Projections', icon: '🔮' },
+                                { id: 'backtest', label: 'Historical Backtest', icon: '⏳' }
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={`pb-4 text-sm font-black uppercase tracking-widest transition-all relative ${activeTab === tab.id
+                                        ? 'text-indigo-600'
+                                        : 'text-slate-400 hover:text-slate-600'
+                                        }`}
+                                >
+                                    <span className="mr-2">{tab.icon}</span>
+                                    {tab.label}
+                                    {activeTab === tab.id && (
+                                        <div className="absolute bottom-0 left-0 w-full h-1 bg-indigo-600 rounded-t-full shadow-[0_-4px_12px_rgba(79,70,229,0.4)]" />
+                                    )}
+                                </button>
+                            ))}
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Want to see the deep dive?</h2>
-                        <p className="text-gray-600 mb-6 max-w-lg mx-auto">
-                            Compare your constraints against our AI optimization and see exactly how much value we added.
-                        </p>
-                        <button
-                            onClick={() => window.location.href = '/analytics'}
-                            className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2 mx-auto"
-                        >
-                            <span>View Detailed Analytics</span>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-                        </button>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                        <div className="glass rounded-xl p-6">
-                            <ReactECharts option={frontierOption} style={{ height: '400px' }} />
-                        </div>
-                        <div className="glass rounded-xl p-6">
-                            <ReactECharts option={assetAllocationOption} style={{ height: '400px' }} />
-                        </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                        {activeTab === 'comparison' ? (
+                            <>
+                                <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="mb-4 flex items-center justify-between">
+                                        <h3 className="font-black text-slate-800 uppercase tracking-tight">Efficient Frontier</h3>
+                                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">📈</div>
+                                    </div>
+                                    <ReactECharts option={frontierOption} style={{ height: '400px' }} />
+                                </div>
+                                <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="mb-4 flex items-center justify-between">
+                                        <h3 className="font-black text-slate-800 uppercase tracking-tight">Strategic Allocation</h3>
+                                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">🥧</div>
+                                    </div>
+                                    <ReactECharts option={assetAllocationOption} style={{ height: '400px' }} />
+                                </div>
+                            </>
+                        ) : activeTab === 'projection' ? (
+                            <div className="lg:col-span-2 bg-white rounded-2xl p-8 border border-slate-200 shadow-sm h-[500px] relative overflow-hidden">
+                                {isSimulating ? (
+                                    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+                                        <p className="text-slate-600 font-bold uppercase tracking-widest text-xs">Simulating 1,000 Market Paths...</p>
+                                    </div>
+                                ) : null}
+                                <ReactECharts option={projectionOption} style={{ height: '440px' }} />
+                            </div>
+                        ) : (
+                            <div className="lg:col-span-2 bg-white rounded-2xl p-8 border border-slate-200 shadow-sm h-[500px] relative overflow-hidden">
+                                {isBacktesting ? (
+                                    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mb-4"></div>
+                                        <p className="text-slate-600 font-bold uppercase tracking-widest text-xs">Processing Historical NAV Data...</p>
+                                    </div>
+                                ) : null}
+                                <ReactECharts option={backtestOption} style={{ height: '440px' }} />
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">

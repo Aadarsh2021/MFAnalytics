@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import asyncio
+from services.backtester import PortfolioBacktester
 
 router = APIRouter(prefix="/api/optimize", tags=["optimize"])
 
@@ -30,6 +31,7 @@ class OptimizationRequest(BaseModel):
     constraints: Dict
     mode: str = 'emh'  # 'emh' or 'custom'
     custom_returns: Optional[Dict[str, float]] = None
+    views: Optional[Dict[int, float]] = None # fund_id -> expected_return_decimal
 
 
 class OptimizationResponse(BaseModel):
@@ -41,6 +43,20 @@ class OptimizationResponse(BaseModel):
     monte_carlo_portfolios: List[Dict] = []
     benchmark_metrics: Optional[Dict] = None
     benchmark_name: Optional[str] = None
+    bl_weights: Optional[Dict[int, float]] = None
+    bl_metrics: Optional[Dict] = None
+
+class SimulationRequest(BaseModel):
+    weights: Dict[int, float]
+    expected_return: float
+    volatility: float
+    horizon_years: int = 5
+    initial_value: float = 100000
+
+class BacktestRequest(BaseModel):
+    fund_ids: List[int]
+    weights: Dict[int, float]
+    initial_value: float = 100000
 
 
 @router.post("/run", response_model=OptimizationResponse)
@@ -396,8 +412,28 @@ async def run_optimization(
             ms_ret, ms_vol = optimizer.compute_portfolio_performance(ms_weights, expected_returns, cov_matrix)
             ms_sharpe = (ms_ret - settings.risk_free_rate) / ms_vol if ms_vol > 0 else 0
         
+        # ms_metrics = ... (logic below 399)
         ms_metrics = optimizer.compute_portfolio_metrics(ms_weights, returns_df, expected_returns, cov_matrix, benchmark_returns=composite_return_series)
         
+        # 2.5 Black-Litterman Optimization (Optional)
+        bl_weights_dict = None
+        bl_metrics = None
+        if request.views:
+             try:
+                 # Map fund_id views to indices
+                 valid_views = {fund_map[fid]: val for fid, val in request.views.items() if fid in fund_map}
+                 if valid_views:
+                     bl_weights, bl_ret, bl_vol = optimizer.optimize_black_litterman(
+                         expected_returns, 
+                         cov_matrix, 
+                         valid_views, 
+                         [str(fid) for fid in fund_ids]
+                     )
+                     bl_weights_dict = {fund_ids[i]: float(w) for i, w in enumerate(bl_weights)}
+                     bl_metrics = optimizer.compute_portfolio_metrics(bl_weights, returns_df, expected_returns, cov_matrix, benchmark_returns=composite_return_series)
+             except Exception as e:
+                 print(f"  ⚠️ BL Optimization Skipped: {e}")
+
         # 3. Frontier
         try:
             frontier = optimizer.generate_efficient_frontier(expected_returns, cov_matrix, n_points=50, constraints=opt_constraints)
@@ -465,7 +501,9 @@ async def run_optimization(
             efficient_frontier=frontier,
             monte_carlo_portfolios=mongo_carlo_points,
             benchmark_metrics=benchmark_metrics,
-            benchmark_name=benchmark_name
+            benchmark_name=benchmark_name,
+            bl_weights=bl_weights_dict,
+            bl_metrics=bl_metrics
         )
         
     except HTTPException as he:
@@ -513,7 +551,7 @@ async def recalculate_portfolio(
         
         # Fetch NAV data
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=3*365)
+        start_date = end_date - timedelta(days=10*365)
         
         nav_data = {}
         for fund_id in fund_ids:
@@ -590,8 +628,70 @@ async def recalculate_portfolio(
         }
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)    )
+    
+@router.post("/simulate")
+async def simulate_portfolio(request: SimulationRequest):
+    """
+    Run Monte Carlo simulation for a portfolio
+    """
+    optimizer = PortfolioOptimizer(trading_days=settings.trading_days_per_year)
+    results = optimizer.simulate_projections(
+        weights=np.array(list(request.weights.values())),
+        expected_return=request.expected_return,
+        volatility=request.volatility,
+        horizon_years=request.horizon_years,
+        initial_value=request.initial_value
+    )
+    return results
 
+@router.post("/backtest")
+async def backtest_portfolio(
+    request: BacktestRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Run historical backtest
+    """
+    optimizer = PortfolioOptimizer(trading_days=settings.trading_days_per_year)
+    backtester = PortfolioBacktester(trading_days=settings.trading_days_per_year)
+    
+    # Fetch NAV data for backtest
+    nav_data = {}
+    end_date = datetime.now()
+    start_date = end_date - timedelta(days=10*365)
+    
+    for fid in request.fund_ids:
+        navs = db.query(NAV).filter(
+            NAV.fund_id == fid,
+            NAV.date >= start_date
+        ).order_by(NAV.date).all()
+        nav_data[fid] = [(n.date.strftime('%Y-%m-%d'), float(n.nav)) for n in navs]
+        
+    returns_df = optimizer.compute_returns(nav_data)
+    
+    # Weights array
+    w_array = np.array([request.weights[fid] for fid in request.fund_ids])
+    
+    # Benchmark returns (NIFTY 50 default)
+    from models.database import Benchmark
+    bench = db.query(Benchmark).filter(Benchmark.name == "NIFTY 50").first()
+    bench_ret = None
+    if bench:
+        b_dates = sorted(bench.tri_series.keys())
+        b_navs = [bench.tri_series[d] for d in b_dates]
+        b_df = pd.DataFrame({'date': pd.to_datetime(b_dates), 'nav': b_navs})
+        b_df.set_index('date', inplace=True)
+        bench_ret = np.log(b_df / b_df.shift(1)).dropna().iloc[:, 0]
+        
+    results = backtester.run_backtest(
+        weights=w_array,
+        returns_df=returns_df,
+        initial_value=request.initial_value,
+        benchmark_returns=bench_ret
+    )
+    
+    return results
 
 @router.get("/{optimization_id}", response_model=OptimizationResponse)
 def get_optimization_result(

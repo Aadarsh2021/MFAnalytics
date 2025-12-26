@@ -150,7 +150,7 @@ class MFAPISeeder:
                 nav_data = details['data']
                 nav_count = 0
                 
-                for nav_entry in nav_data[:1095]:  # Last 3 years
+                for nav_entry in nav_data:  # Use full available history
                     try:
                         nav_date = datetime.strptime(nav_entry['date'], '%d-%m-%Y').date()
                         nav_value = float(nav_entry['nav'])

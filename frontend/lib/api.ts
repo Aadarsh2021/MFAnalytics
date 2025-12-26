@@ -73,6 +73,8 @@ export const api = {
         run: (data: any) => apiClient.post('/api/optimize/run', data),
         recalculate: (weights: Record<number, number>) => apiClient.post('/api/optimize/recalculate', { weights }),
         get: (id: number) => apiClient.get(`/api/optimize/${id}`),
+        simulate: (data: any) => apiClient.post('/api/optimize/simulate', data),
+        backtest: (data: any) => apiClient.post('/api/optimize/backtest', data),
     },
 
     // Rebalance endpoints

@@ -203,7 +203,7 @@ async def get_nav_data(
             end_date = datetime.now().strftime("%Y-%m-%d")
         
         if not start_date:
-            start_date = (datetime.now() - timedelta(days=3*365)).strftime("%Y-%m-%d")
+            start_date = (datetime.now() - timedelta(days=10*365)).strftime("%Y-%m-%d")
         
         start_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
         end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -388,9 +388,9 @@ async def get_fund_metrics(
             # Fallback to NIFTY 50 if named benchmark not found
             benchmark = db.query(Benchmark).filter(Benchmark.name == "NIFTY 50").first()
             
-        # 2. Fetch NAV Data (last 3 years)
+        # 2. Fetch NAV Data (last 10 years)
         end_date = datetime.now().date()
-        start_date = end_date - timedelta(days=3*365)
+        start_date = end_date - timedelta(days=10*365)
         
         navs = db.query(NAV).filter(
             NAV.fund_id == fund_id,
@@ -469,7 +469,7 @@ async def get_fund_metrics(
             "fund_id": fund_id,
             "fund_name": fund.name,
             "benchmark_name": benchmark_name,
-            "cagr_3y": ann_fund_ret,
+            "cagr_10y": ann_fund_ret,
             "volatility": vol,
             "beta": beta,
             "alpha": alpha,

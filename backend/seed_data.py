@@ -12,7 +12,7 @@ import json
 # Create tables
 Base.metadata.create_all(bind=engine)
 
-def generate_sample_navs(start_value=100, days=1095, volatility=0.15, drift=0.12):
+def generate_sample_navs(start_value=100, days=3650, volatility=0.15, drift=0.12):
     """Generate realistic NAV time series using geometric Brownian motion"""
     dt = 1/252  # Daily time step
     dates = [datetime.now() - timedelta(days=days-i) for i in range(days)]

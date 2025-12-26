@@ -44,12 +44,12 @@ for fund_data in sample_funds:
         
         # Add sample NAV data (last 3 years)
         base_nav = 100.0
-        start_date = datetime.now() - timedelta(days=3*365)
+        start_date = datetime.now() - timedelta(days=10*365)
         
-        for i in range(1095):  # 3 years of daily NAVs
+        for i in range(3650):  # 10 years of daily NAVs
             nav_date = start_date + timedelta(days=i)
             # Simulate NAV growth with some randomness
-            nav_value = base_nav * (1 + 0.12 * (i/1095) + random.uniform(-0.02, 0.02))
+            nav_value = base_nav * (1 + 0.12 * (i/3650) + random.uniform(-0.02, 0.02))
             
             nav = NAV(
                 fund_id=fund.id,
@@ -58,7 +58,7 @@ for fund_data in sample_funds:
             )
             db.add(nav)
         
-        print(f"Added: {fund.name[:50]}... with 1095 NAVs")
+        print(f"Added: {fund.name[:50]}... with 3650 NAVs")
 
 db.commit()
 print(f"\n✅ Added {len(sample_funds)} funds with NAV data!")

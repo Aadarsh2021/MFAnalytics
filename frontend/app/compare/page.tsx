@@ -64,7 +64,7 @@ export default function ComparePage() {
     };
 
     const [fundData, setFundData] = useState<Record<number, { navSeries: { date: string, nav: number }[] }>>({});
-    const [performanceMetrics, setPerformanceMetrics] = useState<Record<number, { '1Y': number, '3Y': number, '5Y': number }>>({});
+    const [performanceMetrics, setPerformanceMetrics] = useState<Record<number, { '1Y': number, '3Y': number, '5Y': number, '10Y': number }>>({});
     const [riskMetrics, setRiskMetrics] = useState<Record<number, {
         sharpe_ratio?: number,
         beta?: number,
@@ -85,7 +85,7 @@ export default function ComparePage() {
             try {
                 // Fetch last 5 years + buffer
                 const endDate = new Date().toISOString().split('T')[0];
-                const startDate = new Date(new Date().setFullYear(new Date().getFullYear() - 6)).toISOString().split('T')[0];
+                const startDate = new Date(new Date().setFullYear(new Date().getFullYear() - 11)).toISOString().split('T')[0];
 
                 const response = await api.funds.nav(fundsToFetch, startDate, endDate);
 
@@ -128,12 +128,12 @@ export default function ComparePage() {
 
     // Calculate Returns whenever fundData or selectedFunds update
     useEffect(() => {
-        const metrics: Record<number, { '1Y': number, '3Y': number, '5Y': number }> = {};
+        const metrics: Record<number, { '1Y': number, '3Y': number, '5Y': number, '10Y': number }> = {};
 
         selectedFunds.forEach(fund => {
             const data = fundData[fund.id];
             if (!data?.navSeries || data.navSeries.length === 0) {
-                metrics[fund.id] = { '1Y': 0, '3Y': 0, '5Y': 0 };
+                metrics[fund.id] = { '1Y': 0, '3Y': 0, '5Y': 0, '10Y': 0 };
                 return;
             }
 
@@ -158,11 +158,13 @@ export default function ComparePage() {
             const nav1Y = getNavAtDate(1);
             const nav3Y = getNavAtDate(3);
             const nav5Y = getNavAtDate(5);
+            const nav10Y = getNavAtDate(10);
 
             metrics[fund.id] = {
                 '1Y': nav1Y ? ((currentNav - nav1Y) / nav1Y) * 100 : 0, // Absolute for 1Y
                 '3Y': calculateCAGR(nav3Y || 0, currentNav, 3),
-                '5Y': calculateCAGR(nav5Y || 0, currentNav, 5)
+                '5Y': calculateCAGR(nav5Y || 0, currentNav, 5),
+                '10Y': calculateCAGR(nav10Y || 0, currentNav, 10)
             };
         });
 
@@ -182,6 +184,7 @@ export default function ComparePage() {
                 performanceMetrics[fund.id]?.['1Y']?.toFixed(2) || 0,
                 performanceMetrics[fund.id]?.['3Y']?.toFixed(2) || 0,
                 performanceMetrics[fund.id]?.['5Y']?.toFixed(2) || 0,
+                performanceMetrics[fund.id]?.['10Y']?.toFixed(2) || 0,
             ],
             smooth: true,
             lineStyle: { width: 3 },
@@ -316,10 +319,10 @@ export default function ComparePage() {
                                             ))}
                                         </tr>
                                         <tr className="hover:bg-gray-50 bg-blue-50">
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">3 Year CAGR</td>
+                                            <td className="px-6 py-4 text-sm font-medium text-gray-900 font-black uppercase">10 Year CAGR</td>
                                             {selectedFunds.map((fund) => (
-                                                <td key={fund.id} className="px-6 py-4 text-sm font-bold text-green-700">
-                                                    {performanceMetrics[fund.id]?.['3Y'] ? `${performanceMetrics[fund.id]['3Y'].toFixed(2)}%` : 'N/A'}
+                                                <td key={fund.id} className="px-6 py-4 text-sm font-bold text-blue-700">
+                                                    {performanceMetrics[fund.id]?.['10Y'] ? `${performanceMetrics[fund.id]['10Y'].toFixed(2)}%` : 'N/A'}
                                                 </td>
                                             ))}
                                         </tr>

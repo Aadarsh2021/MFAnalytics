@@ -9,6 +9,8 @@ import cvxpy as cp
 from sklearn.covariance import ledoit_wolf
 from scipy import stats
 import gc
+from pypfopt import black_litterman, risk_models
+from pypfopt.black_litterman import BlackLittermanModel
 
 
 class PortfolioOptimizer:
@@ -599,3 +601,138 @@ class PortfolioOptimizer:
             })
         
         return metrics
+    def simulate_projections(
+        self,
+        weights: np.ndarray,
+        expected_return: float,
+        volatility: float,
+        horizon_years: int = 5,
+        n_simulations: int = 1000,
+        initial_value: float = 100000
+    ) -> Dict:
+        """
+        Generate probabilistic future projections using Geometric Brownian Motion
+        
+        Args:
+            weights: Portfolio weights
+            expected_return: Annualized expected return
+            volatility: Annualized volatility
+            horizon_years: Forecast horizon in years
+            n_simulations: Number of paths to simulate
+            initial_value: Initial investment amount
+            
+        Returns:
+            Dict containing percentiles (5, 25, 50, 75, 95) over time
+        """
+        # Time setup
+        dt = 1 / self.trading_days
+        n_steps = int(horizon_years * self.trading_days)
+        time_axis = np.linspace(0, horizon_years, n_steps)
+        
+        # Drift and diffusion for GBM
+        # dS/S = mu*dt + sigma*dW
+        # ln(S_t/S_0) ~ N((mu - 0.5*sigma^2)*t, sigma*sqrt(t))
+        mu = expected_return
+        sigma = volatility
+        
+        # Generate random paths (log returns)
+        # Using vectorized normal distribution for speed
+        daily_returns = np.random.normal(
+            loc=(mu - 0.5 * sigma**2) * dt,
+            scale=sigma * np.sqrt(dt),
+            size=(n_steps, n_simulations)
+        )
+        
+        # Cumulative returns (price paths)
+        # S_t = S_0 * exp(sum(r_daily))
+        price_paths = initial_value * np.exp(np.cumsum(daily_returns, axis=0))
+        
+        # Prepend initial value
+        price_paths = np.vstack([np.full(n_simulations, initial_value), price_paths])
+        
+        # Calculate percentiles at each step
+        percentiles = {
+            'p5': np.percentile(price_paths, 5, axis=1).tolist(),
+            'p25': np.percentile(price_paths, 25, axis=1).tolist(),
+            'p50': np.percentile(price_paths, 50, axis=1).tolist(),
+            'p75': np.percentile(price_paths, 75, axis=1).tolist(),
+            'p95': np.percentile(price_paths, 95, axis=1).tolist(),
+            'time': [round(t, 2) for t in np.linspace(0, horizon_years, n_steps + 1).tolist()]
+        }
+        
+        return percentiles
+
+    def optimize_black_litterman(
+        self,
+        expected_returns: np.ndarray,
+        cov_matrix: np.ndarray,
+        views: Dict[int, float],
+        fund_names: List[str],
+        prior_returns: Optional[np.ndarray] = None,
+        tau: float = 0.05,
+        risk_aversion: float = 2.0
+    ) -> Tuple[np.ndarray, float, float]:
+        """
+        Optimize using Black-Litterman model to incorporate investor views
+        
+        Args:
+            expected_returns: Equilibrium/Prior returns
+            cov_matrix: Covariance matrix
+            views: Dict of {fund_index: expected_return_decimal}
+            fund_names: List of fund identifiers (for internal indexing)
+            prior_returns: Optional specific prior; defaults to expected_returns
+            tau: Confidence in prior (default 0.05)
+            risk_aversion: Market risk aversion parameter
+            
+        Returns:
+            Tuple of (weights, expected_return, volatility)
+        """
+        # 1. Setup Prior
+        # Convert expected_returns to Series for PyPortfolioOpt
+        s_expected_returns = pd.Series(expected_returns, index=fund_names)
+        df_cov = pd.DataFrame(cov_matrix, index=fund_names, columns=fund_names)
+        
+        # 2. Setup Views
+        # Q: view returns, P: pick matrix
+        view_indices = sorted(views.keys())
+        Q = np.array([views[i] for i in view_indices])
+        
+        P = np.zeros((len(views), len(fund_names)))
+        for row, idx in enumerate(view_indices):
+            P[row, idx] = 1
+            
+        # 3. Apply Black-Litterman
+        try:
+            bl = BlackLittermanModel(
+                df_cov,
+                pi=s_expected_returns,
+                absolute_views=pd.Series(Q, index=[fund_names[i] for i in view_indices]),
+                tau=tau,
+                risk_aversion=risk_aversion
+            )
+            
+            # Posterior returns and covariance
+            posterior_ret = bl.bl_returns()
+            posterior_cov = bl.bl_cov()
+            
+            # 4. Re-optimize for Max Sharpe using BL Posterior
+            from pypfopt import EfficientFrontier
+            ef = EfficientFrontier(posterior_ret, posterior_cov)
+            ef.add_constraint(lambda w: np.sum(w) == 1)
+            ef.add_constraint(lambda w: w >= 0)
+            
+            weights = ef.max_sharpe(risk_free_rate=self.risk_free_rate)
+            cleaned_weights = ef.clean_weights()
+            
+            # Convert back to array
+            w_array = np.array([cleaned_weights[f] for f in fund_names])
+            
+            # Performance using posterior
+            ret, vol = bl.portfolio_performance()
+            
+            return w_array, ret, vol
+            
+        except Exception as e:
+            print(f"Black-Litterman Optimization Error: {e}")
+            # Fallback to standard max sharpe
+            return expected_returns, 0.0, 0.0 # Placeholder fallback logic

@@ -131,7 +131,7 @@ async def optimize_rebalancing(
         
         # 3. Fetch NAV data
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=3*365)
+        start_date = end_date - timedelta(days=10*365)
         
         nav_data = {}
         for fund_id in fund_ids:
