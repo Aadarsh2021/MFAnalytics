@@ -65,8 +65,8 @@ export const api = {
         nav: (fundIds: number[], startDate?: string, endDate?: string) =>
             apiClient.post('/api/funds/nav', { fund_ids: fundIds, start_date: startDate, end_date: endDate }),
         getCategories: () => apiClient.get('/api/funds/categories'),
-        getAssetClasses: () => axios.get(`${API_URL}/funds/asset-classes`),
-        getAMCs: () => axios.get(`${API_URL}/funds/amcs`),
+        getAssetClasses: () => apiClient.get('/api/funds/asset-classes'),
+        getAMCs: () => apiClient.get('/api/funds/amcs'),
         list: (params?: any) => apiClient.get('/api/funds', { params }),
         audit: (fundId: number) => apiClient.post(`/api/funds/${fundId}/audit`),
         getMetrics: (fundId: number) => apiClient.get(`/api/funds/${fundId}/metrics`),
