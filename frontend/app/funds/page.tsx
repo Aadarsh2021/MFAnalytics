@@ -229,10 +229,6 @@ export default function FundsPage() {
 
             if (highQuality.length > 0) {
                 highQuality.slice(0, 4).forEach(fund => topFunds.set(fund.id, fund));
-            } else {
-                // Only if NO high quality funds exist in this class, pick top 2 poor ones
-                // This keeps the asset class represented but minimizes exposure to bad data
-                sortedByQuality.slice(0, 2).forEach(fund => topFunds.set(fund.id, fund));
             }
         });
 

@@ -102,7 +102,8 @@ class MFAPIService:
             'value', 'contra', 'elss', 'tax saver',
             'index', 'nifty', 'sensex', 'bluechip', 'blue chip',
             'opportunities', 'infrastructure', 'pharma', 'tech', 'banking',
-            'etf', 'fo f', 'fund of fund', 'nasdaq', 's&p', 'global', 'international', 'us growth'
+            'etf', 'fo f', 'fund of fund', 'nasdaq', 's&p', 'global', 'international', 'us growth',
+            'hybrid', 'balanced', 'arbitrage'
         ]
         if any(keyword in name_lower for keyword in equity_keywords):
             return 'Equity'
@@ -114,7 +115,7 @@ class MFAPIService:
             'long duration', 'corporate bond', 'credit risk',
             'banking & psu', 'dynamic bond', 'income',
             'floating rate', 'low duration', 'overnight', 'fixed term',
-            'fmp', 'fixed maturity'
+            'fmp', 'fixed maturity', 'short term', 'ultra short term'
         ]
         if any(keyword in name_lower for keyword in debt_keywords):
             return 'Debt'
