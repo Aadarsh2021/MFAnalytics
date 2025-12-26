@@ -20,10 +20,14 @@ router = APIRouter()
 # Global MFAPI service instance
 mfapi_service = MFAPIService()
 
-# Simple Cache for scheme list (it doesn't change often)
+# Cache version (Bumping this clears the cache)
+CACHE_VERSION = "v3_strict_classification"
+
+# Simple Cache for scheme list
 _schemes_cache = {
     "data": [],
-    "last_updated": None
+    "last_updated": None,
+    "version": None
 }
 
 
@@ -38,8 +42,15 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
     try:
         # Get schemes from cache or MFAPI
         now = datetime.now()
-        if not _schemes_cache["data"] or not _schemes_cache["last_updated"] or (now - _schemes_cache["last_updated"]).total_seconds() > 3600:
-            print("Fetching all schemes from MFAPI.in (Cache Miss)...")
+        cache_stale = (
+            not _schemes_cache["data"] or 
+            not _schemes_cache["last_updated"] or 
+            _schemes_cache.get("version") != CACHE_VERSION or
+            (now - _schemes_cache["last_updated"]).total_seconds() > 3600
+        )
+        
+        if cache_stale:
+            print(f"Fetching all schemes from MFAPI.in (Cache Miss/Version {CACHE_VERSION})...")
             all_schemes = await mfapi_service.get_all_schemes()
             
             # OPTIMIZATION: Pre-calculate classifications
@@ -50,7 +61,8 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
                 
             _schemes_cache["data"] = all_schemes
             _schemes_cache["last_updated"] = now
-            print(f"Cached {len(all_schemes)} schemes with classification.")
+            _schemes_cache["version"] = CACHE_VERSION
+            print(f"Cached {len(all_schemes)} schemes with classification version {CACHE_VERSION}.")
         else:
             all_schemes = _schemes_cache["data"]
         

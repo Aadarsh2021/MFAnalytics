@@ -249,7 +249,9 @@ async def run_optimization(
                     if db_fallback and len(db_fallback) > 30:
                         nav_data[fund_id] = [(d.strftime('%Y-%m-%d'), float(n)) for d, n in db_fallback]
                     else:
-                        raise HTTPException(status_code=400, detail=f"Failed to fetch data for fund {fund_id}: {error}")
+                        error_msg = f"Insufficient history or data error for fund '{f_obj.name}' (ID: {fund_id}): {error}. "
+                        error_msg += "Try running a 'Deep Audit' for this fund first."
+                        raise HTTPException(status_code=400, detail=error_msg)
         
         # Close MFAPI client
         await mfapi.close()
