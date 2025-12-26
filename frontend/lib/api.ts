@@ -58,6 +58,7 @@ export const api = {
         getCategories: () => apiClient.get('/api/funds/categories'),
         getAssetClasses: () => apiClient.get('/api/funds/asset-classes'),
         list: (params?: any) => apiClient.get('/api/funds', { params }),
+        audit: (fundId: number) => apiClient.post(`/api/funds/${fundId}/audit`),
     },
 
     // Client endpoints

@@ -9,6 +9,11 @@ from models.schemas import FundSearchRequest, FundSearchResponse, FundInfo, Fund
 from services.mfapi import MFAPIService
 from datetime import datetime, timedelta
 import asyncio
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from database import get_db
+from models.database import NAV
 
 router = APIRouter()
 
@@ -23,7 +28,7 @@ _schemes_cache = {
 
 
 @router.post("/search", response_model=FundSearchResponse)
-async def search_funds(request: FundSearchRequest):
+async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)):
     """
     Search funds directly from MFAPI.in
     
@@ -118,12 +123,26 @@ async def search_funds(request: FundSearchRequest):
         end = start + request.limit
         limited_schemes = filtered_schemes[start:end]
         
+        # Bulk fetch inception dates from DB for the limited set
+        scheme_codes = [int(s['schemeCode']) for s in limited_schemes]
+        inception_dates = {}
+        if scheme_codes:
+            # Get earliest NAV date from database
+            db_results = db.query(
+                NAV.fund_id, 
+                func.min(NAV.date).label('inception')
+            ).filter(NAV.fund_id.in_(scheme_codes)).group_by(NAV.fund_id).all()
+            
+            for f_id, start_date in db_results:
+                inception_dates[f_id] = start_date.strftime("%Y-%m-%d") if start_date else None
+
         # Convert to FundInfo format
         funds_list = []
         for scheme in limited_schemes:
+            s_code = int(scheme['schemeCode'])
             # Use cached values
             funds_list.append(FundInfo(
-                id=int(scheme['schemeCode']),
+                id=s_code,
                 name=scheme['schemeName'],
                 isin=str(scheme['schemeCode']),
                 category=scheme.get('category_cached', 'Other'),
@@ -136,7 +155,8 @@ async def search_funds(request: FundSearchRequest):
                     "Excellent" if scheme.get('asset_class_cached') not in ['Alt', 'Unknown'] and scheme.get('category_cached') != 'Other'
                     else "Good" if scheme.get('asset_class_cached') not in ['Alt', 'Unknown']
                     else "Poor"
-                )
+                ),
+                inception_date=inception_dates.get(s_code)
             ))
         
         return FundSearchResponse(
@@ -255,3 +275,75 @@ async def get_asset_classes():
     """Get list of all asset classes"""
     # Asset classes are well-defined, no need to fetch dynamically
     return ["Equity", "Debt", "Gold", "Alt"]
+
+
+@router.post("/{fund_id}/audit")
+async def audit_fund(fund_id: int, db: Session = Depends(get_db)):
+    """
+    Perform deep audit on a fund to discover inception date and history
+    """
+    try:
+        # Fetch scheme details from MFAPI
+        details = await mfapi_service.get_scheme_details(str(fund_id))
+        
+        if not details or 'data' not in details:
+            raise HTTPException(status_code=404, detail="Fund data not found on MFAPI")
+        
+        # Parse NAV data to find earliest date
+        nav_entries = []
+        earliest_date = None
+        
+        for nav_entry in details['data']:
+            try:
+                nav_date = datetime.strptime(nav_entry['date'], '%d-%m-%Y').date()
+                nav_value = float(nav_entry['nav'])
+                nav_entries.append((nav_date, nav_value))
+                if earliest_date is None or nav_date < earliest_date:
+                    earliest_date = nav_date
+            except:
+                continue
+        
+        # Save to DB (Limited sample or full? Let's do full since it's an audit)
+        if earliest_date:
+            # Check if fund exists in DB
+            from models.database import Fund as DBFund
+            meta = details.get('meta', {})
+            existing_fund = db.query(DBFund).filter(DBFund.id == fund_id).first()
+            if not existing_fund:
+                new_fund = DBFund(
+                    id=fund_id,
+                    name=meta.get('scheme_name', f"Fund {fund_id}"),
+                    isin=meta.get('isin_code', f"MFAPI-{fund_id}"),
+                    category=meta.get('scheme_category', 'Unknown'),
+                    amc=meta.get('fund_house', 'Unknown'),
+                    asset_class=mfapi_service.classify_asset_class(meta.get('scheme_name', '')),
+                )
+                db.add(new_fund)
+                db.commit()
+
+            # Save NAVs
+            from models.database import NAV
+            existing_dates = {n.date for n in db.query(NAV.date).filter(NAV.fund_id == fund_id).all()}
+            
+            to_add = []
+            for d, v in nav_entries:
+                if d not in existing_dates:
+                    to_add.append(NAV(fund_id=fund_id, date=d, nav=v))
+                    existing_dates.add(d)
+            
+            if to_add:
+                db.bulk_save_objects(to_add)
+                db.commit()
+
+            return {
+                "fund_id": fund_id,
+                "inception_date": earliest_date.strftime("%Y-%m-%d"),
+                "records_found": len(nav_entries),
+                "message": f"Successfully audited {len(nav_entries)} records since {earliest_date}"
+            }
+        
+        return {"error": "No valid NAV data found"}
+        
+    except Exception as e:
+        print(f"Audit failed for fund {fund_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

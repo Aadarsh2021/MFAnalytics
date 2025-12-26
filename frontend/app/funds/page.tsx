@@ -19,6 +19,7 @@ interface Fund {
     data_quality: string;
     plan_type: string;
     scheme_type: string;
+    inception_date?: string;
 }
 
 export default function FundsPage() {
@@ -162,6 +163,29 @@ export default function FundsPage() {
         const nextOffset = offset + PAGE_SIZE;
         setOffset(nextOffset);
         searchFunds(nextOffset, false);
+    };
+
+    const handleAudit = async (fund: Fund) => {
+        try {
+            const response = await api.funds.audit(fund.id);
+            const { inception_date } = response.data;
+
+            // Update local state for this fund
+            setFunds(prev => prev.map(f =>
+                f.id === fund.id ? { ...f, inception_date } : f
+            ));
+
+            // Also update selected if present
+            setSelectedFunds(prev => {
+                const newSelected = new Map(prev);
+                if (newSelected.has(fund.id)) {
+                    newSelected.set(fund.id, { ...newSelected.get(fund.id)!, inception_date });
+                }
+                return newSelected;
+            });
+        } catch (err) {
+            console.error('Audit failed:', err);
+        }
     };
 
     const toggleFund = useCallback((fund: Fund) => {
@@ -442,7 +466,8 @@ export default function FundsPage() {
                                                     </th>
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[100px]">Category</th>
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[80px]">Class</th>
-                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[100px] whitespace-nowrap">Data Quality</th>
+                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[120px]">Data Depth</th>
+                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[100px] whitespace-nowrap">Quality</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50">
@@ -469,6 +494,28 @@ export default function FundsPage() {
                                                                 }`}>
                                                                 {fund.asset_class}
                                                             </span>
+                                                        </td>
+                                                        <td className="px-3 py-4">
+                                                            {fund.inception_date ? (
+                                                                <div>
+                                                                    <div className="text-[10px] font-bold text-slate-900 leading-none mb-1">Since {new Date(fund.inception_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short' })}</div>
+                                                                    <div className="flex items-center gap-1">
+                                                                        {(() => {
+                                                                            const years = (new Date().getTime() - new Date(fund.inception_date).getTime()) / (1000 * 60 * 60 * 24 * 365);
+                                                                            if (years >= 10) return <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">Strong Thesis</span>;
+                                                                            if (years >= 5) return <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase">Moderate</span>;
+                                                                            return <span className="text-[9px] bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded font-bold uppercase">Recent</span>;
+                                                                        })()}
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleAudit(fund); }}
+                                                                    className="text-[9px] font-black text-blue-600 border border-blue-200 px-2 py-1 rounded-lg hover:bg-blue-600 hover:text-white transition-all uppercase tracking-wider"
+                                                                >
+                                                                    Audit Depth
+                                                                </button>
+                                                            )}
                                                         </td>
                                                         <td className="px-3 py-4">
                                                             <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-slate-500 ${fund.data_quality === 'Excellent' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
@@ -670,10 +717,17 @@ export default function FundsPage() {
                                                     <div className="font-bold text-xs text-slate-800 leading-snug mb-2 pr-2">{fund.name}</div>
                                                     <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider">
                                                         <span className="text-slate-400">{fund.category}</span>
-                                                        <span className={`px-2 py-0.5 rounded-md ${fund.asset_class === 'Equity' ? 'bg-blue-100 text-blue-700' :
-                                                            fund.asset_class === 'Debt' ? 'bg-emerald-100 text-emerald-700' :
-                                                                'bg-orange-100 text-orange-700'
-                                                            }`}>{fund.asset_class}</span>
+                                                        <div className="flex items-center gap-1">
+                                                            {fund.inception_date && (
+                                                                <span className="text-[9px] text-slate-400">
+                                                                    Since {new Date(fund.inception_date).getFullYear()}
+                                                                </span>
+                                                            )}
+                                                            <span className={`px-2 py-0.5 rounded-md ${fund.asset_class === 'Equity' ? 'bg-blue-100 text-blue-700' :
+                                                                fund.asset_class === 'Debt' ? 'bg-emerald-100 text-emerald-700' :
+                                                                    'bg-orange-100 text-orange-700'
+                                                                }`}>{fund.asset_class}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}

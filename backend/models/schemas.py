@@ -91,6 +91,7 @@ class FundInfo(BaseModel):
     scheme_type: Optional[str] = "Growth"
     has_nav_data: bool = True
     data_quality: str = "unknown"  # good, warning, error, unknown
+    inception_date: Optional[str] = None
 
 
 class FundSearchResponse(BaseModel):
