@@ -60,6 +60,7 @@ export const api = {
         list: (params?: any) => apiClient.get('/api/funds', { params }),
         audit: (fundId: number) => apiClient.post(`/api/funds/${fundId}/audit`),
         getMetrics: (fundId: number) => apiClient.get(`/api/funds/${fundId}/metrics`),
+        getAMCs: () => apiClient.get('/api/funds/amcs'),
     },
 
     // Client endpoints

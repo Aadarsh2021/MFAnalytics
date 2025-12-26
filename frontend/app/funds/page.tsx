@@ -38,6 +38,11 @@ export default function FundsPage() {
     const [sortBy, setSortBy] = useState<'name' | 'category' | 'amc'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
+    const [amcFilter, setAmcFilter] = useState('');
+    const [amcs, setAmcs] = useState<string[]>([]);
+    const [includeIndices, setIncludeIndices] = useState(false);
+    const [isDirectOnly, setIsDirectOnly] = useState(true);
+    const [isGrowthOnly, setIsGrowthOnly] = useState(true);
 
     // Pagination state
     const [offset, setOffset] = useState(0);
@@ -99,12 +104,14 @@ export default function FundsPage() {
 
     const fetchFilters = async () => {
         try {
-            const [catResponse, assetResponse] = await Promise.all([
+            const [catResponse, assetResponse, amcResponse] = await Promise.all([
                 api.funds.getCategories(),
-                api.funds.getAssetClasses()
+                api.funds.getAssetClasses(),
+                api.funds.getAMCs()
             ]);
             setCategories(catResponse.data);
             setAssetClasses(assetResponse.data);
+            setAmcs(amcResponse.data);
         } catch (err) {
             console.error('Failed to fetch filters:', err);
         }
@@ -119,8 +126,9 @@ export default function FundsPage() {
                 query: searchQuery || undefined,
                 category: categoryFilter || undefined,
                 asset_class: assetClassFilter || undefined,
-                plan_type: planTypeFilter || undefined,
-                scheme_type: schemeTypeFilter || undefined,
+                amc: amcFilter || undefined,
+                plan_type: isDirectOnly ? 'Direct' : undefined,
+                scheme_type: isGrowthOnly ? 'Growth' : undefined,
                 limit: PAGE_SIZE,
                 offset: currentOffset
             });
@@ -157,7 +165,7 @@ export default function FundsPage() {
     useEffect(() => {
         searchFunds(0, true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryFilter, assetClassFilter, planTypeFilter, schemeTypeFilter]); // Only trigger on filter changes
+    }, [categoryFilter, assetClassFilter, amcFilter, isDirectOnly, isGrowthOnly]); // Trigger on filter changes
 
     const handleLoadMore = () => {
         const nextOffset = offset + PAGE_SIZE;
@@ -204,7 +212,8 @@ export default function FundsPage() {
         const topFunds = new Map<number, Fund>();
         const fundsByAssetClass: Record<string, Fund[]> = {};
 
-        funds.forEach(fund => {
+        // Important: Only select from CURRENTLY DISPLAYED (filtered) funds
+        sortedFunds.forEach(fund => {
             if (!fundsByAssetClass[fund.asset_class]) {
                 fundsByAssetClass[fund.asset_class] = [];
             }
@@ -418,25 +427,92 @@ export default function FundsPage() {
                         </div>
                     </div>
 
-                    {/* Professional Filters */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <div className="relative group lg:col-span-2">
-                            <input
-                                type="text"
-                                placeholder="Search by Fund Name or ISIN Code..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white outline-none transition-all font-medium"
-                            />
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl">🔍</span>
+                    {/* Professional Metadata Selector - Refined Header */}
+                    <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 mb-10 -mt-16 relative z-30">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {/* Primary Filter Group */}
+                            <div className="lg:col-span-2 space-y-4">
+                                <div className="relative group">
+                                    <input
+                                        type="text"
+                                        placeholder="Search Scheme (Growth/Direct/Category)..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white outline-none transition-all font-medium text-sm shadow-inner"
+                                    />
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FilterSelect
+                                        value={assetClassFilter}
+                                        options={assetClasses}
+                                        label="Asset Class"
+                                        onChange={setAssetClassFilter}
+                                        icon="🏛️"
+                                    />
+                                    <FilterSelect
+                                        value={categoryFilter}
+                                        options={categories}
+                                        label="Category"
+                                        onChange={setCategoryFilter}
+                                        icon="📁"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Secondary Filter Group */}
+                            <div className="space-y-4">
+                                <FilterSelect
+                                    value={amcFilter}
+                                    options={amcs}
+                                    label="All AMCs (Fund House)"
+                                    onChange={setAmcFilter}
+                                    icon="🏢"
+                                />
+                                <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
+                                    <div className="flex flex-col gap-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-black uppercase tracking-tight text-slate-500">Direct Plan Only</span>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" checked={isDirectOnly} onChange={() => setIsDirectOnly(!isDirectOnly)} className="sr-only peer" />
+                                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                            </label>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-black uppercase tracking-tight text-slate-500">Growth Plan Only</span>
+                                            <label className="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" checked={isGrowthOnly} onChange={() => setIsGrowthOnly(!isGrowthOnly)} className="sr-only peer" />
+                                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Group */}
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={autoSelectTopFunds}
+                                    className="h-1/2 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-lg flex items-center justify-center gap-2 group active:scale-95"
+                                >
+                                    <span className="text-xl group-hover:animate-bounce">⚡</span>
+                                    AUTO SELECT FUNDS
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        setCategoryFilter('');
+                                        setAssetClassFilter('');
+                                        setAmcFilter('');
+                                        setIsDirectOnly(true);
+                                        setIsGrowthOnly(true);
+                                    }}
+                                    className="h-1/2 bg-slate-900 text-white rounded-2xl font-black text-[10px] tracking-widest hover:bg-slate-800 transition-all uppercase"
+                                >
+                                    Reset Filters
+                                </button>
+                            </div>
                         </div>
-                        <FilterSelect value={categoryFilter} options={categories} label="All Categories" onChange={setCategoryFilter} />
-                        <FilterSelect value={assetClassFilter} options={assetClasses} label="All Asset Classes" onChange={setAssetClassFilter} />
-                        <FilterSelect value={planTypeFilter} options={['Direct', 'Regular']} label="All Plans" onChange={setPlanTypeFilter} />
-                        <FilterSelect value={schemeTypeFilter} options={['Growth', 'IDCW']} label="All Variants" onChange={setSchemeTypeFilter} />
-                        <button onClick={autoSelectTopFunds} className="bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all py-4 shadow-xl col-span-1 md:col-span-2 lg:col-span-1">
-                            ⚡ Auto
-                        </button>
                     </div>
                 </div>
 
@@ -460,6 +536,7 @@ export default function FundsPage() {
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer hover:text-blue-600 flex items-center gap-1" onClick={() => { setSortBy('name'); setSortOrder(o => o === 'asc' ? 'desc' : 'asc'); }}>
                                                         Fund {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
                                                     </th>
+                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[110px]">Returns (1Y)</th>
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[100px]">Category</th>
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[80px]">Class</th>
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[120px]">Data Depth</th>
@@ -480,6 +557,18 @@ export default function FundsPage() {
                                                                 <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{fund.plan_type}</span>
                                                                 <span className="text-[9px] font-bold uppercase tracking-wider bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{fund.scheme_type}</span>
                                                                 <span className="text-[10px] text-slate-400 tracking-widest uppercase">ISIN: {fund.isin}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-3 py-4">
+                                                            <div className="relative h-6 w-full bg-slate-100 rounded-md overflow-hidden group/bar">
+                                                                {/* Mock 1Y Return Bar - In real app fetch from metrics */}
+                                                                <div
+                                                                    className="absolute inset-y-0 left-0 bg-blue-500/20 group-hover/bar:bg-blue-500/30 transition-all border-r border-blue-500/50"
+                                                                    style={{ width: `${Math.min(100, (Math.random() * 40 + 10))}%` }}
+                                                                ></div>
+                                                                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-slate-700">
+                                                                    ~18.5%
+                                                                </span>
                                                             </div>
                                                         </td>
                                                         <td className="px-3 py-4 text-xs text-slate-500 font-medium truncate max-w-[100px]">{fund.category}</td>

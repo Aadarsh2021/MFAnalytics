@@ -35,7 +35,20 @@ _schemes_cache = {
 }
 
 
-@router.post("/search", response_model=FundSearchResponse)
+@router.get("/amcs", response_model=List[str])
+async def get_amcs():
+    """Get list of common Asset Management Companies"""
+    return [
+        "Axis Mutual Fund", "SBI Mutual Fund", "ICICI Prudential Mutual Fund",
+        "HDFC Mutual Fund", "Nippon India Mutual Fund", "UTI Mutual Fund",
+        "Kotak Mahindra Mutual Fund", "Aditya Birla Sun Life Mutual Fund",
+        "DSP Mutual Fund", "Mirae Asset Mutual Fund", "Quant Mutual Fund",
+        "Parag Parikh Mutual Fund", "Tata Mutual Fund", "Bandhan Mutual Fund",
+        "Motilal Oswal Mutual Fund", "Canara Robeco Mutual Fund"
+    ]
+
+
+@router.get("/search", response_model=FundSearchResponse)
 async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)):
     """
     Search funds directly from MFAPI.in
@@ -96,6 +109,14 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
             filtered_schemes = [
                 s for s in filtered_schemes 
                 if s.get('category_cached') == request.category
+            ]
+
+        # Apply AMC filter
+        if request.amc:
+            amc_lower = request.amc.lower().replace("mutual fund", "").strip()
+            filtered_schemes = [
+                s for s in filtered_schemes 
+                if amc_lower in s['schemeName'].lower()
             ]
 
         # Apply plan type filter
