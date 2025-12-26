@@ -92,6 +92,7 @@ class FundInfo(BaseModel):
     has_nav_data: bool = True
     data_quality: str = "unknown"  # good, warning, error, unknown
     inception_date: Optional[str] = None
+    returns: Dict[str, float] = {}  # 1Y, 3Y, 5Y, etc.
 
 
 class FundSearchResponse(BaseModel):

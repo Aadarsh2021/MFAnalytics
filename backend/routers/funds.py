@@ -7,7 +7,8 @@ from fastapi import APIRouter, HTTPException
 from typing import List, Optional
 from models.schemas import FundSearchRequest, FundSearchResponse, FundInfo, FundSelectionRequest, NAVData, NavDataRequest
 from services.mfapi import MFAPIService
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+import math
 import asyncio
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -35,20 +36,7 @@ _schemes_cache = {
 }
 
 
-@router.get("/amcs", response_model=List[str])
-async def get_amcs():
-    """Get list of common Asset Management Companies"""
-    return [
-        "Axis Mutual Fund", "SBI Mutual Fund", "ICICI Prudential Mutual Fund",
-        "HDFC Mutual Fund", "Nippon India Mutual Fund", "UTI Mutual Fund",
-        "Kotak Mahindra Mutual Fund", "Aditya Birla Sun Life Mutual Fund",
-        "DSP Mutual Fund", "Mirae Asset Mutual Fund", "Quant Mutual Fund",
-        "Parag Parikh Mutual Fund", "Tata Mutual Fund", "Bandhan Mutual Fund",
-        "Motilal Oswal Mutual Fund", "Canara Robeco Mutual Fund"
-    ]
-
-
-@router.get("/search", response_model=FundSearchResponse)
+@router.post("/search", response_model=FundSearchResponse)
 async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)):
     """
     Search funds directly from MFAPI.in
@@ -75,6 +63,7 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
             for s in all_schemes:
                 s['asset_class_cached'] = mfapi_service.classify_asset_class(s['schemeName'])
                 s['category_cached'] = mfapi_service.classify_category(s['schemeName'])
+                s['amc_cached'] = await mfapi_service.classify_amc(s['schemeName'])
                 
             _schemes_cache["data"] = all_schemes
             _schemes_cache["last_updated"] = now
@@ -110,13 +99,12 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
                 s for s in filtered_schemes 
                 if s.get('category_cached') == request.category
             ]
-
-        # Apply AMC filter
+            
+        # Apply AMC filter (Using Cached Value)
         if request.amc:
-            amc_lower = request.amc.lower().replace("mutual fund", "").strip()
             filtered_schemes = [
                 s for s in filtered_schemes 
-                if amc_lower in s['schemeName'].lower()
+                if s.get('amc_cached') == request.amc
             ]
 
         # Apply plan type filter
@@ -158,13 +146,17 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
         # Paginate results based on request
         start = request.offset
         end = start + request.limit
+    
         limited_schemes = filtered_schemes[start:end]
         
         # Bulk fetch inception dates from DB for the limited set
+        # Bulk fetch inception dates and Returns
         scheme_codes = [int(s['schemeCode']) for s in limited_schemes]
         inception_dates = {}
+        fund_returns = {}
+        
         if scheme_codes:
-            # Get earliest NAV date from database
+            # 1. Inception Dates
             db_results = db.query(
                 NAV.fund_id, 
                 func.min(NAV.date).label('inception')
@@ -172,6 +164,63 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
             
             for f_id, start_date in db_results:
                 inception_dates[f_id] = start_date.strftime("%Y-%m-%d") if start_date else None
+
+            # 2. Bulk Returns (1Y, 3Y, 5Y)
+            try:
+                # Helper to get specific date NAVs
+                def get_navs_for_date(target_date, ids):
+                    # Look for NAVs on or before target_date (within 7 days padding)
+                    window_start = target_date - timedelta(days=7)
+                    
+                    subq = db.query(
+                        NAV.fund_id,
+                        func.max(NAV.date).label('max_date')
+                    ).filter(
+                        NAV.fund_id.in_(ids),
+                        NAV.date <= target_date,
+                        NAV.date >= window_start
+                    ).group_by(NAV.fund_id).subquery()
+                    
+                    q = db.query(NAV.fund_id, NAV.nav).join(
+                        subq, 
+                        (NAV.fund_id == subq.c.fund_id) & (NAV.date == subq.c.max_date)
+                    ).all()
+                    return {r[0]: r[1] for r in q}
+
+                today = date.today()
+                dt_1y = today - timedelta(days=365)
+                dt_3y = today - timedelta(days=3*365)
+                dt_5y = today - timedelta(days=5*365)
+                
+                # Fetch reference NAVs
+                current_navs = get_navs_for_date(today, scheme_codes)
+                navs_1y = get_navs_for_date(dt_1y, scheme_codes)
+                navs_3y = get_navs_for_date(dt_3y, scheme_codes)
+                navs_5y = get_navs_for_date(dt_5y, scheme_codes)
+                
+                for f_id in scheme_codes:
+                    curr = current_navs.get(f_id)
+                    returns = {}
+                    
+                    if curr:
+                        # 1Y
+                        if f_id in navs_1y and navs_1y[f_id] > 0:
+                            ret = ((curr / navs_1y[f_id]) - 1) * 100
+                            returns['1Y'] = round(ret, 2)
+                            
+                        # 3Y CAGR
+                        if f_id in navs_3y and navs_3y[f_id] > 0:
+                            ret = (math.pow(curr / navs_3y[f_id], 1/3) - 1) * 100
+                            returns['3Y'] = round(ret, 2)
+                            
+                        # 5Y CAGR
+                        if f_id in navs_5y and navs_5y[f_id] > 0:
+                            ret = (math.pow(curr / navs_5y[f_id], 1/5) - 1) * 100
+                            returns['5Y'] = round(ret, 2)
+                            
+                    fund_returns[f_id] = returns
+            except Exception as e:
+                print(f"Error calculating bulk returns: {e}")
 
         # Convert to FundInfo format
         funds_list = []
@@ -193,7 +242,8 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
                     else "Good" if scheme.get('asset_class_cached') not in ['Alt', 'Unknown']
                     else "Poor"
                 ),
-                inception_date=inception_dates.get(s_code)
+                inception_date=inception_dates.get(s_code),
+                returns=fund_returns.get(s_code, {})
             ))
         
         return FundSearchResponse(
@@ -206,6 +256,31 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
     except Exception as e:
         print(f"Error searching funds: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching funds: {str(e)}")
+
+
+
+@router.get("/amcs", response_model=List[str])
+async def get_amcs():
+    """
+    Get list of available AMCs from cache
+    """
+    # Ensure cache is populated
+    if not _schemes_cache["data"]:
+        # Trigger minimal search to populate cache
+        await search_funds(FundSearchRequest(limit=1))
+        
+    all_schemes = _schemes_cache["data"]
+    if not all_schemes:
+        return []
+        
+    # Extract unique AMCs
+    amcs = set()
+    for s in all_schemes:
+        amc = s.get('amc_cached', 'Other')
+        if amc != 'Other':
+            amcs.add(amc)
+            
+    return sorted(list(amcs))
 
 
 @router.post("/nav", response_model=List[NAVData])

@@ -123,6 +123,55 @@ class MFAPIService:
         # 4. Hybrid/Alternative
         return 'Alt'
     
+    async def classify_amc(self, scheme_name: str) -> str:
+        """
+        Classify scheme into AMC based on name
+        """
+        name_lower = scheme_name.lower()
+        
+        # Common Indian AMCs
+        amcs = {
+            'SBI': ['sbi'],
+            'HDFC': ['hdfc'],
+            'ICICI Prudential': ['icici', 'pru'],
+            'Axis': ['axis'],
+            'Kotak': ['kotak'],
+            'Nippon India': ['nippon', 'reliance'],
+            'UTI': ['uti'],
+            'Aditya Birla Sun Life': ['aditya birla', 'absl', 'birla sun life'],
+            'DSP': ['dsp'],
+            'Mirae Asset': ['mirae'],
+            'Tata': ['tata'],
+            'HSBC': ['hsbc'],
+            'Franklin Templeton': ['franklin', 'templeton'],
+            'Quant': ['quant'],
+            'PPFAS': ['parag parikh', 'ppfas'],
+            'Canara Robeco': ['canara'],
+            'Sundaram': ['sundaram'],
+            'Bandhan': ['bandhan', 'idfc'],
+            'PGIM India': ['pgim'],
+            'Motilal Oswal': ['motilal'],
+            'Edelweiss': ['edelweiss'],
+            'Mahindra Manulife': ['mahindra'],
+            'Union': ['union'],
+            'Baroda BNP Paribas': ['baroda', 'bnp'],
+            'Quantum': ['quantum'],
+            'LIC': ['lic'],
+            'Bank of India': ['boi', 'bank of india'],
+            '360 ONE': ['360 one', 'iifl'],
+            'Navi': ['navi'],
+            'WhiteOak': ['whiteoak', 'white oak'],
+            'Zerodha': ['zerodha'],
+            'Groww': ['groww']
+        }
+        
+        for amc, keywords in amcs.items():
+            if any(keyword in name_lower for keyword in keywords):
+                return amc
+        
+        # Fallback: First word if greater than 3 chars? No, too risky.
+        return 'Other'
+
     def classify_category(self, scheme_name: str) -> str:
         """
         Classify scheme into category

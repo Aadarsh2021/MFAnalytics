@@ -20,6 +20,11 @@ interface Fund {
     plan_type: string;
     scheme_type: string;
     inception_date?: string;
+    returns?: {
+        '1Y'?: number;
+        '3Y'?: number;
+        '5Y'?: number;
+    };
 }
 
 export default function FundsPage() {
@@ -33,16 +38,13 @@ export default function FundsPage() {
     const [assetClassFilter, setAssetClassFilter] = useState('');
     const [planTypeFilter, setPlanTypeFilter] = useState('');
     const [schemeTypeFilter, setSchemeTypeFilter] = useState('');
+    const [amcFilter, setAmcFilter] = useState('');
     const [categories, setCategories] = useState<string[]>([]);
     const [assetClasses, setAssetClasses] = useState<string[]>([]);
+    const [amcs, setAmcs] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState<'name' | 'category' | 'amc'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
-    const [amcFilter, setAmcFilter] = useState('');
-    const [amcs, setAmcs] = useState<string[]>([]);
-    const [includeIndices, setIncludeIndices] = useState(false);
-    const [isDirectOnly, setIsDirectOnly] = useState(true);
-    const [isGrowthOnly, setIsGrowthOnly] = useState(true);
 
     // Pagination state
     const [offset, setOffset] = useState(0);
@@ -127,8 +129,8 @@ export default function FundsPage() {
                 category: categoryFilter || undefined,
                 asset_class: assetClassFilter || undefined,
                 amc: amcFilter || undefined,
-                plan_type: isDirectOnly ? 'Direct' : undefined,
-                scheme_type: isGrowthOnly ? 'Growth' : undefined,
+                plan_type: planTypeFilter || undefined,
+                scheme_type: schemeTypeFilter || undefined,
                 limit: PAGE_SIZE,
                 offset: currentOffset
             });
@@ -150,7 +152,7 @@ export default function FundsPage() {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [searchQuery, categoryFilter, assetClassFilter, planTypeFilter, schemeTypeFilter, funds.length]);
+    }, [searchQuery, categoryFilter, assetClassFilter, amcFilter, planTypeFilter, schemeTypeFilter, funds.length]);
 
     // Debounce Search Query (Typing needs delay)
     useEffect(() => {
@@ -165,7 +167,7 @@ export default function FundsPage() {
     useEffect(() => {
         searchFunds(0, true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryFilter, assetClassFilter, amcFilter, isDirectOnly, isGrowthOnly]); // Trigger on filter changes
+    }, [categoryFilter, assetClassFilter, amcFilter, planTypeFilter, schemeTypeFilter]); // Only trigger on filter changes
 
     const handleLoadMore = () => {
         const nextOffset = offset + PAGE_SIZE;
@@ -212,8 +214,7 @@ export default function FundsPage() {
         const topFunds = new Map<number, Fund>();
         const fundsByAssetClass: Record<string, Fund[]> = {};
 
-        // Important: Only select from CURRENTLY DISPLAYED (filtered) funds
-        sortedFunds.forEach(fund => {
+        funds.forEach(fund => {
             if (!fundsByAssetClass[fund.asset_class]) {
                 fundsByAssetClass[fund.asset_class] = [];
             }
@@ -427,90 +428,117 @@ export default function FundsPage() {
                         </div>
                     </div>
 
-                    {/* Professional Metadata Selector - Refined Header */}
-                    <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/40 mb-10 -mt-16 relative z-30">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {/* Primary Filter Group */}
-                            <div className="lg:col-span-2 space-y-4">
-                                <div className="relative group">
-                                    <input
-                                        type="text"
-                                        placeholder="Search Scheme (Growth/Direct/Category)..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:bg-white outline-none transition-all font-medium text-sm shadow-inner"
-                                    />
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FilterSelect
-                                        value={assetClassFilter}
-                                        options={assetClasses}
-                                        label="Asset Class"
-                                        onChange={setAssetClassFilter}
-                                        icon="🏛️"
-                                    />
-                                    <FilterSelect
-                                        value={categoryFilter}
-                                        options={categories}
-                                        label="Category"
-                                        onChange={setCategoryFilter}
-                                        icon="📁"
-                                    />
+                    {/* Advanced Fund Selector */}
+                    <div className="bg-white rounded-xl shadow-lg border border-slate-100 p-6 mb-8 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16"></div>
+
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                    <span className="text-blue-600">⚡</span> Fund Selector
+                                </h2>
+                                <div className="text-xs font-medium text-slate-400 bg-slate-50 px-3 py-1 rounded-full border border-slate-100">
+                                    {totalFunds} Schemes Found
                                 </div>
                             </div>
 
-                            {/* Secondary Filter Group */}
-                            <div className="space-y-4">
-                                <FilterSelect
-                                    value={amcFilter}
-                                    options={amcs}
-                                    label="All AMCs (Fund House)"
-                                    onChange={setAmcFilter}
-                                    icon="🏢"
-                                />
-                                <div className="p-4 bg-slate-50 border border-slate-100 rounded-2xl">
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-black uppercase tracking-tight text-slate-500">Direct Plan Only</span>
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" checked={isDirectOnly} onChange={() => setIsDirectOnly(!isDirectOnly)} className="sr-only peer" />
-                                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                                            </label>
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                                {/* Search & Primary Filters */}
+                                <div className="md:col-span-8 space-y-4">
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <span className="text-xl">🔍</span>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-black uppercase tracking-tight text-slate-500">Growth Plan Only</span>
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" checked={isGrowthOnly} onChange={() => setIsGrowthOnly(!isGrowthOnly)} className="sr-only peer" />
-                                                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
-                                            </label>
-                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Search by Scheme Name (e.g. Axis Bluechip)"
+                                            className="pl-10 w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm font-medium outline-none"
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        <select
+                                            value={amcFilter}
+                                            onChange={(e) => setAmcFilter(e.target.value)}
+                                            className="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                        >
+                                            <option value="">All AMCs</option>
+                                            {amcs.map(amc => (
+                                                <option key={amc} value={amc}>{amc}</option>
+                                            ))}
+                                        </select>
+
+                                        <select
+                                            value={categoryFilter}
+                                            onChange={(e) => setCategoryFilter(e.target.value)}
+                                            className="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                        >
+                                            <option value="">All Categories</option>
+                                            {categories.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
+                                            ))}
+                                        </select>
+
+                                        <select
+                                            value={assetClassFilter}
+                                            onChange={(e) => setAssetClassFilter(e.target.value)}
+                                            className="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                        >
+                                            <option value="">All Asset Classes</option>
+                                            {assetClasses.map(ac => (
+                                                <option key={ac} value={ac}>{ac}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* Action Group */}
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={autoSelectTopFunds}
-                                    className="h-1/2 bg-blue-600 text-white rounded-2xl font-black text-sm hover:bg-blue-700 transition-all shadow-lg flex items-center justify-center gap-2 group active:scale-95"
-                                >
-                                    <span className="text-xl group-hover:animate-bounce">⚡</span>
-                                    AUTO SELECT FUNDS
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setSearchQuery('');
-                                        setCategoryFilter('');
-                                        setAssetClassFilter('');
-                                        setAmcFilter('');
-                                        setIsDirectOnly(true);
-                                        setIsGrowthOnly(true);
-                                    }}
-                                    className="h-1/2 bg-slate-900 text-white rounded-2xl font-black text-[10px] tracking-widest hover:bg-slate-800 transition-all uppercase"
-                                >
-                                    Reset Filters
-                                </button>
+                                {/* Toggles Panel */}
+                                <div className="md:col-span-4 bg-slate-50/50 rounded-xl border border-slate-100 p-4">
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Refine Selection</h3>
+                                    <div className="space-y-3">
+                                        <label className="flex items-center justify-between cursor-pointer group">
+                                            <span className="text-sm font-medium text-slate-600 group-hover:text-slate-800">Plan Type</span>
+                                            <div className="relative inline-flex bg-slate-200 rounded-lg p-0.5 border border-slate-200">
+                                                <button
+                                                    onClick={() => setPlanTypeFilter(planTypeFilter === 'Regular' ? '' : 'Regular')}
+                                                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${planTypeFilter === 'Regular' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                                >
+                                                    Reg
+                                                </button>
+                                                <button
+                                                    onClick={() => setPlanTypeFilter(planTypeFilter === 'Direct' ? '' : 'Direct')}
+                                                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${planTypeFilter === 'Direct' ? 'bg-white text-green-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                                >
+                                                    Dir
+                                                </button>
+                                            </div>
+                                        </label>
+
+                                        <label className="flex items-center justify-between cursor-pointer group">
+                                            <span className="text-sm font-medium text-slate-600 group-hover:text-slate-800">Option</span>
+                                            <div className="relative inline-flex bg-slate-200 rounded-lg p-0.5 border border-slate-200">
+                                                <button
+                                                    onClick={() => setSchemeTypeFilter(schemeTypeFilter === 'IDCW' ? '' : 'IDCW')}
+                                                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${schemeTypeFilter === 'IDCW' ? 'bg-white text-purple-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                                >
+                                                    IDCW
+                                                </button>
+                                                <button
+                                                    onClick={() => setSchemeTypeFilter(schemeTypeFilter === 'Growth' ? '' : 'Growth')}
+                                                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${schemeTypeFilter === 'Growth' ? 'bg-white text-teal-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                                >
+                                                    Grw
+                                                </button>
+                                            </div>
+                                        </label>
+
+                                        <button onClick={autoSelectTopFunds} className="w-full mt-2 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-all py-2 text-xs shadow-lg flex items-center justify-center gap-2">
+                                            <span>⚡</span> Auto-Select Top 4
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -536,10 +564,9 @@ export default function FundsPage() {
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer hover:text-blue-600 flex items-center gap-1" onClick={() => { setSortBy('name'); setSortOrder(o => o === 'asc' ? 'desc' : 'asc'); }}>
                                                         Fund {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
                                                     </th>
-                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[110px]">Returns (1Y)</th>
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[100px]">Category</th>
-                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[80px]">Class</th>
-                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[120px]">Data Depth</th>
+                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest min-w-[120px]">1 Year</th>
+                                                    <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest min-w-[120px]">3 Year</th>
                                                     <th className="px-3 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest w-[100px] whitespace-nowrap">Quality</th>
                                                 </tr>
                                             </thead>
@@ -559,47 +586,39 @@ export default function FundsPage() {
                                                                 <span className="text-[10px] text-slate-400 tracking-widest uppercase">ISIN: {fund.isin}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-3 py-4">
-                                                            <div className="relative h-6 w-full bg-slate-100 rounded-md overflow-hidden group/bar">
-                                                                {/* Mock 1Y Return Bar - In real app fetch from metrics */}
-                                                                <div
-                                                                    className="absolute inset-y-0 left-0 bg-blue-500/20 group-hover/bar:bg-blue-500/30 transition-all border-r border-blue-500/50"
-                                                                    style={{ width: `${Math.min(100, (Math.random() * 40 + 10))}%` }}
-                                                                ></div>
-                                                                <span className="absolute inset-0 flex items-center justify-center text-[10px] font-black text-slate-700">
-                                                                    ~18.5%
-                                                                </span>
-                                                            </div>
-                                                        </td>
                                                         <td className="px-3 py-4 text-xs text-slate-500 font-medium truncate max-w-[100px]">{fund.category}</td>
-                                                        <td className="px-3 py-4 text-xs">
-                                                            <span className={`px-2 py-1 rounded-md font-bold text-[10px] uppercase tracking-wider ${fund.asset_class === 'Equity' ? 'bg-blue-100 text-blue-700' :
-                                                                fund.asset_class === 'Debt' ? 'bg-emerald-100 text-emerald-700' :
-                                                                    fund.asset_class === 'Gold' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'
-                                                                }`}>
-                                                                {fund.asset_class}
-                                                            </span>
-                                                        </td>
                                                         <td className="px-3 py-4">
-                                                            {fund.inception_date ? (
-                                                                <div>
-                                                                    <div className="text-[10px] font-bold text-slate-900 leading-none mb-1">Since {new Date(fund.inception_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short' })}</div>
-                                                                    <div className="flex items-center gap-1">
-                                                                        {(() => {
-                                                                            const years = (new Date().getTime() - new Date(fund.inception_date).getTime()) / (1000 * 60 * 60 * 24 * 365);
-                                                                            if (years >= 10) return <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter">Strong Thesis</span>;
-                                                                            if (years >= 5) return <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold uppercase">Moderate</span>;
-                                                                            return <span className="text-[9px] bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded font-bold uppercase">Recent</span>;
-                                                                        })()}
+                                                            {fund.returns?.['1Y'] ? (
+                                                                <div className="w-full">
+                                                                    <div className="flex justify-between items-end mb-1">
+                                                                        <span className="text-xs font-bold text-slate-800">{fund.returns['1Y']}%</span>
+                                                                    </div>
+                                                                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                                        <div
+                                                                            className="h-full bg-blue-500 rounded-full"
+                                                                            style={{ width: `${Math.min(Math.max(fund.returns['1Y'], 0), 100)}%` }}
+                                                                        ></div>
                                                                     </div>
                                                                 </div>
                                                             ) : (
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleAudit(fund); }}
-                                                                    className="text-[9px] font-black text-blue-600 border border-blue-200 px-2 py-1 rounded-lg hover:bg-blue-600 hover:text-white transition-all uppercase tracking-wider"
-                                                                >
-                                                                    Audit Depth
-                                                                </button>
+                                                                <span className="text-[10px] text-slate-300 font-bold">-</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="px-3 py-4">
+                                                            {fund.returns?.['3Y'] ? (
+                                                                <div className="w-full">
+                                                                    <div className="flex justify-between items-end mb-1">
+                                                                        <span className="text-xs font-bold text-slate-800">{fund.returns['3Y']}%</span>
+                                                                    </div>
+                                                                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                                        <div
+                                                                            className="h-full bg-indigo-500 rounded-full"
+                                                                            style={{ width: `${Math.min(Math.max(fund.returns['3Y'], 0), 100)}%` }}
+                                                                        ></div>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-[10px] text-slate-300 font-bold">-</span>
                                                             )}
                                                         </td>
                                                         <td className="px-3 py-4">

@@ -51,16 +51,25 @@ export const api = {
 
     // Fund endpoints
     funds: {
-        search: (params: any) => apiClient.post('/api/funds/search', params),
+        search: (params: {
+            query?: string;
+            category?: string;
+            asset_class?: string;
+            plan_type?: string;
+            scheme_type?: string;
+            amc?: string;
+            limit?: number;
+            offset?: number;
+        }) => apiClient.post('/api/funds/search', params),
         select: (data: any) => apiClient.post('/api/funds/select', data),
         nav: (fundIds: number[], startDate?: string, endDate?: string) =>
             apiClient.post('/api/funds/nav', { fund_ids: fundIds, start_date: startDate, end_date: endDate }),
         getCategories: () => apiClient.get('/api/funds/categories'),
-        getAssetClasses: () => apiClient.get('/api/funds/asset-classes'),
+        getAssetClasses: () => axios.get(`${API_URL}/funds/asset-classes`),
+        getAMCs: () => axios.get(`${API_URL}/funds/amcs`),
         list: (params?: any) => apiClient.get('/api/funds', { params }),
         audit: (fundId: number) => apiClient.post(`/api/funds/${fundId}/audit`),
         getMetrics: (fundId: number) => apiClient.get(`/api/funds/${fundId}/metrics`),
-        getAMCs: () => apiClient.get('/api/funds/amcs'),
     },
 
     // Client endpoints
