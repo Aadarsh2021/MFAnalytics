@@ -188,8 +188,28 @@ export default function FundsPage() {
         });
 
         Object.values(fundsByAssetClass).forEach(assetFunds => {
-            // Pick top 4 from each class if available
-            assetFunds.slice(0, 4).forEach(fund => topFunds.set(fund.id, fund));
+            // Quality mapping for sorting
+            const qualityOrder: Record<string, number> = { 'Excellent': 0, 'Good': 1, 'Poor': 2 };
+            
+            // Sort by quality first, then by name for consistency
+            const sortedByQuality = [...assetFunds].sort((a, b) => {
+                const qA = qualityOrder[a.data_quality] ?? 3;
+                const qB = qualityOrder[b.data_quality] ?? 3;
+                if (qA !== qB) return qA - qB;
+                return a.name.localeCompare(b.name);
+            });
+
+            // Pick top 4 from each class, EXCLUDING "Poor" unless necessary
+            // High quality selection (Excellent or Good)
+            const highQuality = sortedByQuality.filter(f => f.data_quality !== 'Poor');
+            
+            if (highQuality.length > 0) {
+                highQuality.slice(0, 4).forEach(fund => topFunds.set(fund.id, fund));
+            } else {
+                // Only if NO high quality funds exist in this class, pick top 2 poor ones
+                // This keeps the asset class represented but minimizes exposure to bad data
+                sortedByQuality.slice(0, 2).forEach(fund => topFunds.set(fund.id, fund));
+            }
         });
 
         setSelectedFunds(topFunds);
