@@ -38,10 +38,11 @@ export default function FundsPage() {
     const [assetClassFilter, setAssetClassFilter] = useState('');
     const [planTypeFilter, setPlanTypeFilter] = useState('');
     const [schemeTypeFilter, setSchemeTypeFilter] = useState('');
-    const [amcFilter, setAmcFilter] = useState('');
+    const [amcFilter, setAmcFilter] = useState<string[]>([]);  // Multi-select AMC
     const [categories, setCategories] = useState<string[]>([]);
     const [assetClasses, setAssetClasses] = useState<string[]>([]);
     const [amcs, setAmcs] = useState<string[]>([]);
+    const [showAmcDropdown, setShowAmcDropdown] = useState(false);  // AMC dropdown state
     const [sortBy, setSortBy] = useState<'name' | 'category' | 'amc'>('name');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
@@ -104,6 +105,19 @@ export default function FundsPage() {
         fetchFilters();
     }, []);
 
+    // Close AMC dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+            if (showAmcDropdown && !target.closest('.amc-dropdown-container')) {
+                setShowAmcDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showAmcDropdown]);
+
     const fetchFilters = async () => {
         try {
             const [catResponse, assetResponse, amcResponse] = await Promise.all([
@@ -128,7 +142,7 @@ export default function FundsPage() {
                 query: searchQuery || undefined,
                 category: categoryFilter || undefined,
                 asset_class: assetClassFilter || undefined,
-                amc: amcFilter || undefined,
+                amc: amcFilter.length > 0 ? amcFilter : undefined,  // Send array
                 plan_type: planTypeFilter || undefined,
                 scheme_type: schemeTypeFilter || undefined,
                 limit: PAGE_SIZE,
@@ -459,28 +473,61 @@ export default function FundsPage() {
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                        <select
-                                            value={amcFilter}
-                                            onChange={(e) => setAmcFilter(e.target.value)}
-                                            className="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                                        >
-                                            <option value="">All AMCs</option>
-                                            {amcs.map(amc => (
-                                                <option key={amc} value={amc}>{amc}</option>
-                                            ))}
-                                        </select>
+                                        {/* AMC Multi-Select - First */}
+                                        <div className="relative amc-dropdown-container">
+                                            <button
+                                                onClick={() => setShowAmcDropdown(!showAmcDropdown)}
+                                                className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none flex items-center justify-between"
+                                            >
+                                                <span className="truncate">
+                                                    {amcFilter.length === 0 ? 'All AMCs' :
+                                                        amcFilter.length === 1 ? amcFilter[0] :
+                                                            `${amcFilter.length} AMCs Selected`}
+                                                </span>
+                                                <span className="text-xs ml-2">▼</span>
+                                            </button>
 
-                                        <select
-                                            value={categoryFilter}
-                                            onChange={(e) => setCategoryFilter(e.target.value)}
-                                            className="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                                        >
-                                            <option value="">All Categories</option>
-                                            {categories.map(cat => (
-                                                <option key={cat} value={cat}>{cat}</option>
-                                            ))}
-                                        </select>
+                                            {showAmcDropdown && (
+                                                <div className="absolute z-50 mt-1 w-full max-h-64 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl">
+                                                    <div className="sticky top-0 bg-slate-50 p-2 border-b border-slate-100 flex gap-2">
+                                                        <button
+                                                            onClick={() => setAmcFilter(amcs)}
+                                                            className="flex-1 text-xs font-bold text-blue-600 hover:bg-blue-50 py-1 rounded"
+                                                        >
+                                                            Select All
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setAmcFilter([])}
+                                                            className="flex-1 text-xs font-bold text-red-600 hover:bg-red-50 py-1 rounded"
+                                                        >
+                                                            Clear
+                                                        </button>
+                                                    </div>
+                                                    {amcs.map(amc => (
+                                                        <label
+                                                            key={amc}
+                                                            className="flex items-center gap-2 px-3 py-2 hover:bg-blue-50 cursor-pointer transition-colors"
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={amcFilter.includes(amc)}
+                                                                onChange={(e) => {
+                                                                    if (e.target.checked) {
+                                                                        setAmcFilter([...amcFilter, amc]);
+                                                                    } else {
+                                                                        setAmcFilter(amcFilter.filter(a => a !== amc));
+                                                                    }
+                                                                }}
+                                                                className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                                            />
+                                                            <span className="text-sm font-medium text-slate-700">{amc}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
 
+                                        {/* Asset Class - Second */}
                                         <select
                                             value={assetClassFilter}
                                             onChange={(e) => setAssetClassFilter(e.target.value)}
@@ -489,6 +536,18 @@ export default function FundsPage() {
                                             <option value="">All Asset Classes</option>
                                             {assetClasses.map(ac => (
                                                 <option key={ac} value={ac}>{ac}</option>
+                                            ))}
+                                        </select>
+
+                                        {/* Category - Third */}
+                                        <select
+                                            value={categoryFilter}
+                                            onChange={(e) => setCategoryFilter(e.target.value)}
+                                            className="px-3 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                                        >
+                                            <option value="">All Categories</option>
+                                            {categories.map(cat => (
+                                                <option key={cat} value={cat}>{cat}</option>
                                             ))}
                                         </select>
                                     </div>

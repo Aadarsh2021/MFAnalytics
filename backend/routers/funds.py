@@ -18,6 +18,8 @@ from models.database import NAV, Fund, Benchmark
 from services.yahoo import YahooFinanceService
 import pandas as pd
 import numpy as np
+import json
+from pathlib import Path
 
 router = APIRouter()
 
@@ -26,7 +28,12 @@ mfapi_service = MFAPIService()
 yahoo_service = YahooFinanceService()
 
 # Cache version (Bumping this clears the cache)
-CACHE_VERSION = "v3_strict_classification"
+CACHE_VERSION = "v4_persistent_24h"
+
+# Cache directory
+CACHE_DIR = Path("cache")
+CACHE_DIR.mkdir(exist_ok=True)
+CACHE_FILE = CACHE_DIR / f"schemes_{CACHE_VERSION}.json"
 
 # Simple Cache for scheme list
 _schemes_cache = {
@@ -34,6 +41,64 @@ _schemes_cache = {
     "last_updated": None,
     "version": None
 }
+
+
+async def load_persistent_cache():
+    """Load cache from disk if available"""
+    if CACHE_FILE.exists():
+        try:
+            with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+                cache_data = json.load(f)
+                # Check if cache is still valid (24 hours)
+                cache_time = datetime.fromisoformat(cache_data.get('timestamp', '2000-01-01'))
+                age_hours = (datetime.now() - cache_time).total_seconds() / 3600
+                
+                if age_hours < 24:
+                    print(f"✅ Loaded persistent cache ({len(cache_data['schemes'])} schemes, {age_hours:.1f}h old)")
+                    return cache_data['schemes'], cache_time
+                else:
+                    print(f"⚠️ Cache expired ({age_hours:.1f}h old), will refresh")
+        except Exception as e:
+            print(f"⚠️ Failed to load cache: {e}")
+    return None, None
+
+
+async def save_persistent_cache(schemes):
+    """Save cache to disk"""
+    try:
+        cache_data = {
+            'version': CACHE_VERSION,
+            'timestamp': datetime.now().isoformat(),
+            'schemes': schemes
+        }
+        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(cache_data, f)
+        print(f"💾 Saved persistent cache ({len(schemes)} schemes)")
+    except Exception as e:
+        print(f"⚠️ Failed to save cache: {e}")
+
+
+async def classify_schemes_parallel(schemes, mfapi_service):
+    """Classify schemes in parallel batches for performance"""
+    print(f"🚀 Classifying {len(schemes)} schemes in parallel...")
+    
+    # Batch size for parallel processing
+    BATCH_SIZE = 1000
+    
+    for i in range(0, len(schemes), BATCH_SIZE):
+        batch = schemes[i:i+BATCH_SIZE]
+        
+        # Process batch synchronously (classification is CPU-bound, not I/O)
+        for s in batch:
+            s['asset_class_cached'] = mfapi_service.classify_asset_class(s['schemeName'])
+            s['category_cached'] = mfapi_service.classify_category(s['schemeName'])
+            s['amc_cached'] = mfapi_service.classify_amc(s['schemeName'])
+        
+        if (i + BATCH_SIZE) % 5000 == 0:
+            print(f"  Classified {min(i + BATCH_SIZE, len(schemes))}/{len(schemes)} schemes...")
+    
+    print(f"✅ Classification complete!")
+    return schemes
 
 
 @router.post("/search", response_model=FundSearchResponse)
@@ -47,30 +112,43 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
     try:
         # Get schemes from cache or MFAPI
         now = datetime.now()
+        
+        # Try persistent cache first
+        if not _schemes_cache["data"] or _schemes_cache.get("version") != CACHE_VERSION:
+            cached_schemes, cache_time = await load_persistent_cache()
+            if cached_schemes:
+                _schemes_cache["data"] = cached_schemes
+                _schemes_cache["last_updated"] = cache_time
+                _schemes_cache["version"] = CACHE_VERSION
+        
+        # Check if cache needs refresh (24 hours)
         cache_stale = (
             not _schemes_cache["data"] or 
             not _schemes_cache["last_updated"] or 
             _schemes_cache.get("version") != CACHE_VERSION or
-            (now - _schemes_cache["last_updated"]).total_seconds() > 3600
+            (now - _schemes_cache["last_updated"]).total_seconds() > 86400  # 24 hours
         )
         
         if cache_stale:
-            print(f"Fetching all schemes from MFAPI.in (Cache Miss/Version {CACHE_VERSION})...")
+            print(f"🔄 Fetching all schemes from MFAPI.in (Cache refresh)...")
             all_schemes = await mfapi_service.get_all_schemes()
             
-            # OPTIMIZATION: Pre-calculate classifications
-            print("Pre-calculating classifications for cache...")
-            for s in all_schemes:
-                s['asset_class_cached'] = mfapi_service.classify_asset_class(s['schemeName'])
-                s['category_cached'] = mfapi_service.classify_category(s['schemeName'])
-                s['amc_cached'] = await mfapi_service.classify_amc(s['schemeName'])
+            # Parallel classification
+            print(f"⚡ Pre-calculating classifications for {len(all_schemes)} schemes...")
+            all_schemes = await classify_schemes_parallel(all_schemes, mfapi_service)
                 
             _schemes_cache["data"] = all_schemes
             _schemes_cache["last_updated"] = now
             _schemes_cache["version"] = CACHE_VERSION
-            print(f"Cached {len(all_schemes)} schemes with classification version {CACHE_VERSION}.")
+            
+            # Save to disk
+            await save_persistent_cache(all_schemes)
+            
+            print(f"✅ Cached {len(all_schemes)} schemes with version {CACHE_VERSION}.")
         else:
             all_schemes = _schemes_cache["data"]
+            age_hours = (now - _schemes_cache["last_updated"]).total_seconds() / 3600
+            print(f"✅ Using cached data ({len(all_schemes)} schemes, {age_hours:.1f}h old)")
         
         if not all_schemes:
             return FundSearchResponse(funds=[], total=0, offset=request.offset, limit=request.limit)
@@ -100,11 +178,13 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
                 if s.get('category_cached') == request.category
             ]
             
-        # Apply AMC filter (Using Cached Value)
+        # Apply AMC filter (Using Cached Value) - Support multiple AMCs
         if request.amc:
+            # Support both single string (backward compat) and list
+            amc_list = request.amc if isinstance(request.amc, list) else [request.amc]
             filtered_schemes = [
                 s for s in filtered_schemes 
-                if s.get('amc_cached') == request.amc
+                if s.get('amc_cached') in amc_list
             ]
 
         # Apply plan type filter

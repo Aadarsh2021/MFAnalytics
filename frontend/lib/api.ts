@@ -57,7 +57,7 @@ export const api = {
             asset_class?: string;
             plan_type?: string;
             scheme_type?: string;
-            amc?: string;
+            amc?: string | string[];
             limit?: number;
             offset?: number;
         }) => apiClient.post('/api/funds/search', params),

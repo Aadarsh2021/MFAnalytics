@@ -72,7 +72,7 @@ class FundSearchRequest(BaseModel):
     query: Optional[str] = None
     category: Optional[str] = None
     asset_class: Optional[str] = None
-    amc: Optional[str] = None
+    amc: Optional[List[str]] = None  # Support multiple AMCs
     plan_type: Optional[str] = None  # Direct / Regular
     scheme_type: Optional[str] = None  # Growth / IDCW
     limit: int = Field(default=2000, ge=1)

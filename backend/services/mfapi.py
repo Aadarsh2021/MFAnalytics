@@ -9,6 +9,8 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from models.database import Fund, NAV
 import json
+import os
+from pathlib import Path
 
 
 class MFAPIService:
@@ -123,9 +125,9 @@ class MFAPIService:
         # 4. Hybrid/Alternative
         return 'Alt'
     
-    async def classify_amc(self, scheme_name: str) -> str:
+    def classify_amc(self, scheme_name: str) -> str:
         """
-        Classify scheme into AMC based on name
+        Classify scheme into AMC based on name (synchronous for performance)
         """
         name_lower = scheme_name.lower()
         
