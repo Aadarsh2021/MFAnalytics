@@ -443,8 +443,8 @@ export default function FundsPage() {
                     </div>
 
                     {/* Advanced Fund Selector */}
-                    <div className="bg-white rounded-xl shadow-lg border border-slate-100 p-6 mb-8 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16"></div>
+                    <div className="bg-white rounded-xl shadow-lg border border-slate-100 p-6 mb-8 relative">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 overflow-hidden"></div>
 
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-6">
