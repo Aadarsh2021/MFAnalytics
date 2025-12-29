@@ -49,13 +49,19 @@ export default function Home() {
                             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
                                 <Link
                                     href="/intake"
-                                    className="px-10 py-5 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-2xl hover:bg-slate-800 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                    className="px-8 py-5 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-2xl hover:bg-slate-800 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                 >
-                                    🎯 Start Optimization
+                                    🎯 Design Strategy
+                                </Link>
+                                <Link
+                                    href="/funds"
+                                    className="px-8 py-5 bg-white text-slate-900 border-2 border-slate-200 rounded-2xl font-bold text-lg hover:border-blue-400 hover:text-blue-600 transition-all flex items-center justify-center gap-2"
+                                >
+                                    ⚡ Select Funds Directly
                                 </Link>
                                 <Link
                                     href="/rebalance"
-                                    className="px-10 py-5 bg-white text-slate-900 border-2 border-slate-200 rounded-2xl font-bold text-lg hover:border-blue-400 hover:text-blue-600 transition-all flex items-center justify-center gap-2"
+                                    className="px-6 py-5 bg-slate-50 text-slate-400 rounded-2xl font-medium text-sm hover:text-blue-600 hover:bg-white transition-all flex items-center justify-center gap-2 border border-transparent hover:border-slate-200"
                                 >
                                     📊 CAS Analytics
                                 </Link>

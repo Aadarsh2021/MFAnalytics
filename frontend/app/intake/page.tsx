@@ -250,9 +250,20 @@ export default function ClientIntakePage() {
                                     )}
 
                                     <div className="flex justify-between pt-8 border-t border-slate-100">
-                                        <button type="button" onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : router.push('/')} className="px-8 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
-                                            {currentStep === 1 ? 'Cancel' : 'Back'}
-                                        </button>
+                                        <div className="flex items-center gap-4">
+                                            <button type="button" onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : router.push('/')} className="px-8 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">
+                                                {currentStep === 1 ? 'Cancel' : 'Back'}
+                                            </button>
+                                            {currentStep === 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => router.push('/funds')}
+                                                    className="px-6 py-3 rounded-xl font-bold text-slate-400 hover:text-blue-600 transition-all text-sm"
+                                                >
+                                                    Skip to Funds →
+                                                </button>
+                                            )}
+                                        </div>
                                         <button type="submit" disabled={loading} className="px-10 py-3 rounded-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg shadow-blue-200 hover:scale-105 active:scale-95 transition-all">
                                             {loading ? 'Processing...' : currentStep === 2 ? 'Finalize & Select Funds' : 'Next Step'}
                                         </button>

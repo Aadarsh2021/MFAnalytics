@@ -55,7 +55,53 @@ export default function FundsPage() {
 
 
     const [clientName, setClientName] = useState<string | null>(null);
+    const [clientProfile, setClientProfile] = useState<any>(null);
     const [showClientSwitcher, setShowClientSwitcher] = useState(false);
+
+    const riskPresets = {
+        conservative: {
+            risk_level: 'conservative',
+            asset_allocation: { equity_min: 20, equity_max: 40, debt_min: 50, debt_max: 70, gold_min: 0, gold_max: 10, alt_min: 0, alt_max: 10 },
+            target_allocation: { equity: 30, debt: 60, gold: 5, alt: 5 },
+            volatility_tolerance: 25,
+            return_expectation: 8,
+            max_weight_per_fund: 15,
+            min_weight_per_fund: 1,
+        },
+        moderate: {
+            risk_level: 'moderate',
+            asset_allocation: { equity_min: 50, equity_max: 70, debt_min: 20, debt_max: 40, gold_min: 0, gold_max: 10, alt_min: 0, alt_max: 10 },
+            target_allocation: { equity: 60, debt: 30, gold: 5, alt: 5 },
+            volatility_tolerance: 50,
+            return_expectation: 12,
+            max_weight_per_fund: 20,
+            min_weight_per_fund: 2,
+        },
+        aggressive: {
+            risk_level: 'aggressive',
+            asset_allocation: { equity_min: 70, equity_max: 90, debt_min: 0, debt_max: 20, gold_min: 0, gold_max: 10, alt_min: 0, alt_max: 10 },
+            target_allocation: { equity: 80, debt: 10, gold: 5, alt: 5 },
+            volatility_tolerance: 75,
+            return_expectation: 15,
+            max_weight_per_fund: 25,
+            min_weight_per_fund: 2,
+        },
+    };
+
+    const handleProfileChange = (profileKey: string) => {
+        const preset = riskPresets[profileKey as keyof typeof riskPresets];
+        if (preset) {
+            setClientProfile(preset);
+            sessionStorage.setItem('clientProfile', JSON.stringify(preset));
+            // If no clientId exists, we should still allow optimization if the user is an advisor
+            if (!sessionStorage.getItem('clientId')) {
+                // Set a temporary "Advisor Session" if needed, 
+                // but usually the backend requires a client. 
+                // For now, let's just ensure the profile is there.
+                console.log("Risk Profile manually set to:", profileKey);
+            }
+        }
+    };
 
     const handleClientSwitch = (client: any) => {
         if (window.confirm(`Switch active session to ${client.name}? Current selection will be cleared.`)) {
@@ -69,6 +115,16 @@ export default function FundsPage() {
         // Hydrate client name from session or fetch if missing
         const storedId = sessionStorage.getItem('clientId');
         const storedName = sessionStorage.getItem('clientName');
+        const storedProfile = sessionStorage.getItem('clientProfile');
+
+        if (storedProfile) {
+            setClientProfile(JSON.parse(storedProfile));
+        } else {
+            // Default to Moderate if none exists
+            const defaultProfile = riskPresets.moderate;
+            setClientProfile(defaultProfile);
+            sessionStorage.setItem('clientProfile', JSON.stringify(defaultProfile));
+        }
 
         if (storedName) {
             setClientName(storedName);
@@ -229,35 +285,44 @@ export default function FundsPage() {
         const fundsByAssetClass: Record<string, Fund[]> = {};
 
         funds.forEach(fund => {
-            if (!fundsByAssetClass[fund.asset_class]) {
-                fundsByAssetClass[fund.asset_class] = [];
+            const ac = fund.asset_class.toLowerCase();
+            if (!fundsByAssetClass[ac]) {
+                fundsByAssetClass[ac] = [];
             }
-            fundsByAssetClass[fund.asset_class].push(fund);
+            fundsByAssetClass[ac].push(fund);
         });
 
-        Object.values(fundsByAssetClass).forEach(assetFunds => {
-            // Quality mapping for sorting
-            const qualityOrder: Record<string, number> = { 'Excellent': 0, 'Good': 1, 'Poor': 2 };
+        // Use active profile to determine fund counts per class
+        const targetAlloc = clientProfile?.target_allocation || { equity: 60, debt: 30, gold: 5, alt: 5 };
+        const totalTargetFunds = 12; // Design decision: Aim for ~12 funds total
 
-            // Sort by quality first, then by name for consistency
-            const sortedByQuality = [...assetFunds].sort((a, b) => {
-                const qA = qualityOrder[a.data_quality] ?? 3;
-                const qB = qualityOrder[b.data_quality] ?? 3;
-                if (qA !== qB) return qA - qB;
-                return a.name.localeCompare(b.name);
-            });
+        Object.keys(targetAlloc).forEach(acKey => {
+            const weight = targetAlloc[acKey as keyof typeof targetAlloc];
+            const fundCount = Math.max(1, Math.ceil((weight / 100) * totalTargetFunds));
+            const assetFunds = fundsByAssetClass[acKey] || [];
 
-            // Pick top 4 from each class, EXCLUDING "Poor" unless necessary
-            // High quality selection (Excellent or Good)
-            const highQuality = sortedByQuality.filter(f => f.data_quality !== 'Poor');
+            if (assetFunds.length > 0) {
+                // Quality mapping for sorting
+                const qualityOrder: Record<string, number> = { 'Excellent': 0, 'Good': 1, 'Poor': 2 };
 
-            if (highQuality.length > 0) {
-                highQuality.slice(0, 4).forEach(fund => topFunds.set(fund.id, fund));
+                // Sort by quality first, then by name for consistency
+                const sortedByQuality = [...assetFunds].sort((a, b) => {
+                    const qA = qualityOrder[a.data_quality] ?? 3;
+                    const qB = qualityOrder[b.data_quality] ?? 3;
+                    if (qA !== qB) return qA - qB;
+                    return a.name.localeCompare(b.name);
+                });
+
+                // Pick based on calculated count, EXCLUDING "Poor" unless necessary
+                const highQuality = sortedByQuality.filter(f => f.data_quality !== 'Poor');
+                const pool = highQuality.length > 0 ? highQuality : sortedByQuality;
+
+                pool.slice(0, fundCount).forEach(fund => topFunds.set(fund.id, fund));
             }
         });
 
         setSelectedFunds(topFunds);
-    }, [funds]);
+    }, [funds, clientProfile]);
 
     const proceedToOptimization = useCallback(async () => {
         if (selectedFunds.size === 0) {
@@ -593,8 +658,26 @@ export default function FundsPage() {
                                             </div>
                                         </label>
 
+                                        <div className="pt-2">
+                                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Target Profile</h3>
+                                            <div className="flex gap-2">
+                                                {Object.keys(riskPresets).map(p => (
+                                                    <button
+                                                        key={p}
+                                                        onClick={() => handleProfileChange(p)}
+                                                        className={`flex-1 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tighter transition-all border ${clientProfile?.risk_level === p
+                                                            ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                                                            : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300'
+                                                            }`}
+                                                    >
+                                                        {p}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
                                         <button onClick={autoSelectTopFunds} className="w-full mt-2 bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition-all py-2 text-xs shadow-lg flex items-center justify-center gap-2">
-                                            <span>⚡</span> Auto-Select Top 4
+                                            <span>⚡</span> Auto-Select Proportional
                                         </button>
                                     </div>
                                 </div>
@@ -844,9 +927,14 @@ export default function FundsPage() {
                                 <div className="space-y-4 mb-8">
                                     {assetClasses.map(asset => {
                                         const count = Array.from(selectedFunds.values()).filter(f => f.asset_class === asset).length;
-                                        return count > 0 ? (
+                                        const target = clientProfile?.target_allocation?.[asset.toLowerCase()] || 0;
+
+                                        return (count > 0 || target > 0) ? (
                                             <div key={asset} className="flex justify-between items-center px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                                <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{asset}</span>
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{asset}</span>
+                                                    {target > 0 && <span className="text-[10px] font-bold text-blue-600">Target: {target}%</span>}
+                                                </div>
                                                 <span className="font-black text-slate-800">{count} Funds</span>
                                             </div>
                                         ) : null;
