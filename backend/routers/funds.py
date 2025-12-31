@@ -204,6 +204,15 @@ async def search_funds(request: FundSearchRequest, db: Session = Depends(get_db)
             else:
                 filtered_schemes = [s for s in filtered_schemes if 'idcw' not in s['schemeName'].lower() and 'dividend' not in s['schemeName'].lower()]
         
+        # Apply exclusion keywords filter
+        if request.exclude_keywords:
+            for keyword in request.exclude_keywords:
+                kw_lower = keyword.lower()
+                filtered_schemes = [
+                    s for s in filtered_schemes 
+                    if kw_lower not in s['schemeName'].lower()
+                ]
+        
         # Total count calculated after deduplication below
         # total_count = len(filtered_schemes)
         

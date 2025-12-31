@@ -80,6 +80,7 @@ class FundSearchRequest(BaseModel):
     amc: Optional[List[str]] = None  # Support multiple AMCs
     plan_type: Optional[str] = None  # Direct / Regular
     scheme_type: Optional[str] = None  # Growth / IDCW
+    exclude_keywords: Optional[List[str]] = None  # Keywords to exclude (e.g., 'etf', 'fmp')
     limit: int = Field(default=2000, ge=1)
     offset: int = Field(default=0, ge=0)
 
