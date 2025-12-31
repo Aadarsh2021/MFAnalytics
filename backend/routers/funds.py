@@ -28,7 +28,7 @@ mfapi_service = MFAPIService()
 yahoo_service = YahooFinanceService()
 
 # Cache version (Bumping this clears the cache)
-CACHE_VERSION = "v4_persistent_24h"
+CACHE_VERSION = "v5_persistent_24h"
 
 # Cache directory
 CACHE_DIR = Path("cache")

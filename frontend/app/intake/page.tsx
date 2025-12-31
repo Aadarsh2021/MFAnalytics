@@ -143,7 +143,9 @@ export default function ClientIntakePage() {
                     monthly_savings: profile.monthlySavings,
                     emergency_fund_months: profile.emergencyFundMonths,
                     tax_bracket: profile.taxBracket,
-                    current_investment_value: profile.currentInvestmentValue
+
+                    current_investment_value: profile.currentInvestmentValue,
+                    target_allocation: profile.assetAllocation // Add strict target for frontend reuse
                 }
             };
             const response = await apiClient.post('/api/clients', clientPayload);

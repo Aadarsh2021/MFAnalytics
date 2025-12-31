@@ -91,7 +91,19 @@ class MFAPIService:
         if any(keyword in name_lower for keyword in gold_keywords):
             return 'Gold'
 
-        # 2. Equity classification (Broadest category)
+        # 2. Debt classification (Check before Equity to avoid overlaps like 'Banking' vs 'Banking & PSU')
+        debt_keywords = [
+            'debt', 'bond', 'gilt', 'liquid', 'money market', 
+            'ultra short', 'short duration', 'medium duration',
+            'long duration', 'corporate bond', 'credit risk',
+            'banking & psu', 'dynamic bond', 'income',
+            'floating rate', 'low duration', 'overnight', 'fixed term',
+            'fmp', 'fixed maturity', 'short term', 'ultra short term'
+        ]
+        if any(keyword in name_lower for keyword in debt_keywords):
+            return 'Debt'
+
+        # 3. Equity classification (Broadest category)
         # Added: midcap, smallcap, largecap (without spaces), flexicap, multicap, tax saver
         equity_keywords = [
             'equity', 'stock', 
@@ -109,18 +121,6 @@ class MFAPIService:
         ]
         if any(keyword in name_lower for keyword in equity_keywords):
             return 'Equity'
-            
-        # 3. Debt classification
-        debt_keywords = [
-            'debt', 'bond', 'gilt', 'liquid', 'money market', 
-            'ultra short', 'short duration', 'medium duration',
-            'long duration', 'corporate bond', 'credit risk',
-            'banking & psu', 'dynamic bond', 'income',
-            'floating rate', 'low duration', 'overnight', 'fixed term',
-            'fmp', 'fixed maturity', 'short term', 'ultra short term'
-        ]
-        if any(keyword in name_lower for keyword in debt_keywords):
-            return 'Debt'
             
         # 4. Hybrid/Alternative
         return 'Alt'

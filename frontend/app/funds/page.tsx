@@ -293,7 +293,12 @@ export default function FundsPage() {
         });
 
         // Use active profile to determine fund counts per class
-        const targetAlloc = clientProfile?.target_allocation || { equity: 60, debt: 30, gold: 5, alt: 5 };
+        // Fallback Priority: 1. Explicit Target (Custom) -> 2. Risk Preset -> 3. Moderate Default
+        let targetAlloc = clientProfile?.target_allocation;
+        if (!targetAlloc && clientProfile?.risk_level && riskPresets[clientProfile.risk_level as keyof typeof riskPresets]) {
+            targetAlloc = riskPresets[clientProfile.risk_level as keyof typeof riskPresets].target_allocation;
+        }
+        targetAlloc = targetAlloc || { equity: 60, debt: 30, gold: 5, alt: 5 };
         const totalTargetFunds = 12; // Design decision: Aim for ~12 funds total
 
         Object.keys(targetAlloc).forEach(acKey => {
