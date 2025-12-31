@@ -13,7 +13,7 @@ import json
 router = APIRouter(prefix="/api/clients", tags=["clients"])
 
 
-from models.schemas import IntakeRequest, IntakeResponse, RiskProfile, AssetAllocation as WealthAssetAllocation
+from models.schemas import IntakeRequest, IntakeResponse, RiskProfile, AssetAllocation as WealthAssetAllocation, UpdateClientRequest
 
 
 from datetime import datetime
@@ -129,3 +129,43 @@ def list_clients(
         client_responses.append(client)
         
     return client_responses
+
+
+@router.put("/{client_id}", response_model=IntakeResponse)
+def update_client(
+    client_id: int,
+    request: UpdateClientRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update client profile (Risk Profile, Strategy, etc.)
+    """
+    try:
+        # Check ownership
+        client = db.query(Client).filter(
+            Client.id == client_id,
+            Client.advisor_id == current_user.id
+        ).first()
+        
+        if not client:
+            raise HTTPException(status_code=404, detail="Client not found")
+            
+        if request.risk_profile:
+            # Update fields
+            client.risk_profile = request.risk_profile.risk_level.value
+            client.investment_horizon = request.risk_profile.investment_horizon
+            
+            # Serialize full risk profile to constraints JSON
+            client.constraints = json.dumps(request.risk_profile.model_dump())
+            
+            db.commit()
+            
+        return IntakeResponse(
+            client_id=client.id,
+            message="Client strategy updated successfully"
+        )
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating client: {str(e)}")

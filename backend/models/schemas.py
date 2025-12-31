@@ -61,6 +61,11 @@ class IntakeRequest(BaseModel):
     risk_profile: RiskProfile
 
 
+class UpdateClientRequest(BaseModel):
+    """Request to update client profile"""
+    risk_profile: Optional[RiskProfile] = None
+
+
 class IntakeResponse(BaseModel):
     """Response after save intake"""
     client_id: int
