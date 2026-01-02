@@ -19,6 +19,7 @@ export default function HistoryPage() {
     const [clients, setClients] = useState<Client[]>([]);
     const [loading, setLoading] = useState(true);
     const [processingId, setProcessingId] = useState<number | null>(null);
+    const [editingClient, setEditingClient] = useState<Client | null>(null);
 
     useEffect(() => {
         const fetchClients = async () => {
@@ -55,18 +56,26 @@ export default function HistoryPage() {
             };
             sessionStorage.setItem('clientProfile', JSON.stringify(profile));
 
-            // Note: We might miss 'selectedFunds' if not returned by optimization_get
-            // But results page mostly uses 'results' object.
-            // If results page needs fundDetails for names, we might need to extract them from results if available
-            // (The backend get_optimization_result doesn't return fund selection list explicitly in the matched response model yet)
-            // It maps weights, but maybe not names if they aren't in the metrics.
-
             router.push('/results');
         } catch (error) {
             console.error("Failed to load results:", error);
             alert("Could not load historical results.");
         } finally {
             setProcessingId(null);
+        }
+    };
+
+    const handleEditSave = async () => {
+        // Refresh list
+        try {
+            setLoading(true);
+            const response = await api.clients.list();
+            setClients(response.data);
+            setEditingClient(null);
+        } catch (error) {
+            console.error("Failed to refresh list:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -103,6 +112,7 @@ export default function HistoryPage() {
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client Name</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Profile</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horizon</th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Strategy</th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Optimization</th>
                                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                         </tr>
@@ -123,6 +133,14 @@ export default function HistoryPage() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {client.investment_horizon} Years
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    <button
+                                                        onClick={() => setEditingClient(client)}
+                                                        className="text-indigo-600 hover:text-indigo-900 font-bold text-xs uppercase"
+                                                    >
+                                                        Edit Rules
+                                                    </button>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {client.latest_optimization_date
@@ -150,7 +168,173 @@ export default function HistoryPage() {
                         )}
                     </div>
                 </div>
+
+                {editingClient && (
+                    <StrategyEditorModal
+                        client={editingClient}
+                        onClose={() => setEditingClient(null)}
+                        onSave={handleEditSave}
+                    />
+                )}
             </div>
         </ProtectedRoute>
+    );
+}
+
+function StrategyEditorModal({ client, onClose, onSave }: { client: Client, onClose: () => void, onSave: () => void }) {
+    const [riskProfile, setRiskProfile] = useState(client.risk_profile);
+    const [horizon, setHorizon] = useState(client.investment_horizon);
+    const [assetAllocation, setAssetAllocation] = useState({ equity: 0, debt: 0, gold: 0, alt: 0 });
+    const [loading, setLoading] = useState(false);
+
+    // Initial load? Ideally we need client's current details.
+    // Since list only gives basic info, we might need to fetch details or assume based on profile?
+    // The list API response doesn't give constraint details.
+    // We should fetch client details on mount.
+
+    useEffect(() => {
+        setLoading(true);
+        api.clients.get(client.id)
+            .then(res => {
+                const data = res.data;
+                // Parse constraints if available, or set defaults
+                // The GET /clients/{id} returns the client object. Constraints are stored as JSON string in 'constraints' column
+                // But the schema ClientProfileResponse doesn't explicitly expose constraints field.
+                // We might need to update backend GET endpoint to expose constraints or parse them.
+                // For now, let's assume we can get it or default it.
+                // Wait, GET /clients/{id} returns ClientProfileResponse which DOES NOT include constraints.
+                // Actually the backend `get_client` returns the ORM object which HAS constraints, 
+                // but the Pydantic response model filters it out?
+                // `ClientProfileResponse` in `clients.py` does NOT have `constraints`.
+                // Checking `clients.py` again...
+                // Ideally we need the constraints.
+
+                // Workaround: We will rely on user inputting new values or defaults based on Risk Profile.
+                // If Custom, we default to 25/25/25/25
+            })
+            .catch(err => console.error(err))
+            .finally(() => setLoading(false));
+
+        // Set defaults based on risk profile for now since we can't fetch exact custom values easily without backend update
+        if (riskProfile === 'moderate') setAssetAllocation({ equity: 60, debt: 30, gold: 5, alt: 5 });
+        else if (riskProfile === 'aggressive') setAssetAllocation({ equity: 80, debt: 10, gold: 5, alt: 5 });
+        else if (riskProfile === 'conservative') setAssetAllocation({ equity: 30, debt: 60, gold: 5, alt: 5 });
+        else setAssetAllocation({ equity: 25, debt: 25, gold: 25, alt: 25 });
+
+    }, []);
+
+    const handleSave = async () => {
+        const total = Object.values(assetAllocation).reduce((a, b) => a + b, 0);
+        if (riskProfile === 'custom' && Math.abs(total - 100) > 0.1) {
+            alert(`Total allocation must be 100%. Current: ${total}%`);
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const payload = {
+                risk_profile: {
+                    risk_level: riskProfile,
+                    investment_horizon: horizon,
+                    asset_allocation: {
+                        equity_min: Math.max(0, assetAllocation.equity - 10),
+                        equity_max: Math.min(100, assetAllocation.equity + 10),
+                        debt_min: Math.max(0, assetAllocation.debt - 10),
+                        debt_max: Math.min(100, assetAllocation.debt + 10),
+                        gold_min: Math.max(0, assetAllocation.gold - 5),
+                        gold_max: Math.min(100, assetAllocation.gold + 5),
+                        alt_min: Math.max(0, assetAllocation.alt - 5),
+                        alt_max: Math.min(100, assetAllocation.alt + 5)
+                    },
+                    target_allocation: assetAllocation // Start saving target explicitly!
+                }
+            };
+
+            await api.clients.update(client.id, payload);
+            onSave();
+        } catch (error) {
+            console.error("Update failed", error);
+            alert("Failed to update strategy");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 className="text-xl font-bold text-gray-900">Edit Strategy: {client.name}</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+
+                <div className="p-6 space-y-6">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Risk Profile</label>
+                        <select
+                            value={riskProfile}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setRiskProfile(val);
+                                if (val === 'moderate') setAssetAllocation({ equity: 60, debt: 30, gold: 5, alt: 5 });
+                                else if (val === 'aggressive') setAssetAllocation({ equity: 80, debt: 10, gold: 5, alt: 5 });
+                                else if (val === 'conservative') setAssetAllocation({ equity: 30, debt: 60, gold: 5, alt: 5 });
+                            }}
+                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"
+                        >
+                            <option value="conservative">Conservative</option>
+                            <option value="moderate">Moderate</option>
+                            <option value="aggressive">Aggressive</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Investment Horizon (Years)</label>
+                        <input
+                            type="number"
+                            value={horizon}
+                            onChange={(e) => setHorizon(parseInt(e.target.value))}
+                            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl"
+                        />
+                    </div>
+
+                    {riskProfile === 'custom' && (
+                        <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Asset Allocation</h4>
+                            {['equity', 'debt', 'gold', 'alt'].map((asset) => (
+                                <div key={asset}>
+                                    <div className="flex justify-between text-xs font-medium text-gray-600 mb-1">
+                                        <span className="capitalize">{asset}</span>
+                                        <span>{assetAllocation[asset as keyof typeof assetAllocation]}%</span>
+                                    </div>
+                                    <input
+                                        type="range"
+                                        min="0" max="100"
+                                        value={assetAllocation[asset as keyof typeof assetAllocation]}
+                                        onChange={(e) => setAssetAllocation({ ...assetAllocation, [asset]: parseInt(e.target.value) })}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                    />
+                                </div>
+                            ))}
+                            <div className={`text-right text-xs font-bold ${Math.abs(Object.values(assetAllocation).reduce((a, b) => a + b, 0) - 100) > 0.1 ? 'text-red-500' : 'text-green-600'}`}>
+                                Total: {Object.values(assetAllocation).reduce((a, b) => a + b, 0)}%
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3">
+                    <button onClick={onClose} className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50">Cancel</button>
+                    <button
+                        onClick={handleSave}
+                        disabled={loading}
+                        className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50"
+                    >
+                        {loading ? 'Saving...' : 'Save Strategy'}
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }

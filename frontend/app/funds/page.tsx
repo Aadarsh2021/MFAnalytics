@@ -39,6 +39,12 @@ export default function FundsPage() {
     const [planTypeFilter, setPlanTypeFilter] = useState('');
     const [schemeTypeFilter, setSchemeTypeFilter] = useState('');
     const [amcFilter, setAmcFilter] = useState<string[]>([]);  // Multi-select AMC
+
+    // Exclusion Filters
+    const [excludeETF, setExcludeETF] = useState(false);
+    const [excludeSDL, setExcludeSDL] = useState(false);
+    const [excludeFMP, setExcludeFMP] = useState(false);
+
     const [categories, setCategories] = useState<string[]>([]);
     const [assetClasses, setAssetClasses] = useState<string[]>([]);
     const [amcs, setAmcs] = useState<string[]>([]);
@@ -199,6 +205,11 @@ export default function FundsPage() {
                 category: categoryFilter || undefined,
                 asset_class: assetClassFilter || undefined,
                 amc: amcFilter.length > 0 ? amcFilter : undefined,  // Send array
+                exclude_keywords: [
+                    ...(excludeETF ? ['etf'] : []),
+                    ...(excludeSDL ? ['sdl', 'state development'] : []),
+                    ...(excludeFMP ? ['fmp', 'fixed maturity'] : []),
+                ],
                 plan_type: planTypeFilter || undefined,
                 scheme_type: schemeTypeFilter || undefined,
                 limit: PAGE_SIZE,
@@ -222,7 +233,7 @@ export default function FundsPage() {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [searchQuery, categoryFilter, assetClassFilter, amcFilter, planTypeFilter, schemeTypeFilter, funds.length]);
+    }, [searchQuery, categoryFilter, assetClassFilter, amcFilter, planTypeFilter, schemeTypeFilter, excludeETF, excludeSDL, excludeFMP, funds.length]);
 
     // Debounce Search Query (Typing needs delay)
     useEffect(() => {
@@ -237,7 +248,7 @@ export default function FundsPage() {
     useEffect(() => {
         searchFunds(0, true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryFilter, assetClassFilter, amcFilter, planTypeFilter, schemeTypeFilter]); // Only trigger on filter changes
+    }, [categoryFilter, assetClassFilter, amcFilter, planTypeFilter, schemeTypeFilter, excludeETF, excludeSDL, excludeFMP]); // Only trigger on filter changes
 
     const handleLoadMore = () => {
         const nextOffset = offset + PAGE_SIZE;
@@ -293,8 +304,21 @@ export default function FundsPage() {
         });
 
         // Use active profile to determine fund counts per class
-        // Fallback Priority: 1. Explicit Target (Custom) -> 2. Risk Preset -> 3. Moderate Default
+        // Fallback Priority: 1. Explicit Target (Custom) -> 2. Asset Allocation Ranges (Legacy) -> 3. Risk Preset -> 4. Moderate Default
         let targetAlloc = clientProfile?.target_allocation;
+
+        // Legacy Support: Derive target from ranges if missing
+        if (!targetAlloc && clientProfile?.asset_allocation) {
+            const ranges = clientProfile.asset_allocation;
+            // Calculate midpoint of ranges
+            targetAlloc = {
+                equity: (ranges.equity_min + ranges.equity_max) / 2,
+                debt: (ranges.debt_min + ranges.debt_max) / 2,
+                gold: (ranges.gold_min + ranges.gold_max) / 2,
+                alt: (ranges.alt_min + ranges.alt_max) / 2,
+            };
+        }
+
         if (!targetAlloc && clientProfile?.risk_level && riskPresets[clientProfile.risk_level as keyof typeof riskPresets]) {
             targetAlloc = riskPresets[clientProfile.risk_level as keyof typeof riskPresets].target_allocation;
         }
@@ -662,6 +686,40 @@ export default function FundsPage() {
                                                 </button>
                                             </div>
                                         </label>
+
+                                        {/* Exclusions */}
+                                        <div className="bg-white/50 p-3 rounded-lg border border-slate-200/60">
+                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Exclusions</h4>
+                                            <div className="flex flex-col gap-2">
+                                                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={excludeETF}
+                                                        onChange={(e) => setExcludeETF(e.target.checked)}
+                                                        className="w-3.5 h-3.5 text-red-500 rounded focus:ring-red-500 border-slate-300"
+                                                    />
+                                                    <span className="text-xs font-bold text-slate-600">Exclude ETFs</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={excludeSDL}
+                                                        onChange={(e) => setExcludeSDL(e.target.checked)}
+                                                        className="w-3.5 h-3.5 text-red-500 rounded focus:ring-red-500 border-slate-300"
+                                                    />
+                                                    <span className="text-xs font-bold text-slate-600">Exclude SDLs</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={excludeFMP}
+                                                        onChange={(e) => setExcludeFMP(e.target.checked)}
+                                                        className="w-3.5 h-3.5 text-red-500 rounded focus:ring-red-500 border-slate-300"
+                                                    />
+                                                    <span className="text-xs font-bold text-slate-600">Exclude FMPs</span>
+                                                </label>
+                                            </div>
+                                        </div>
 
                                         <div className="pt-2">
                                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Target Profile</h3>

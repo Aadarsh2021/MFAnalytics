@@ -58,6 +58,7 @@ export const api = {
             plan_type?: string;
             scheme_type?: string;
             amc?: string | string[];
+            exclude_keywords?: string[];
             limit?: number;
             offset?: number;
         }) => apiClient.post('/api/funds/search', params),
@@ -76,6 +77,7 @@ export const api = {
     clients: {
         list: () => apiClient.get('/api/clients'),
         get: (id: number) => apiClient.get(`/api/clients/${id}`),
+        update: (id: number, data: any) => apiClient.put(`/api/clients/${id}`, data),
     },
 
     // Optimization endpoints
