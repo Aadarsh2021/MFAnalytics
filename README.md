@@ -1,87 +1,102 @@
-# Portfolio Advisor - Institutional Grade 🏛️
+# MFAnalytics: Institutional-Grade Portfolio Intelligence 🏛️📈
 
-Professional portfolio optimization tool with comprehensive tracking, regime detection, and institutional-grade backtesting.
+A state-of-the-art portfolio advisory and optimization platform designed for the Indian Mutual Fund ecosystem. It combines macroeconomic regime detection, Quant-based optimization (Black-Litterman), and professional-grade historical backtesting.
 
-## ✨ Core Features
+## 🚀 A to Z Feature List
 
-### 1. 🛡️ 6-Pillar Regime Detection Engine
+### 🔍 1. Discovery & Data Acquisition
 
-A robust macroeconomic scanner that identifies 4 distinct market states (A, B, C, D) using a weighted 6-pillar approach:
+- **Live Mutual Fund Search**: Search across 10,000+ Indian Mutual Funds using the [MFAPI.in](https://www.mfapi.in/) gateway.
+- **Automated NAV Fetching**: One-click historical NAV retrieval for multi-fund comparison.
+- **Data Quality Scoring**: Integrated validation for missing dates, data gaps, and dividend adjustments.
+- **CSV Data Import**: Support for custom fund data and benchmark indices.
 
-- **Volatility Ratio (30%)**: Growth Vol / Inflation Vol (Core Lead Indicator)
-- **Debt Stress (20%)**: Credit spreads and funding liquidity
-- **Bond-Equity Correlation (15%)**: Hedge effectiveness tracking
-- **Real Policy Rates (15%)**: Monetary policy discipline
-- **Inflation Volatility (10%)**: Stable pricing vs Loss of Control
-- **CB Gold Buying (10%)**: Central Bank safety sentiment
+### 🛡️ 2. Macro Regime Intelligence (The 6-Pillar Engine)
 
-### 2. 🇮🇳 Indian Expression Layer
+- **Dynamic Regime Detection**: Identifies 4 distinct market states (A: Normal, B: Overheated, C: Crisis, D: Recovery).
+- **Multi-Pillar Scoring**:
+  - **Volatility Ratio (Lead)**: Rolling Growth Vol vs. Inflation Vol.
+  - **Credit Stress Tracker**: Tracking yields and credit spreads.
+  - **Bond-Equity Correlation**: Analyzing the effectiveness of debt as a hedge.
+  - **Real Policy Rates**: Monetary discipline monitor.
+  - **Inflation Trajectory**: Consumer price stability index.
+  - **Institutional Sentiment**: Monitoring Central Bank gold reserves.
+- **Hysteresis & Debouncing**: 3-month smoothing logic to prevent "whipsaw" transitions in portfolio restructuring.
 
-Translates global macro regimes into actionable Indian market strategies:
+### 🇮🇳 3. Indian Expression Layer
 
-- **Equity Bias**: Dynamic shifts between 40-75% based on growth momentum.
-- **Debt Strategy**: Automatic switches between Short Duration, Medium Term, and Gilt (DEBT_LONG) funds.
-- **Liquidity Constraints**: Integrated SEBI category mapping for Indian Mutual Funds.
+- **SEBI-Aligned Strategy**: Translates global macro signals into India-specific asset class targets.
+- **Dynamic Equity Bias**: Shifts equity exposure between 40% and 75% based on growth/inflation dynamics.
+- **Smart Debt Sourcing**:
+  - **DEBT_SHORT**: Liquidity, Overnight, and Low Duration funds for defensive play.
+  - **DEBT_MEDIUM**: Short Term and Corporate Bond funds for yield harvesting.
+  - **DEBT_LONG**: Gilt and Long Duration funds for duration-based returns in falling rate regimes.
+- **Gold & Hybrid Integration**: Automatic inclusion for inflation protection and balanced stability.
 
-### 3. 📊 Advanced Historical Backtest
+### ⚖️ 4. Advanced Portfolio Optimization
 
-Comprehensive "Executive Report" generation covering 2002 to Present:
+- **MVP (Mean-Variance) Suite**: Support for SQP, Convex, and Critical Line optimization methods.
+- **Black-Litterman Engine**: Combines market equilibrium with active "User Views".
+- **View-Integrated Tilting**:
+  - **Absolute Views**: High confidence annual return targets for specific funds.
+  - **Relative Views**: Outperformance/Underperformance views (e.g., Fund A vs Fund B).
+- **Regime-Constrained Bands**: Tilt-engine strictly respects safety floor (min) and ceiling (max) weights defined by the current market regime.
 
-- **Financial Performance**: CAGR, Absolute Gains, and Max Drawdown tracking.
-- **Market Transitions**: Year-by-year breakdown of regime states.
-- **Debouncing Logic**: Explained hysteresis and "Transition Sensitivity" for model stability.
+### 📊 5. Executive Backtesting Suite
 
-### 4. ⚖️ View-Integrated Optimization
+- **23-Year Historical Simulation**: Backtest strategies from 2002 to present using unified US/India macro data.
+- **Performance Narrative**: Detailed breakdown of CAGR, Absolute Gains, and Sharpe Ratio.
+- **Regime Transition Report**: Detailed timeline of every regime shift in history (2008 GFC, 2020 COVID, etc.).
+- **Capital Growth Simulation**: Precision compounding of daily returns for a realistic $100k capital growth visualization.
+- **State Count Analysis**: Frequency of various regimes during annual rebalancing points.
 
-Enhanced Black-Litterman engine that incorporates user market views as "Tilts" while strictly respecting Regime-Based safety bands.
+### 🎨 6. Premium UI/UX Features
+
+- **Six Pillars Dashboard**: Real-time visualization of individual macro scores.
+- **Glassmorphic Design**: Modern, clean, and intuitive dark-themed interface.
+- **Interactive Recharts**: Dynamic, hover-enabled performance charts with historical markers.
+- **Responsive Navigation**: Step-by-step workflow (Setup → Macro → Views → Optimize → Report).
+
+---
 
 ## 🛠️ Tech Stack
 
-- **React 18 / Vite** - High-performance frontend
-- **TailwindCSS** - Premium glassmorphic UI
-- **Recharts** - Dynamic financial visualization
-- **Lucide React** - Modern iconography
-- **Python / Node** - Backend data processing & NAV fetching
+- **Frontend**: React 18, Vite, TailwindCSS
+- **Visualization**: Recharts, Lucide Icons
+- **Calculations**: Matrix Algebra (Internal), Python (Pre-processing)
+- **Deployment**: Firebase Hosting
+- **Repository**: GitHub (CI/CD Ready)
 
-## 📐 Project Structure
+## 📐 Project Architecture
 
 ```plaintext
-MFP/
-├── backend/
-│   ├── data-processing/    # Python & JS logic for Macro/NAV data
-│   └── scripts/            # Verification & utility tools
-├── data/
-│   ├── processed/          # Integrated US & Indian Historical JSONs
-│   └── raw/                # Source CSVs for transparency
+MFAnalytics/
 ├── src/
-│   ├── components/         # Premium UI Components (SixPillars, BacktestResults)
-│   ├── utils/              # Calculation Engines (backtestEngine, regimeDetector)
-│   ├── config/             # Regime/Asset Class configurations
-│   └── contexts/           # Global state management
-├── docs/                   # Architecture and PDF requirements
-└── tools/                  # Build and deployment toolkits
+│   ├── components/       # Dashboard, Backtest, Pillar visualizations
+│   ├── utils/            # Calculation Engines (Regimes, BL, Backtest)
+│   ├── config/           # Regime bands, Asset class mapping
+│   └── data/             # Processed Historical Macro JSONs
+├── backend/
+│   ├── data-processing/  # NAV Fetching & Macro cleaning scripts
+│   └── scripts/          # Sanity & verification suites
+└── docs/                 # Original PDF requirements & architecture
 ```
 
 ## 🚀 Getting Started
 
-1. **Install Dependencies**: `npm install`
-2. **Run Development**: `npm run dev`
-3. **Build Production**: `npm run build`
-4. **Deploy**: `firebase deploy`
+1. `npm install`
+2. `npm run dev`
+3. `npm run build`
+4. `firebase deploy`
 
-## 📊 Workflow
+---
 
-1. **Selection**: Choose from 10,000+ Indian Mutual Funds.
-2. **Detection**: Run the **6-Pillar Engine** to identify the current market cycle.
-3. **View Setting**: Express custom market views (Absolute or Relative).
-4. **Optimization**: Run the **Tilt-Engine** to generate the optimal portfolio within regime bands.
-5. **Backtest**: Verify the strategy against 23 years of historical data.
+## 🔗 Data Citations
 
-## 🔗 Data Sources
-
-- [MFAPI.in](https://www.mfapi.in/) - Real-time Indian NAVs
-- RBI DBIE & Federal Reserve - Macroeconomic Indicators
+- NAV Data: [MFAPI](https://www.mfapi.in/)
+- US Macro: Federal Reserve (FRED)
+- Indian Macro: RBI DBIE
 
 ## 🛡️ License
 
-MIT
+MIT - Developed for Professional Asset Management.
