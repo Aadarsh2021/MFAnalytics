@@ -1,0 +1,1415 @@
+import React, { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+
+function PortfolioTool() {
+  const [step, setStep] = useState(1);
+  const [historicalData, setHistoricalData] = useState(null);
+  const [mvpWeights, setMvpWeights] = useState(null);
+  const [views, setViews] = useState([]);
+  const [blResults, setBLResults] = useState(null);
+  const [calculatedMVP, setCalculatedMVP] = useState(null);
+  const [mcResults, setMCResults] = useState(null);
+  const [mcResultsMVP, setMCResultsMVP] = useState(null);
+  const [params, setParams] = useState({
+    riskFreeRate: 0.04,
+    tau: 0.025,
+    mcSimulations: 10000,
+    timeHorizon: 1,
+    initialInvestment: 100000,
+    dataFrequency: 'daily',
+    useLedoitWolf: true
+  });
+
+  const getAnnualizationFactors = () => {
+    const factors = {
+      daily: { periods: 252, sqrtPeriods: Math.sqrt(252), label: 'Daily' },
+      monthly: { periods: 12, sqrtPeriods: Math.sqrt(12), label: 'Monthly' },
+      annual: { periods: 1, sqrtPeriods: 1, label: 'Annual' }
+    };
+    return factors[params.dataFrequency];
+  };
+
+  const parseCSV = (text) => {
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    const returns = {};
+    
+    headers.slice(1).forEach(asset => {
+      returns[asset] = [];
+    });
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',');
+      headers.slice(1).forEach((asset, idx) => {
+        const value = parseFloat(values[idx + 1]);
+        if (!isNaN(value)) {
+          returns[asset].push(value);
+        }
+      });
+    }
+    return returns;
+  };
+
+  const parseMVPWeights = (text) => {
+    const lines = text.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    if (lines.length < 2) return null;
+    
+    const weights = {};
+    const values = lines[1].split(',');
+    headers.forEach((asset, idx) => {
+      const weight = parseFloat(values[idx]);
+      if (!isNaN(weight)) {
+        weights[asset] = weight;
+      }
+    });
+    return weights;
+  };
+
+  const transpose = (matrix) => {
+    return matrix[0].map((_, i) => matrix.map(row => row[i]));
+  };
+
+  const matrixMultiply = (a, b) => {
+    const result = Array(a.length).fill(0).map(() => Array(b[0].length).fill(0));
+    for (let i = 0; i < a.length; i++) {
+      for (let j = 0; j < b[0].length; j++) {
+        for (let k = 0; k < b.length; k++) {
+          result[i][j] += a[i][k] * b[k][j];
+        }
+      }
+    }
+    return result;
+  };
+
+  const matrixInverse = (matrix) => {
+    const n = matrix.length;
+    const augmented = matrix.map((row, i) => [...row, ...Array(n).fill(0).map((_, j) => i === j ? 1 : 0)]);
+    
+    for (let i = 0; i < n; i++) {
+      let maxRow = i;
+      for (let k = i + 1; k < n; k++) {
+        if (Math.abs(augmented[k][i]) > Math.abs(augmented[maxRow][i])) {
+          maxRow = k;
+        }
+      }
+      [augmented[i], augmented[maxRow]] = [augmented[maxRow], augmented[i]];
+      
+      const pivot = augmented[i][i];
+      if (Math.abs(pivot) < 1e-10) continue;
+      
+      for (let j = 0; j < 2 * n; j++) {
+        augmented[i][j] /= pivot;
+      }
+      
+      for (let k = 0; k < n; k++) {
+        if (k !== i) {
+          const factor = augmented[k][i];
+          for (let j = 0; j < 2 * n; j++) {
+            augmented[k][j] -= factor * augmented[i][j];
+          }
+        }
+      }
+    }
+    return augmented.map(row => row.slice(n));
+  };
+
+  const ledoitWolfShrinkage = (returns, sampleCov, means, assets) => {
+    const n = assets.length;
+    const T = returns[assets[0]].length;
+    
+    let avgVar = 0;
+    for (let i = 0; i < n; i++) {
+      avgVar += sampleCov[i][i];
+    }
+    avgVar /= n;
+    
+    let avgCorr = 0;
+    let count = 0;
+    for (let i = 0; i < n; i++) {
+      for (let j = i + 1; j < n; j++) {
+        const corr = sampleCov[i][j] / Math.sqrt(sampleCov[i][i] * sampleCov[j][j]);
+        avgCorr += corr;
+        count++;
+      }
+    }
+    avgCorr = count > 0 ? avgCorr / count : 0;
+    
+    const target = Array(n).fill(0).map((_, i) => 
+      Array(n).fill(0).map((_, j) => {
+        if (i === j) return sampleCov[i][i];
+        return avgCorr * Math.sqrt(sampleCov[i][i] * sampleCov[j][j]);
+      })
+    );
+    
+    const delta = Math.min(1, Math.max(0, (n + 1) / ((n + 1) + T)));
+    
+    const shrunkCov = Array(n).fill(0).map((_, i) =>
+      Array(n).fill(0).map((_, j) => 
+        (1 - delta) * sampleCov[i][j] + delta * target[i][j]
+      )
+    );
+    
+    return { shrunkCov, delta };
+  };
+
+  const calculateCovariance = (returns) => {
+    const assets = Object.keys(returns);
+    const n = assets.length;
+    const cov = Array(n).fill(0).map(() => Array(n).fill(0));
+    
+    const means = assets.map(asset => {
+      return returns[asset].reduce((a, b) => a + b, 0) / returns[asset].length;
+    });
+    
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        let sum = 0;
+        const len = returns[assets[i]].length;
+        for (let k = 0; k < len; k++) {
+          sum += (returns[assets[i]][k] - means[i]) * (returns[assets[j]][k] - means[j]);
+        }
+        cov[i][j] = sum / (len - 1);
+      }
+    }
+    
+    let shrinkageDelta = 0;
+    let finalCov = cov;
+    
+    if (params.useLedoitWolf) {
+      const result = ledoitWolfShrinkage(returns, cov, means, assets);
+      finalCov = result.shrunkCov;
+      shrinkageDelta = result.delta;
+    }
+    
+    return { cov: finalCov, means, shrinkageDelta };
+  };
+
+  const calculateMVPWeights = (covariance, posteriorReturns) => {
+    const n = covariance.length;
+    
+    try {
+      const covInv = matrixInverse(covariance);
+      const ones = Array(n).fill(1);
+      
+      const covInvOnes = Array(n).fill(0);
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          covInvOnes[i] += covInv[i][j] * ones[j];
+        }
+      }
+      
+      let denominator = 0;
+      for (let i = 0; i < n; i++) {
+        denominator += covInvOnes[i];
+      }
+      
+      const mvpWeights = covInvOnes.map(val => val / denominator);
+      
+      let mvpReturn = 0;
+      for (let i = 0; i < n; i++) {
+        mvpReturn += mvpWeights[i] * posteriorReturns[i];
+      }
+      
+      let mvpVariance = 0;
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+          mvpVariance += mvpWeights[i] * covariance[i][j] * mvpWeights[j];
+        }
+      }
+      const mvpVolatility = Math.sqrt(mvpVariance);
+      
+      return { weights: mvpWeights, expectedReturn: mvpReturn, volatility: mvpVolatility };
+    } catch (error) {
+      console.error("MVP calculation failed:", error);
+      return null;
+    }
+  };
+
+  const calculateBlackLitterman = () => {
+    const assets = Object.keys(historicalData);
+    const { cov, means, shrinkageDelta } = calculateCovariance(historicalData);
+    
+    const mktWeights = Array(assets.length).fill(1 / assets.length);
+    const riskAversion = 2.5;
+    const pi = mktWeights.map((w, i) => {
+      let sum = 0;
+      for (let j = 0; j < assets.length; j++) {
+        sum += riskAversion * cov[i][j] * mktWeights[j];
+      }
+      return sum;
+    });
+    
+    if (views.length === 0) {
+      const mvpCalc = calculateMVPWeights(cov, pi);
+      if (mvpCalc) {
+        setCalculatedMVP({
+          assets,
+          weights: mvpCalc.weights,
+          expectedReturn: mvpCalc.expectedReturn,
+          volatility: mvpCalc.volatility
+        });
+      }
+      
+      setBLResults({
+        assets,
+        equilibriumReturns: pi,
+        posteriorReturns: pi,
+        historicalReturns: means,
+        covariance: cov,
+        shrinkageDelta
+      });
+      return;
+    }
+    
+    const P = views.map(view => {
+      const row = Array(assets.length).fill(0);
+      if (view.type === 'absolute') {
+        row[assets.indexOf(view.asset)] = 1;
+      } else if (view.type === 'relative') {
+        row[assets.indexOf(view.asset)] = 1;
+        row[assets.indexOf(view.asset2)] = -1;
+      }
+      return row;
+    });
+    
+    const Q = views.map(view => [view.return]);
+    const omega = views.map((view, i) => {
+      const row = Array(views.length).fill(0);
+      row[i] = view.confidence || 0.01;
+      return row;
+    });
+    
+    const tau = params.tau;
+    const tauSigma = cov.map(row => row.map(val => tau * val));
+    
+    const tauSigmaInv = matrixInverse(tauSigma);
+    const omegaInv = matrixInverse(omega);
+    const Pt = transpose(P);
+    
+    const term1 = matrixMultiply(matrixMultiply(Pt, omegaInv), P);
+    const leftSide = tauSigmaInv.map((row, i) => 
+      row.map((val, j) => val + term1[i][j])
+    );
+    const leftSideInv = matrixInverse(leftSide);
+    
+    const piMatrix = pi.map(p => [p]);
+    const rightTerm1 = matrixMultiply(tauSigmaInv, piMatrix);
+    const rightTerm2 = matrixMultiply(matrixMultiply(Pt, omegaInv), Q);
+    const rightSide = rightTerm1.map((row, i) => [row[0] + rightTerm2[i][0]]);
+    
+    const posteriorReturns = matrixMultiply(leftSideInv, rightSide).map(row => row[0]);
+    
+    const mvpCalc = calculateMVPWeights(cov, posteriorReturns);
+    if (mvpCalc) {
+      setCalculatedMVP({
+        assets,
+        weights: mvpCalc.weights,
+        expectedReturn: mvpCalc.expectedReturn,
+        volatility: mvpCalc.volatility
+      });
+    }
+    
+    setBLResults({
+      assets,
+      equilibriumReturns: pi,
+      posteriorReturns,
+      historicalReturns: means,
+      covariance: cov,
+      shrinkageDelta
+    });
+  };
+
+  const choleskyDecomposition = (matrix) => {
+    const n = matrix.length;
+    const L = Array(n).fill(0).map(() => Array(n).fill(0));
+    
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j <= i; j++) {
+        let sum = 0;
+        for (let k = 0; k < j; k++) {
+          sum += L[i][k] * L[j][k];
+        }
+        
+        if (i === j) {
+          L[i][j] = Math.sqrt(Math.max(matrix[i][i] - sum, 0));
+        } else {
+          L[i][j] = L[j][j] > 0 ? (matrix[i][j] - sum) / L[j][j] : 0;
+        }
+      }
+    }
+    return L;
+  };
+
+  const randomNormal = () => {
+    let u = 0, v = 0;
+    while (u === 0) u = Math.random();
+    while (v === 0) v = Math.random();
+    return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+  };
+
+  const runMonteCarloSimulation = (useCustomWeights = false, customWeights = null) => {
+    if (!blResults) return;
+    
+    const { posteriorReturns, covariance, assets } = blResults;
+    const n = assets.length;
+    const simulations = params.mcSimulations;
+    const horizon = params.timeHorizon;
+    
+    const annFactor = getAnnualizationFactors();
+    const annualizedReturns = posteriorReturns.map(r => r * annFactor.periods);
+    
+    let weights;
+    if (useCustomWeights && customWeights) {
+      weights = assets.map(asset => customWeights[asset] || 0);
+      const sum = weights.reduce((a, b) => a + b, 0);
+      weights = weights.map(w => w / sum);
+    } else {
+      const totalReturn = annualizedReturns.reduce((a, b) => a + b, 0);
+      weights = annualizedReturns.map(r => Math.max(0, r) / annualizedReturns.reduce((a, b) => a + Math.max(0, b), 0));
+    }
+    
+    const L = choleskyDecomposition(covariance);
+    const portfolioReturns = [];
+    const finalValues = [];
+    
+    for (let sim = 0; sim < simulations; sim++) {
+      const z = Array(n).fill(0).map(() => randomNormal());
+      const correlatedReturns = Array(n).fill(0);
+      
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j <= i; j++) {
+          correlatedReturns[i] += L[i][j] * z[j];
+        }
+        const volScale = Math.sqrt(horizon * annFactor.periods);
+        correlatedReturns[i] = annualizedReturns[i] * horizon + correlatedReturns[i] * volScale;
+      }
+      
+      let portfolioReturn = 0;
+      for (let i = 0; i < n; i++) {
+        portfolioReturn += weights[i] * correlatedReturns[i];
+      }
+      
+      portfolioReturns.push(portfolioReturn);
+      finalValues.push(params.initialInvestment * (1 + portfolioReturn));
+    }
+    
+    portfolioReturns.sort((a, b) => a - b);
+    finalValues.sort((a, b) => a - b);
+    
+    const mean = portfolioReturns.reduce((a, b) => a + b, 0) / simulations;
+    const variance = portfolioReturns.reduce((a, r) => a + Math.pow(r - mean, 2), 0) / simulations;
+    const std = Math.sqrt(variance);
+    
+    const percentiles = [5, 25, 50, 75, 95].map(p => {
+      const idx = Math.floor(simulations * p / 100);
+      return { percentile: p, return: portfolioReturns[idx], value: finalValues[idx] };
+    });
+    
+    const var95 = portfolioReturns[Math.floor(simulations * 0.05)];
+    const cvar95 = portfolioReturns.slice(0, Math.floor(simulations * 0.05)).reduce((a, b) => a + b, 0) / Math.floor(simulations * 0.05);
+    
+    const bins = 50;
+    const minReturn = portfolioReturns[0];
+    const maxReturn = portfolioReturns[simulations - 1];
+    const binSize = (maxReturn - minReturn) / bins;
+    
+    const histogram = Array(bins).fill(0).map((_, i) => {
+      const binStart = minReturn + i * binSize;
+      const binEnd = binStart + binSize;
+      const count = portfolioReturns.filter(r => r >= binStart && r < binEnd).length;
+      return {
+        return: ((binStart + binEnd) / 2 * 100).toFixed(1),
+        frequency: count,
+        percentage: (count / simulations * 100).toFixed(2)
+      };
+    });
+    
+    const results = {
+      weights,
+      mean,
+      std,
+      var95,
+      cvar95,
+      percentiles,
+      histogram,
+      allReturns: portfolioReturns,
+      allValues: finalValues
+    };
+    
+    if (useCustomWeights) {
+      setMCResultsMVP(results);
+    } else {
+      setMCResults(results);
+    }
+    
+    return results;
+  };
+
+  const getDailyRisk = (riskValue) => {
+    if (params.dataFrequency === 'daily') {
+      return riskValue / Math.sqrt(252 * params.timeHorizon);
+    } else if (params.dataFrequency === 'monthly') {
+      return riskValue / Math.sqrt(12 * params.timeHorizon);
+    }
+    return riskValue;
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const data = parseCSV(event.target.result);
+      setHistoricalData(data);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleMVPUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const weights = parseMVPWeights(event.target.result);
+      setMvpWeights(weights);
+    };
+    reader.readAsText(file);
+  };
+
+  const applyRegimePreset = (regime) => {
+    const assets = Object.keys(historicalData);
+    let newViews = [];
+    
+    if (regime === 'bullish') {
+      const equity = assets.find(a => a.toLowerCase().includes('equity') || a.toLowerCase().includes('stock'));
+      const bonds = assets.find(a => a.toLowerCase().includes('bond') || a.toLowerCase().includes('debt'));
+      const cash = assets.find(a => a.toLowerCase().includes('cash') || a.toLowerCase().includes('liquid'));
+      
+      if (equity && bonds) {
+        newViews.push({ type: 'relative', asset: equity, asset2: bonds, return: 0.03, confidence: 0.01 });
+      }
+      if (bonds && cash) {
+        newViews.push({ type: 'relative', asset: bonds, asset2: cash, return: 0.02, confidence: 0.01 });
+      }
+      if (equity && cash) {
+        newViews.push({ type: 'relative', asset: equity, asset2: cash, return: 0.07, confidence: 0.01 });
+      }
+    } else if (regime === 'bearish') {
+      const equity = assets.find(a => a.toLowerCase().includes('equity') || a.toLowerCase().includes('stock'));
+      const bonds = assets.find(a => a.toLowerCase().includes('bond') || a.toLowerCase().includes('debt'));
+      const cash = assets.find(a => a.toLowerCase().includes('cash') || a.toLowerCase().includes('liquid'));
+      
+      if (bonds && equity) {
+        newViews.push({ type: 'relative', asset: bonds, asset2: equity, return: 0.02, confidence: 0.01 });
+      }
+      if (cash && equity) {
+        newViews.push({ type: 'relative', asset: cash, asset2: equity, return: 0.01, confidence: 0.01 });
+      }
+    } else if (regime === 'rising_rates') {
+      const bonds = assets.find(a => a.toLowerCase().includes('bond') || a.toLowerCase().includes('debt'));
+      const cash = assets.find(a => a.toLowerCase().includes('cash') || a.toLowerCase().includes('liquid'));
+      
+      if (bonds) {
+        newViews.push({ type: 'absolute', asset: bonds, return: -0.02, confidence: 0.01 });
+      }
+      if (cash && bonds) {
+        newViews.push({ type: 'relative', asset: cash, asset2: bonds, return: 0.03, confidence: 0.01 });
+      }
+    } else if (regime === 'recession') {
+      const equity = assets.find(a => a.toLowerCase().includes('equity') || a.toLowerCase().includes('stock'));
+      const bonds = assets.find(a => a.toLowerCase().includes('bond') || a.toLowerCase().includes('debt'));
+      
+      if (equity) {
+        newViews.push({ type: 'absolute', asset: equity, return: -0.05, confidence: 0.01 });
+      }
+      if (bonds) {
+        newViews.push({ type: 'absolute', asset: bonds, return: 0.04, confidence: 0.01 });
+      }
+    } else if (regime === 'custom_example') {
+      const equity = assets.find(a => a.toLowerCase().includes('equity') || a.toLowerCase().includes('stock'));
+      const bonds = assets.find(a => a.toLowerCase().includes('bond') || a.toLowerCase().includes('debt'));
+      const cash = assets.find(a => a.toLowerCase().includes('cash') || a.toLowerCase().includes('liquid'));
+      
+      if (equity && bonds) {
+        newViews.push({ type: 'relative', asset: equity, asset2: bonds, return: 0.025, confidence: 0.01 });
+      }
+      if (equity && cash) {
+        newViews.push({ type: 'relative', asset: equity, asset2: cash, return: 0.07, confidence: 0.01 });
+      }
+      if (bonds && cash) {
+        newViews.push({ type: 'relative', asset: bonds, asset2: cash, return: 0.04, confidence: 0.01 });
+      }
+    }
+    
+    setViews(newViews);
+  };
+
+  const generateEfficientFrontier = () => {
+    if (!calculatedMVP || !blResults) return null;
+    
+    const annFactor = getAnnualizationFactors();
+    const points = [];
+    const numPoints = 50;
+    
+    // Generate points along efficient frontier
+    for (let i = 0; i <= numPoints; i++) {
+      const weight = i / numPoints;
+      
+      // Interpolate between MVP and maximum return portfolio
+      const portfolioReturn = calculatedMVP.expectedReturn * (1 - weight) + 
+        Math.max(...blResults.posteriorReturns) * weight;
+      
+      // Approximate volatility (simplified)
+      const portfolioVol = calculatedMVP.volatility * (1 + weight * 0.5);
+      
+      points.push({
+        return: (portfolioReturn * annFactor.periods * 100).toFixed(2),
+        risk: (portfolioVol * annFactor.sqrtPeriods * 100).toFixed(2)
+      });
+    }
+    
+    return points;
+  };
+
+  const addView = () => {
+    setViews([...views, { type: 'absolute', asset: '', asset2: '', return: 0, confidence: 0.01 }]);
+  };
+
+  const updateView = (idx, field, value) => {
+    const newViews = [...views];
+    newViews[idx][field] = value;
+    setViews(newViews);
+  };
+
+  const removeView = (idx) => {
+    setViews(views.filter((_, i) => i !== idx));
+  };
+
+  const getComparisonData = () => {
+    if (!mcResults || !mcResultsMVP || !blResults) return null;
+    
+    return {
+      weightComparison: blResults.assets.map((asset, idx) => ({
+        asset,
+        mvp: (mcResultsMVP.weights[idx] * 100).toFixed(2),
+        bl: (mcResults.weights[idx] * 100).toFixed(2),
+        diff: ((mcResults.weights[idx] - mcResultsMVP.weights[idx]) * 100).toFixed(2)
+      })),
+      performanceComparison: [
+        { metric: 'Expected Return', mvp: (mcResultsMVP.mean * 100).toFixed(2), bl: (mcResults.mean * 100).toFixed(2) },
+        { metric: 'Volatility', mvp: (mcResultsMVP.std * 100).toFixed(2), bl: (mcResults.std * 100).toFixed(2) },
+        { metric: 'Sharpe Ratio', mvp: ((mcResultsMVP.mean - params.riskFreeRate) / mcResultsMVP.std).toFixed(3), bl: ((mcResults.mean - params.riskFreeRate) / mcResults.std).toFixed(3) },
+        { metric: 'VaR (95%)', mvp: (getDailyRisk(mcResultsMVP.var95) * 100).toFixed(2), bl: (getDailyRisk(mcResults.var95) * 100).toFixed(2) },
+        { metric: 'CVaR (95%)', mvp: (getDailyRisk(mcResultsMVP.cvar95) * 100).toFixed(2), bl: (getDailyRisk(mcResults.cvar95) * 100).toFixed(2) }
+      ]
+    };
+  };
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-6 bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg">
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <h1 className="text-3xl font-bold text-slate-800 mb-2">
+          📈 Black-Litterman + Monte Carlo Portfolio Tool
+        </h1>
+        <p className="text-slate-600">Advanced portfolio optimization with forward-looking returns</p>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div className="flex gap-2 mb-4">
+          {['Upload Data', 'Set Views', 'Black-Litterman', 'Monte Carlo', 'Results'].map((label, idx) => (
+            <button
+              key={idx}
+              onClick={() => setStep(idx + 1)}
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                step === idx + 1 
+                  ? 'bg-blue-600 text-white' 
+                  : step > idx + 1
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-slate-100 text-slate-600'
+              }`}
+              disabled={idx > 0 && !historicalData}
+            >
+              {idx + 1}. {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {step === 1 && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">Step 1: Upload Historical Returns</h2>
+            <div className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
+              <div className="text-6xl mb-4">📤</div>
+              <p className="text-slate-600 mb-4">Upload CSV with periodic returns</p>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleFileUpload}
+                className="mx-auto"
+              />
+            </div>
+            
+            {historicalData && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Loaded Assets:</h3>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {Object.keys(historicalData).map(asset => (
+                    <span key={asset} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                      {asset} ({historicalData[asset].length} periods)
+                    </span>
+                  ))}
+                </div>
+                
+                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 mt-4">
+                  <h3 className="text-lg font-semibold mb-3 text-yellow-900">
+                    ⚠️ Select Your Data Frequency
+                  </h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      onClick={() => setParams({...params, dataFrequency: 'daily'})}
+                      className={`p-4 rounded-lg border-2 ${
+                        params.dataFrequency === 'daily'
+                          ? 'border-blue-500 bg-blue-100'
+                          : 'border-slate-300 bg-white'
+                      }`}
+                    >
+                      <div className="font-semibold">Daily Returns</div>
+                      <div className="text-xs mt-1">252 days/year</div>
+                    </button>
+                    
+                    <button
+                      onClick={() => setParams({...params, dataFrequency: 'monthly'})}
+                      className={`p-4 rounded-lg border-2 ${
+                        params.dataFrequency === 'monthly'
+                          ? 'border-blue-500 bg-blue-100'
+                          : 'border-slate-300 bg-white'
+                      }`}
+                    >
+                      <div className="font-semibold">Monthly Returns</div>
+                      <div className="text-xs mt-1">12 months/year</div>
+                    </button>
+                    
+                    <button
+                      onClick={() => setParams({...params, dataFrequency: 'annual'})}
+                      className={`p-4 rounded-lg border-2 ${
+                        params.dataFrequency === 'annual'
+                          ? 'border-blue-500 bg-blue-100'
+                          : 'border-slate-300 bg-white'
+                      }`}
+                    >
+                      <div className="font-semibold">Annual Returns</div>
+                      <div className="text-xs mt-1">Already annualized</div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {historicalData && (
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-2xl font-bold text-slate-800 mb-4">Optional: Upload MVP Weights</h2>
+              <div className="border-2 border-dashed border-blue-300 rounded-lg p-8 text-center">
+                <div className="text-6xl mb-4">📤</div>
+                <p className="text-slate-600 mb-2">Upload CSV with weights</p>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleMVPUpload}
+                  className="mx-auto"
+                />
+              </div>
+              
+              {mvpWeights && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-2">MVP Weights Loaded:</h3>
+                  <div className="space-y-2">
+                    {Object.entries(mvpWeights).map(([asset, weight]) => (
+                      <div key={asset} className="flex justify-between border-b pb-2">
+                        <span>{asset}</span>
+                        <span className="font-semibold">{(weight * 100).toFixed(2)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <button
+                onClick={() => setStep(2)}
+                className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Continue to Views
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {step === 2 && historicalData && (
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">Step 2: Express Your Views (Optional)</h2>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <p className="text-slate-700">💡 Views represent your forward-looking expectations that differ from historical averages. Use regime presets or customize your own views.</p>
+          </div>
+          
+          <div className="mb-6 bg-purple-50 border-2 border-purple-300 rounded-lg p-4">
+            <h3 className="text-lg font-semibold mb-3 text-purple-900">📊 Covariance Matrix Estimation</h3>
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={params.useLedoitWolf}
+                  onChange={(e) => setParams({...params, useLedoitWolf: e.target.checked})}
+                  className="w-5 h-5"
+                />
+                <span className="font-medium text-purple-900">Use Ledoit-Wolf Shrinkage</span>
+              </label>
+              <span className="text-sm text-purple-700 bg-purple-100 rounded px-3 py-1">
+                Recommended for stability
+              </span>
+            </div>
+            <p className="text-sm text-purple-800 mt-2">
+              {params.useLedoitWolf 
+                ? "✓ Shrinkage enabled - Reduces estimation error by combining sample covariance with stable target"
+                : "✗ Using raw sample covariance - May be unstable with limited data"}
+            </p>
+          </div>
+
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">Quick Regime Presets</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <button
+                onClick={() => applyRegimePreset('custom_example')}
+                className="p-4 border-2 border-green-300 bg-green-50 rounded-lg hover:bg-green-100 text-left transition-colors"
+              >
+                <div className="font-semibold text-green-800">Your Example</div>
+                <div className="text-sm text-green-700 mt-1">Equity +2.5% vs Bonds</div>
+                <div className="text-sm text-green-700">Cash -7% vs Equity</div>
+              </button>
+              
+              <button
+                onClick={() => applyRegimePreset('bullish')}
+                className="p-4 border-2 border-blue-300 bg-blue-50 rounded-lg hover:bg-blue-100 text-left transition-colors"
+              >
+                <div className="font-semibold text-blue-800">Bullish Market</div>
+                <div className="text-sm text-blue-700 mt-1">Equity outperforms</div>
+                <div className="text-sm text-blue-700">Risk-on sentiment</div>
+              </button>
+              
+              <button
+                onClick={() => applyRegimePreset('bearish')}
+                className="p-4 border-2 border-red-300 bg-red-50 rounded-lg hover:bg-red-100 text-left transition-colors"
+              >
+                <div className="font-semibold text-red-800">Bearish Market</div>
+                <div className="text-sm text-red-700 mt-1">Flight to safety</div>
+                <div className="text-sm text-red-700">Bonds outperform</div>
+              </button>
+              
+              <button
+                onClick={() => applyRegimePreset('rising_rates')}
+                className="p-4 border-2 border-orange-300 bg-orange-50 rounded-lg hover:bg-orange-100 text-left transition-colors"
+              >
+                <div className="font-semibold text-orange-800">Rising Rates</div>
+                <div className="text-sm text-orange-700 mt-1">Cash outperforms</div>
+                <div className="text-sm text-orange-700">Bonds underperform</div>
+              </button>
+              
+              <button
+                onClick={() => applyRegimePreset('recession')}
+                className="p-4 border-2 border-purple-300 bg-purple-50 rounded-lg hover:bg-purple-100 text-left transition-colors"
+              >
+                <div className="font-semibold text-purple-800">Recession</div>
+                <div className="text-sm text-purple-700 mt-1">Negative equity returns</div>
+                <div className="text-sm text-purple-700">Bonds rally</div>
+              </button>
+              
+              <button
+                onClick={() => setViews([])}
+                className="p-4 border-2 border-slate-300 bg-slate-50 rounded-lg hover:bg-slate-100 text-left transition-colors"
+              >
+                <div className="font-semibold text-slate-800">Clear All</div>
+                <div className="text-sm text-slate-700 mt-1">Remove all views</div>
+                <div className="text-sm text-slate-700">Use equilibrium</div>
+              </button>
+            </div>
+          </div>
+
+          <h3 className="text-lg font-semibold mb-3">Custom Views</h3>
+          <div className="space-y-4">
+            {views.map((view, idx) => (
+              <div key={idx} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <select
+                    value={view.type}
+                    onChange={(e) => updateView(idx, 'type', e.target.value)}
+                    className="border border-slate-300 rounded px-3 py-2"
+                  >
+                    <option value="absolute">Absolute Return</option>
+                    <option value="relative">Relative Performance</option>
+                  </select>
+                  
+                  <select
+                    value={view.asset}
+                    onChange={(e) => updateView(idx, 'asset', e.target.value)}
+                    className="border border-slate-300 rounded px-3 py-2"
+                  >
+                    <option value="">Select Asset</option>
+                    {Object.keys(historicalData).map(asset => (
+                      <option key={asset} value={asset}>{asset}</option>
+                    ))}
+                  </select>
+                  
+                  {view.type === 'relative' && (
+                    <>
+                      <div className="flex items-center justify-center text-slate-600 font-semibold">
+                        outperforms
+                      </div>
+                      <select
+                        value={view.asset2}
+                        onChange={(e) => updateView(idx, 'asset2', e.target.value)}
+                        className="border border-slate-300 rounded px-3 py-2"
+                      >
+                        <option value="">Select Asset</option>
+                        {Object.keys(historicalData).map(asset => (
+                          <option key={asset} value={asset}>{asset}</option>
+                        ))}
+                      </select>
+                    </>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder={view.type === 'relative' ? "by %" : "Return %"}
+                        value={view.return * 100}
+                        onChange={(e) => updateView(idx, 'return', parseFloat(e.target.value) / 100 || 0)}
+                        className="w-full border border-slate-300 rounded px-3 py-2"
+                      />
+                      <div className="text-xs text-slate-500 mt-1">
+                        {view.type === 'relative' ? 'Outperformance' : 'Expected return'}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeView(idx)}
+                      className="px-3 py-2 bg-red-100 text-red-600 rounded hover:bg-red-200 self-start"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="mt-2 text-sm text-slate-600 bg-white rounded p-2">
+                  {view.type === 'absolute' && view.asset && (
+                    <span>📊 Expecting <strong>{view.asset}</strong> to return <strong>{(view.return * 100).toFixed(2)}%</strong></span>
+                  )}
+                  {view.type === 'relative' && view.asset && view.asset2 && (
+                    <span>📈 Expecting <strong>{view.asset}</strong> to outperform <strong>{view.asset2}</strong> by <strong>{(view.return * 100).toFixed(2)}%</strong></span>
+                  )}
+                  {(!view.asset || (view.type === 'relative' && !view.asset2)) && (
+                    <span className="text-slate-400">Configure your view above</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={addView}
+              className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
+            >
+              + Add Custom View
+            </button>
+            <button
+              onClick={() => { calculateBlackLitterman(); setStep(3); }}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Calculate Black-Litterman Returns {views.length > 0 ? `(${views.length} views)` : '(No views - equilibrium)'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 3 && blResults && (
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">Step 3: Black-Litterman Expected Returns</h2>
+          
+          {params.useLedoitWolf && blResults.shrinkageDelta > 0 && (
+            <div className="bg-purple-50 border border-purple-300 rounded-lg p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">📊</span>
+                <div>
+                  <div className="font-semibold text-purple-900">Ledoit-Wolf Shrinkage Applied</div>
+                  <div className="text-sm text-purple-800 mt-1">
+                    Shrinkage intensity: <strong>{(blResults.shrinkageDelta * 100).toFixed(1)}%</strong>
+                    {blResults.shrinkageDelta > 0.3 
+                      ? " (High shrinkage - limited data or many assets)" 
+                      : blResults.shrinkageDelta > 0.15
+                      ? " (Moderate shrinkage - reasonable balance)"
+                      : " (Low shrinkage - sufficient data)"}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <h3 className="font-semibold text-lg mb-3">Return Comparison</h3>
+              <div className="space-y-2">
+                {blResults.assets.map((asset, idx) => (
+                  <div key={asset} className="border-b border-slate-200 pb-2">
+                    <div className="font-medium text-slate-700">{asset}</div>
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      <div>
+                        <span className="text-slate-500">Historical:</span>
+                        <span className="font-semibold ml-2">{(blResults.historicalReturns[idx] * getAnnualizationFactors().periods * 100).toFixed(2)}%</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Equilibrium:</span>
+                        <span className="font-semibold ml-2">{(blResults.equilibriumReturns[idx] * getAnnualizationFactors().periods * 100).toFixed(2)}%</span>
+                      </div>
+                      <div>
+                        <span className="text-blue-600">Posterior:</span>
+                        <span className="font-semibold ml-2 text-blue-600">{(blResults.posteriorReturns[idx] * getAnnualizationFactors().periods * 100).toFixed(2)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="font-semibold text-lg mb-3">Parameters</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-slate-600 mb-1">Risk-Free Rate</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={params.riskFreeRate}
+                    onChange={(e) => setParams({...params, riskFreeRate: parseFloat(e.target.value)})}
+                    className="w-full border border-slate-300 rounded px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-600 mb-1">Tau (Uncertainty Scaling)</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={params.tau}
+                    onChange={(e) => setParams({...params, tau: parseFloat(e.target.value)})}
+                    className="w-full border border-slate-300 rounded px-3 py-2"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {calculatedMVP && (
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 mb-6">
+              <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span className="text-2xl">📊</span>
+                Tool-Calculated Minimum Variance Portfolio (MVP)
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-white rounded-lg p-4">
+                  <div className="text-sm text-slate-600">Expected Return (Annual)</div>
+                  <div className="text-2xl font-bold text-green-600">{(calculatedMVP.expectedReturn * getAnnualizationFactors().periods * 100).toFixed(2)}%</div>
+                </div>
+                <div className="bg-white rounded-lg p-4">
+                  <div className="text-sm text-slate-600">Volatility (Annual)</div>
+                  <div className="text-2xl font-bold text-green-600">{(calculatedMVP.volatility * getAnnualizationFactors().sqrtPeriods * 100).toFixed(2)}%</div>
+                </div>
+                <div className="bg-white rounded-lg p-4">
+                  <div className="text-sm text-slate-600">Sharpe Ratio</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {((calculatedMVP.expectedReturn * getAnnualizationFactors().periods - params.riskFreeRate) / 
+                      (calculatedMVP.volatility * getAnnualizationFactors().sqrtPeriods)).toFixed(3)}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4">
+                <h4 className="font-semibold mb-3">MVP Optimal Weights</h4>
+                <div className="space-y-2">
+                  {calculatedMVP.assets.map((asset, idx) => (
+                    <div key={asset} className="flex justify-between items-center">
+                      <span className="text-sm text-slate-700">{asset}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 bg-slate-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-600 h-2 rounded-full"
+                            style={{width: `${calculatedMVP.weights[idx] * 100}%`}}
+                          />
+                        </div>
+                        <span className="text-sm font-semibold text-green-600 w-16 text-right">
+                          {(calculatedMVP.weights[idx] * 100).toFixed(2)}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="mt-4 text-sm text-slate-600 bg-white rounded p-3">
+                <strong>Note:</strong> This is the Minimum Variance Portfolio calculated by the tool using the covariance matrix. 
+                Compare these weights with your uploaded MVP file to verify your optimization tool's calculations.
+              </div>
+            </div>
+          )}
+          
+          {/* Efficient Frontier Visualization */}
+          {calculatedMVP && (
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-6 mb-6">
+              <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span className="text-2xl">📈</span>
+                Modern Portfolio Theory - Efficient Frontier
+              </h3>
+              
+              <div className="bg-white rounded-lg p-4">
+                <ResponsiveContainer width="100%" height={400}>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart data={generateEfficientFrontier()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="risk" 
+                        label={{ value: 'Risk (Volatility %)', position: 'insideBottom', offset: -5 }}
+                        type="number"
+                      />
+                      <YAxis 
+                        dataKey="return"
+                        label={{ value: 'Expected Return (%)', angle: -90, position: 'insideLeft' }}
+                        type="number"
+                      />
+                      <Tooltip content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white border border-slate-300 rounded p-3 shadow-lg">
+                              <p className="text-sm font-semibold">Risk: {payload[0].payload.risk}%</p>
+                              <p className="text-sm font-semibold">Return: {payload[0].payload.return}%</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }} />
+                      <Bar dataKey="return" fill="#4f46e5" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ResponsiveContainer>
+                
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                  <div className="bg-green-50 border border-green-300 rounded p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-4 h-4 bg-green-600 rounded-full"></div>
+                      <span className="font-semibold text-green-800">Minimum Variance Point (MVP)</span>
+                    </div>
+                    <div className="text-sm text-green-700">
+                      Risk: {(calculatedMVP.volatility * getAnnualizationFactors().sqrtPeriods * 100).toFixed(2)}%
+                      <br />
+                      Return: {(calculatedMVP.expectedReturn * getAnnualizationFactors().periods * 100).toFixed(2)}%
+                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 border border-blue-300 rounded p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
+                      <span className="font-semibold text-blue-800">Efficient Frontier</span>
+                    </div>
+                    <div className="text-sm text-blue-700">
+                      All portfolios on the frontier offer the best return for each level of risk
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-3 text-xs text-slate-600 bg-slate-50 rounded p-2">
+                  <strong>💡 Tip:</strong> The MVP (leftmost point) has the lowest possible risk. Moving right along the frontier increases both risk and expected return.
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <button
+            onClick={() => setStep(4)}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Continue to Monte Carlo Simulation
+          </button>
+        </div>
+      )}
+
+      {step === 4 && blResults && (
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">Step 4: Monte Carlo Simulation</h2>
+          
+          <div className="grid grid-cols-3 gap-6 mb-6">
+            <div>
+              <label className="block text-sm mb-1">Simulations</label>
+              <input
+                type="number"
+                value={params.mcSimulations}
+                onChange={(e) => setParams({...params, mcSimulations: parseInt(e.target.value)})}
+                className="w-full border rounded px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Time Horizon (Years)</label>
+              <input
+                type="number"
+                step="0.25"
+                value={params.timeHorizon}
+                onChange={(e) => setParams({...params, timeHorizon: parseFloat(e.target.value)})}
+                className="w-full border rounded px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Initial Investment</label>
+              <input
+                type="number"
+                value={params.initialInvestment}
+                onChange={(e) => setParams({...params, initialInvestment: parseFloat(e.target.value)})}
+                className="w-full border rounded px-3 py-2"
+              />
+            </div>
+          </div>
+          
+          <button
+            onClick={() => { 
+              runMonteCarloSimulation(false, null);
+              if (mvpWeights) {
+                runMonteCarloSimulation(true, mvpWeights);
+              }
+              setStep(5); 
+            }}
+            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Run Simulation
+          </button>
+        </div>
+      )}
+
+      {step === 5 && mcResults && (
+        <div className="space-y-6">
+          {/* Comparison Mode */}
+          {mvpWeights && mcResultsMVP && (
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg shadow-lg p-6">
+              <h2 className="text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <span className="text-2xl">⚖️</span>
+                Portfolio Comparison: MVP vs Black-Litterman
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Weight Comparison */}
+                <div className="bg-white rounded-lg p-4">
+                  <h3 className="font-semibold text-lg mb-3">Weight Allocation</h3>
+                  <div className="space-y-3">
+                    {getComparisonData().weightComparison.map(item => (
+                      <div key={item.asset}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium">{item.asset}</span>
+                          <span className="text-slate-600">MVP: {item.mvp}% → BL: {item.bl}%</span>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="flex-1 bg-orange-200 rounded h-2" style={{width: `${item.mvp}%`}} />
+                          <div className="flex-1 bg-blue-200 rounded h-2" style={{width: `${item.bl}%`}} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Performance Comparison */}
+                <div className="bg-white rounded-lg p-4">
+                  <h3 className="font-semibold text-lg mb-3">Performance Metrics</h3>
+                  <div className="space-y-2">
+                    {getComparisonData().performanceComparison.map(item => (
+                      <div key={item.metric} className="flex justify-between items-center border-b border-slate-200 pb-2">
+                        <span className="text-sm text-slate-600">{item.metric}</span>
+                        <div className="flex gap-4">
+                          <span className="text-sm font-semibold text-orange-600">MVP: {item.mvp}</span>
+                          <span className="text-sm font-semibold text-blue-600">BL: {item.bl}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Side-by-side distribution comparison */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white rounded-lg p-4">
+                  <h3 className="font-semibold mb-2 text-orange-600">MVP Portfolio Distribution</h3>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={mcResultsMVP.histogram}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="return" tick={{fontSize: 10}} />
+                      <YAxis tick={{fontSize: 10}} />
+                      <Tooltip />
+                      <Bar dataKey="frequency">
+                        {mcResultsMVP.histogram.map((entry, index) => (
+                          <Cell key={index} fill={parseFloat(entry.return) < 0 ? '#ef4444' : '#f97316'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="bg-white rounded-lg p-4">
+                  <h3 className="font-semibold mb-2 text-blue-600">Black-Litterman Portfolio Distribution</h3>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={mcResults.histogram}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="return" tick={{fontSize: 10}} />
+                      <YAxis tick={{fontSize: 10}} />
+                      <Tooltip />
+                      <Bar dataKey="frequency">
+                        {mcResults.histogram.map((entry, index) => (
+                          <Cell key={index} fill={parseFloat(entry.return) < 0 ? '#ef4444' : '#3b82f6'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">
+              {mvpWeights ? 'Black-Litterman' : 'Monte Carlo'} Results Summary
+            </h2>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4 text-sm">
+              <strong>Note:</strong> All metrics below are displayed in <strong>annualized terms</strong> (converted from {getAnnualizationFactors().label.toLowerCase()} data)
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <div className="text-sm text-slate-600">Expected Return (Annual)</div>
+                <div className="text-2xl font-bold text-blue-600">{(mcResults.mean * 100).toFixed(2)}%</div>
+                <div className="text-xs text-slate-500 mt-1">Over {params.timeHorizon} year{params.timeHorizon !== 1 ? 's' : ''}</div>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <div className="text-sm text-slate-600">Volatility (Annual)</div>
+                <div className="text-2xl font-bold text-purple-600">{(mcResults.std * 100).toFixed(2)}%</div>
+                <div className="text-xs text-slate-500 mt-1">Annualized standard deviation</div>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <div className="text-sm text-slate-600">Median Return</div>
+                <div className="text-2xl font-bold text-green-600">{(mcResults.percentiles[2].return * 100).toFixed(2)}%</div>
+                <div className="text-xs text-slate-500 mt-1">Over {params.timeHorizon} year{params.timeHorizon !== 1 ? 's' : ''}</div>
+              </div>
+              <div className="bg-orange-50 rounded-lg p-4">
+                <div className="text-sm text-slate-600">VaR 95% ({params.dataFrequency === 'annual' ? 'Annual' : params.dataFrequency === 'monthly' ? 'Monthly' : 'Daily'})</div>
+                <div className="text-2xl font-bold text-orange-600">{(getDailyRisk(mcResults.var95) * 100).toFixed(2)}%</div>
+                <div className="text-xs text-slate-500 mt-1">Worst-case single-{params.dataFrequency === 'annual' ? 'year' : params.dataFrequency === 'monthly' ? 'month' : 'day'} loss</div>
+              </div>
+              <div className="bg-red-50 rounded-lg p-4">
+                <div className="text-sm text-slate-600">CVaR 95% ({params.dataFrequency === 'annual' ? 'Annual' : params.dataFrequency === 'monthly' ? 'Monthly' : 'Daily'})</div>
+                <div className="text-2xl font-bold text-red-600">{(getDailyRisk(mcResults.cvar95) * 100).toFixed(2)}%</div>
+                <div className="text-xs text-slate-500 mt-1">Avg loss in worst 5%</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-xl font-bold text-slate-800 mb-4">Return Percentiles (Over {params.timeHorizon} Year{params.timeHorizon !== 1 ? 's' : ''})</h3>
+            <div className="space-y-2">
+              {mcResults.percentiles.map(p => (
+                <div key={p.percentile} className="flex items-center gap-4">
+                  <div className="w-16 text-sm text-slate-600">{p.percentile}th</div>
+                  <div className="flex-1 bg-slate-100 rounded-full h-8 relative overflow-hidden">
+                    <div 
+                      className={`${p.return >= 0 ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gradient-to-r from-red-500 to-red-600'} h-full flex items-center ${p.return >= 0 ? 'justify-end pr-3' : 'justify-start pl-3'}`}
+                      style={{
+                        width: `${Math.max(5, Math.min(95, 50 + (p.return * 100)))}%`,
+                        marginLeft: p.return < 0 ? `${Math.max(0, 50 + (p.return * 100))}%` : '0'
+                      }}
+                    >
+                      <span className="text-white text-sm font-semibold whitespace-nowrap">{(p.return * 100).toFixed(2)}%</span>
+                    </div>
+                  </div>
+                  <div className="w-32 text-sm text-slate-600">${p.value.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-xl font-bold text-slate-800 mb-4">Return Distribution (Over {params.timeHorizon} Year{params.timeHorizon !== 1 ? 's' : ''})</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={mcResults.histogram}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="return" label={{ value: `Return (%) over ${params.timeHorizon} year${params.timeHorizon !== 1 ? 's' : ''}`, position: 'insideBottom', offset: -5 }} />
+                <YAxis label={{ value: 'Frequency', angle: -90, position: 'insideLeft' }} />
+                <Tooltip content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="bg-white border border-slate-300 rounded p-2 shadow-lg">
+                        <p className="text-sm">Return: {payload[0].payload.return}%</p>
+                        <p className="text-sm">Frequency: {payload[0].value}</p>
+                        <p className="text-sm">Percentage: {payload[0].payload.percentage}%</p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }} />
+                <Bar dataKey="frequency">
+                  {mcResults.histogram.map((entry, index) => (
+                    <Cell key={index} fill={parseFloat(entry.return) < 0 ? '#ef4444' : '#3b82f6'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-xl font-bold text-slate-800 mb-4">
+              {mvpWeights ? 'Black-Litterman' : 'Optimal'} Portfolio Weights
+            </h3>
+            <div className="space-y-3">
+              {blResults.assets.map((asset, idx) => (
+                <div key={asset}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium text-slate-700">{asset}</span>
+                    <span className="text-sm font-semibold text-blue-600">{(mcResults.weights[idx] * 100).toFixed(2)}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-3">
+                    <div 
+                      className="bg-blue-600 h-3 rounded-full transition-all"
+                      style={{width: `${mcResults.weights[idx] * 100}%`}}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-lg p-6">
+            <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <span className="text-2xl">💡</span>
+              Key Insights
+            </h3>
+            <div className="space-y-3 text-slate-700">
+              <p>• With {params.mcSimulations.toLocaleString()} simulations over {params.timeHorizon} year{params.timeHorizon !== 1 ? 's' : ''}, your {mvpWeights ? 'Black-Litterman' : 'expected'} portfolio return is <strong>{(mcResults.mean * 100).toFixed(2)}%</strong></p>
+              <p>• There's a 95% confidence that your return will be between <strong>{(mcResults.percentiles[0].return * 100).toFixed(2)}%</strong> and <strong>{(mcResults.percentiles[4].return * 100).toFixed(2)}%</strong></p>
+              <p>• Your initial ${params.initialInvestment.toLocaleString()} investment has a median projected value of <strong>${mcResults.percentiles[2].value.toLocaleString(undefined, {maximumFractionDigits: 0})}</strong></p>
+              <p>• <strong>Daily Risk (VaR 95%):</strong> In the worst 5% of {params.dataFrequency === 'annual' ? 'years' : params.dataFrequency === 'monthly' ? 'months' : 'days'}, you could lose up to <strong>{(getDailyRisk(mcResults.var95) * 100).toFixed(2)}%</strong> in a single {params.dataFrequency === 'annual' ? 'year' : params.dataFrequency === 'monthly' ? 'month' : 'day'}</p>
+              <p>• The portfolio volatility is <strong>{(mcResults.std * 100).toFixed(2)}%</strong>, indicating {mcResults.std < 0.10 ? 'low' : mcResults.std < 0.20 ? 'moderate' : 'high'} risk</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default PortfolioTool;

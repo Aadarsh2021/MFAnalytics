@@ -1,0 +1,50 @@
+export function downloadReport(method, returns, allData, mvpResults, blResult) {
+    let weights, vol, methodName
+
+    if (method === 'blacklitterman') {
+        weights = blResult.weights
+        vol = blResult.vol
+        methodName = 'Black-Litterman'
+    } else {
+        weights = mvpResults[method].weights
+        vol = mvpResults[method].vol
+        methodName = method.toUpperCase()
+    }
+
+    // 1. Prepare Daily Returns Section (Mirroring Standalone Tool)
+    const retHeaders = ['Date', ...returns.codes.map(c => `"${allData[c].name}_Return"`)]
+    const retRows = returns.dates.map(date => {
+        return [date, ...returns.codes.map(c => (returns.returns[c][date] || 0).toFixed(6))]
+    })
+    const retCSV = [
+        '=== Daily Returns ===',
+        retHeaders.join(','),
+        ...retRows.map(r => r.join(','))
+    ].join('\n')
+
+    // 2. Prepare Weights Section
+    const wHeaders = ['Fund', 'Code', 'Weight', 'Weight_Pct']
+    const wRows = returns.codes.map((c, i) => [
+        `"${allData[c].name}"`,
+        c,
+        weights[i].toFixed(6),
+        `${(weights[i] * 100).toFixed(2)}%`
+    ])
+    const wCSV = [
+        `=== ${methodName} Portfolio Weights ===`,
+        wHeaders.join(','),
+        ...wRows.map(r => r.join(',')),
+        '',
+        `Portfolio Volatility,${(vol * 100).toFixed(2)}%`
+    ].join('\n')
+
+    // 3. Combined Export
+    const combinedData = retCSV + '\n\n\n' + wCSV
+    const blob = new Blob([combinedData], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `Portfolio_${methodName}_Full_Report_${new Date().toISOString().split('T')[0]}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+}

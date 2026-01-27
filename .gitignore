@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+*.log
+.env
+.env.local
+.env.production
+.firebase
+.firebaserc
+firebase-debug.log
+
+# Data directories
+data/raw/
+data/processed/
+data/archive/

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Optimizer - 3 Methods</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-6">
+    <div class="max-w-7xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold mb-2">📊 MVP Portfolio Optimizer</h1>
+            <p class="text-gray-600 mb-6">Compare 3 professional optimization methods: SQP, Convex, and Critical Line</p>
+
+            <!-- Search -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2">Search Mutual Funds</label>
+                <div class="flex gap-3">
+                    <input id="searchInput" type="text" placeholder="e.g., HDFC, SBI, Axis..." 
+                           class="flex-1 px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <button id="searchBtn" onclick="searchFunds()" 
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <span id="searchBtnText">🔍 Search</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Selected Funds -->
+            <div id="selectedContainer" class="mb-6 hidden">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex justify-between mb-3">
+                        <h3 class="font-semibold text-blue-900">📋 Selected: <span id="selectedCount">0</span></h3>
+                        <button onclick="clearAll()" class="text-sm text-blue-700 underline">Clear All</button>
+                    </div>
+                    <div id="selectedList" class="space-y-2 mb-3"></div>
+                    <button id="fetchBtn" onclick="fetchAllData()" 
+                            class="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 mb-2">
+                        <span id="fetchBtnText">📊 Fetch & Align Data</span>
+                    </button>
+                    <button id="returnsBtn" onclick="calculateReturns()" 
+                            class="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 mb-2 hidden">
+                        <span id="returnsBtnText">📈 Calculate Returns</span>
+                    </button>
+                    <button id="mvpBtn" onclick="calculateAllMVP()" 
+                            class="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 hidden">
+                        <span id="mvpBtnText">⚖️ Calculate MVP (All 3 Methods)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="errorBox" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg hidden">
+                <p class="text-red-800 font-bold">⚠️ Error</p>
+                <p id="errorText" class="text-red-700 text-sm"></p>
+            </div>
+            <div id="successBox" class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg hidden">
+                <p class="text-green-800 font-bold">✅ Success</p>
+                <p id="successText" class="text-green-700 text-sm"></p>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsContainer" class="mb-6 hidden">
+                <h2 class="text-xl font-semibold mb-4">Results (<span id="resultCount">0</span>)</h2>
+                <div id="resultsList" class="max-h-96 overflow-y-auto space-y-3"></div>
+            </div>
+
+            <!-- MVP Comparison -->
+            <div id="mvpContainer" class="hidden">
+                <h2 class="text-2xl font-bold mb-4">🔬 MVP Weight Comparison</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- SQP -->
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-blue-900 mb-2">🎯 SQP Method</h3>
+                        <p class="text-xs text-blue-700 mb-4">Sequential Quadratic Programming</p>
+                        <div id="sqpWeights" class="space-y-2 mb-4"></div>
+                        <div class="bg-white p-3 rounded mb-3">
+                            <p class="text-xs text-gray-600">Volatility</p>
+                            <p id="sqpVol" class="text-xl font-bold text-blue-600">-</p>
+                        </div>
+                        <button onclick="downloadMethod('sqp')" 
+                                class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            📥 Download SQP
+                        </button>
+                    </div>
+
+                    <!-- Convex -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-green-900 mb-2">🔷 Convex Method</h3>
+                        <p class="text-xs text-green-700 mb-4">Interior Point / Barrier Method</p>
+                        <div id="convexWeights" class="space-y-2 mb-4"></div>
+                        <div class="bg-white p-3 rounded mb-3">
+                            <p class="text-xs text-gray-600">Volatility</p>
+                            <p id="convexVol" class="text-xl font-bold text-green-600">-</p>
+                        </div>
+                        <button onclick="downloadMethod('convex')" 
+                                class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            📥 Download Convex
+                        </button>
+                    </div>
+
+                    <!-- Critical Line -->
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-purple-900 mb-2">📐 Critical Line</h3>
+                        <p class="text-xs text-purple-700 mb-4">Analytical Solution Method</p>
+                        <div id="criticalWeights" class="space-y-2 mb-4"></div>
+                        <div class="bg-white p-3 rounded mb-3">
+                            <p class="text-xs text-gray-600">Volatility</p>
+                            <p id="criticalVol" class="text-xl font-bold text-purple-600">-</p>
+                        </div>
+                        <button onclick="downloadMethod('critical')" 
+                                class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                            📥 Download Critical
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comparison Table -->
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-semibold mb-3">📊 Side-by-Side Comparison</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 text-left">Fund</th>
+                                    <th class="px-4 py-2 text-center">SQP</th>
+                                    <th class="px-4 py-2 text-center">Convex</th>
+                                    <th class="px-4 py-2 text-center">Critical</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compTable" class="divide-y"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selected = [];
+        let allData = {};
+        let aligned = null;
+        let returns = null;
+        let mvp = null;
+        let searchResults = [];
+
+        // Search
+        async function searchFunds() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                showError('Enter fund name');
+                return;
+            }
+
+            document.getElementById('searchBtn').disabled = true;
+            document.getElementById('searchBtnText').innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const res = await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                
+                if (!data || data.length === 0) {
+                    showError('No funds found');
+                } else {
+                    searchResults = data;
+                    displayResults(data);
+                }
+            } catch (e) {
+                showError('Search failed: ' + e.message);
+            } finally {
+                document.getElementById('searchBtn').disabled = false;
+                document.getElementById('searchBtnText').innerHTML = '🔍 Search';
+            }
+        }
+
+        // Display results
+        function displayResults(results) {
+            const list = document.getElementById('resultsList');
+            list.innerHTML = '';
+            document.getElementById('resultCount').textContent = results.length;
+
+            results.forEach(fund => {
+                const isSelected = selected.some(f => f.code === fund.schemeCode);
+                const div = document.createElement('div');
+                div.className = `p-3 border rounded-lg cursor-pointer hover:bg-blue-50 ${isSelected ? 'bg-green-50' : ''}`;
+                div.onclick = () => toggleFund(fund.schemeCode, fund.schemeName);
+                div.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-medium text-sm">${fund.schemeName}</p>
+                            <p class="text-xs text-gray-500">Code: ${fund.schemeCode}</p>
+                        </div>
+                        <span class="text-lg">${isSelected ? '✓' : '+'}</span>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            document.getElementById('resultsContainer').classList.remove('hidden');
+        }
+
+        // Toggle selection
+        function toggleFund(code, name) {
+            const idx = selected.findIndex(f => f.code === code);
+            if (idx >= 0) {
+                selected.splice(idx, 1);
+            } else {
+                selected.push({ code, name });
+            }
+            updateSelected();
+            displayResults(searchResults);
+        }
+
+        // Update selected
+        function updateSelected() {
+            document.getElementById('selectedCount').textContent = selected.length;
+            
+            if (selected.length === 0) {
+                document.getElementById('selectedContainer').classList.add('hidden');
+                return;
+            }
+
+            const list = document.getElementById('selectedList');
+            list.innerHTML = selected.map((f, i) => `
+                <div class="flex justify-between bg-white p-2 rounded border">
+                    <span class="text-sm">${i + 1}. ${f.name}</span>
+                    <button onclick="toggleFund(${f.code}, '${f.name.replace(/'/g, "\\'")}')">✕</button>
+                </div>
+            `).join('');
+
+            document.getElementById('selectedContainer').classList.remove('hidden');
+        }
+
+        // Clear all
+        function clearAll() {
+            selected = [];
+            updateSelected();
+            displayResults(searchResults);
+        }
+
+        // Fetch all data
+        async function fetchAllData() {
+            if (selected.length < 2) {
+                showError('Select at least 2 funds');
+                return;
+            }
+
+            document.getElementById('fetchBtn').disabled = true;
+            document.getElementById('fetchBtnText').innerHTML = '<div class="spinner"></div>';
+            allData = {};
+
+            try {
+                for (let i = 0; i < selected.length; i++) {
+                    document.getElementById('fetchBtnText').textContent = `${i + 1}/${selected.length}`;
+                    const res = await fetch(`https://api.mfapi.in/mf/${selected[i].code}`);
+                    const data = await res.json();
+                    
+                    if (data.data) {
+                        allData[selected[i].code] = {
+                            name: selected[i].name,
+                            data: data.data,
+                            meta: data.meta
+                        };
+                    }
+                }
+
+                alignData();
+                document.getElementById('returnsBtn').classList.remove('hidden');
+                showSuccess('Data fetched and aligned');
+            } catch (e) {
+                showError('Fetch failed: ' + e.message);
+            } finally {
+                document.getElementById('fetchBtn').disabled = false;
+                document.getElementById('fetchBtnText').innerHTML = '📊 Fetch & Align Data';
+            }
+        }
+
+        // Align data
+        function alignData() {
+            const codes = Object.keys(allData);
+            let latestStart = null;
+            
+            codes.forEach(code => {
+                const dates = allData[code].data;
+                const start = parseDate(dates[dates.length - 1].date);
+                if (!latestStart || start > latestStart) latestStart = start;
+            });
+
+            const nav = {};
+            const dateSet = new Set();
+            
+            codes.forEach(code => {
+                nav[code] = {};
+                allData[code].data.forEach(item => {
+                    const d = parseDate(item.date);
+                    if (d >= latestStart) {
+                        nav[code][item.date] = parseFloat(item.nav);
+                        dateSet.add(item.date);
+                    }
+                });
+            });
+
+            const allDates = Array.from(dateSet).sort((a, b) => parseDate(b) - parseDate(a));
+            const common = allDates.filter(d => codes.every(c => nav[c][d]));
+
+            aligned = { dates: common, codes, nav };
+        }
+
+        // Calculate returns
+        function calculateReturns() {
+            if (!aligned) return;
+
+            const ret = {};
+            const dates = aligned.dates.slice(0, -1);
+            
+            aligned.codes.forEach(code => {
+                ret[code] = {};
+                for (let i = 0; i < dates.length; i++) {
+                    const today = dates[i];
+                    const yesterday = aligned.dates[i + 1];
+                    const nav1 = aligned.nav[code][today];
+                    const nav2 = aligned.nav[code][yesterday];
+                    if (nav1 && nav2 && nav2 !== 0) {
+                        ret[code][today] = (nav1 - nav2) / nav2;
+                    }
+                }
+            });
+
+            returns = { dates, codes: aligned.codes, returns: ret };
+            document.getElementById('mvpBtn').classList.remove('hidden');
+            showSuccess('Returns calculated');
+        }
+
+        // Calculate all MVP methods
+        function calculateAllMVP() {
+            if (!returns) return;
+
+            document.getElementById('mvpBtn').disabled = true;
+            document.getElementById('mvpBtnText').innerHTML = '<div class="spinner"></div>';
+
+            try {
+                const n = returns.codes.length;
+                const cov = calcCovariance();
+                
+                // Method 1: SQP
+                const sqp = optimizeSQP(cov, n);
+                
+                // Method 2: Convex (Interior Point)
+                const convex = optimizeConvex(cov, n);
+                
+                // Method 3: Critical Line
+                const critical = optimizeCritical(cov, n);
+
+                mvp = { sqp, convex, critical };
+                displayMVP();
+                showSuccess('All 3 methods calculated');
+            } catch (e) {
+                showError('Optimization failed: ' + e.message);
+            } finally {
+                document.getElementById('mvpBtn').disabled = false;
+                document.getElementById('mvpBtnText').innerHTML = '⚖️ Calculate MVP (All 3 Methods)';
+            }
+        }
+
+        // Calculate covariance matrix
+        function calcCovariance() {
+            const n = returns.codes.length;
+            const cov = [];
+            
+            for (let i = 0; i < n; i++) {
+                cov[i] = [];
+                for (let j = 0; j < n; j++) {
+                    const c1 = returns.codes[i];
+                    const c2 = returns.codes[j];
+                    let sum = 0, count = 0, m1 = 0, m2 = 0;
+                    
+                    returns.dates.forEach(d => {
+                        if (returns.returns[c1][d] !== undefined && returns.returns[c2][d] !== undefined) {
+                            m1 += returns.returns[c1][d];
+                            m2 += returns.returns[c2][d];
+                            count++;
+                        }
+                    });
+                    m1 /= count;
+                    m2 /= count;
+                    
+                    returns.dates.forEach(d => {
+                        if (returns.returns[c1][d] !== undefined && returns.returns[c2][d] !== undefined) {
+                            sum += (returns.returns[c1][d] - m1) * (returns.returns[c2][d] - m2);
+                        }
+                    });
+                    
+                    cov[i][j] = sum / (count - 1);
+                }
+            }
+            
+            return cov;
+        }
+
+        // SQP Optimization - Sequential Quadratic Programming
+        function optimizeSQP(cov, n) {
+            let w = new Array(n).fill(1 / n);
+            let bestW = [...w];
+            let bestVar = calcVariance(w, cov);
+            
+            for (let iter = 0; iter < 3000; iter++) {
+                // Calculate gradient: ∇(w'Σw) = 2Σw
+                let grad = new Array(n).fill(0);
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        grad[i] += 2 * cov[i][j] * w[j];
+                    }
+                }
+                
+                // Adaptive learning rate
+                const lr = 0.02 / Math.sqrt(iter + 1);
+                
+                // Gradient step
+                let newW = new Array(n);
+                for (let i = 0; i < n; i++) {
+                    newW[i] = w[i] - lr * grad[i];
+                }
+                
+                // Project onto simplex (sum=1, all ≥ 0)
+                newW = projectSimplex(newW);
+                
+                // Track best solution
+                const newVar = calcVariance(newW, cov);
+                if (newVar < bestVar) {
+                    bestVar = newVar;
+                    bestW = [...newW];
+                }
+                
+                // Check convergence
+                const change = w.reduce((acc, wi, i) => acc + Math.abs(wi - newW[i]), 0);
+                w = [...newW];
+                
+                if (change < 1e-9 && iter > 100) break;
+            }
+            
+            // Use best weights found
+            w = [...bestW];
+            
+            // Final cleanup and normalization
+            w = w.map(wi => wi < 0.001 ? 0 : wi);
+            const sum = w.reduce((a, b) => a + b, 0);
+            w = w.map(wi => wi / sum);
+            
+            console.log('SQP weights sum:', w.reduce((a,b) => a+b, 0).toFixed(6));
+            return { weights: w, vol: Math.sqrt(calcVariance(w, cov) * 252) };
+        }
+
+        // Convex Optimization - Interior Point Method with Barrier
+        function optimizeConvex(cov, n) {
+            let w = new Array(n).fill(1 / n);
+            let mu = 1.0; // Initial barrier parameter
+            let bestW = [...w];
+            let bestVar = calcVariance(w, cov);
+            
+            // Outer loop: decrease barrier parameter
+            for (let outer = 0; outer < 10; outer++) {
+                // Inner loop: optimize with current barrier
+                for (let iter = 0; iter < 500; iter++) {
+                    let grad = new Array(n).fill(0);
+                    
+                    // Gradient of f(w) = w'Σw - μ∑log(w_i)
+                    for (let i = 0; i < n; i++) {
+                        // Quadratic objective gradient
+                        for (let j = 0; j < n; j++) {
+                            grad[i] += 2 * cov[i][j] * w[j];
+                        }
+                        // Barrier gradient: -μ/w_i
+                        grad[i] -= mu / Math.max(w[i], 1e-8);
+                    }
+                    
+                    // Remove constraint gradient for sum constraint
+                    const avgGrad = grad.reduce((a, b) => a + b, 0) / n;
+                    grad = grad.map(g => g - avgGrad);
+                    
+                    const lr = 0.01 / Math.sqrt(iter + 1);
+                    let newW = w.map((wi, i) => wi - lr * grad[i]);
+                    
+                    // Ensure positivity and normalize
+                    newW = newW.map(wi => Math.max(1e-8, wi));
+                    const sum = newW.reduce((a, b) => a + b, 0);
+                    newW = newW.map(wi => wi / sum);
+                    
+                    // Track best solution
+                    const newVar = calcVariance(newW, cov);
+                    if (newVar < bestVar) {
+                        bestVar = newVar;
+                        bestW = [...newW];
+                    }
+                    
+                    const change = w.reduce((acc, wi, i) => acc + Math.abs(wi - newW[i]), 0);
+                    w = [...newW];
+                    
+                    if (change < 1e-9) break;
+                }
+                
+                // Decrease barrier parameter
+                mu *= 0.5;
+            }
+            
+            // Use best weights
+            w = [...bestW];
+            
+            // Final cleanup
+            w = w.map(wi => wi < 0.001 ? 0 : wi);
+            const sum = w.reduce((a, b) => a + b, 0);
+            w = w.map(wi => wi / sum);
+            
+            console.log('Convex weights sum:', w.reduce((a,b) => a+b, 0).toFixed(6));
+            return { weights: w, vol: Math.sqrt(calcVariance(w, cov) * 252) };
+        }
+
+        // Critical Line Algorithm - Analytical Method
+        function optimizeCritical(cov, n) {
+            // Start with analytical solution: w = Σ^(-1)·1 / (1'·Σ^(-1)·1)
+            try {
+                const invCov = invertMatrix(cov);
+                let w = new Array(n).fill(0);
+                
+                // w_i = sum_j(invCov[i][j])
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        w[i] += invCov[i][j];
+                    }
+                }
+                
+                // Handle negative weights by iterative removal
+                let activeSet = new Array(n).fill(true);
+                let maxIter = n;
+                
+                for (let iter = 0; iter < maxIter; iter++) {
+                    // Check if all weights are non-negative
+                    const hasNegative = w.some((wi, i) => activeSet[i] && wi < 0);
+                    if (!hasNegative) break;
+                    
+                    // Find most negative weight and set to zero
+                    let minIdx = -1;
+                    let minVal = 0;
+                    for (let i = 0; i < n; i++) {
+                        if (activeSet[i] && w[i] < minVal) {
+                            minVal = w[i];
+                            minIdx = i;
+                        }
+                    }
+                    
+                    if (minIdx >= 0) {
+                        activeSet[minIdx] = false;
+                        w[minIdx] = 0;
+                        
+                        // Recalculate weights for active set
+                        const activeIndices = [];
+                        for (let i = 0; i < n; i++) {
+                            if (activeSet[i]) activeIndices.push(i);
+                        }
+                        
+                        if (activeIndices.length > 0) {
+                            // Build reduced covariance matrix
+                            const m = activeIndices.length;
+                            const covReduced = [];
+                            for (let i = 0; i < m; i++) {
+                                covReduced[i] = [];
+                                for (let j = 0; j < m; j++) {
+                                    covReduced[i][j] = cov[activeIndices[i]][activeIndices[j]];
+                                }
+                            }
+                            
+                            // Invert and solve
+                            const invCovRed = invertMatrix(covReduced);
+                            const wReduced = new Array(m).fill(0);
+                            for (let i = 0; i < m; i++) {
+                                for (let j = 0; j < m; j++) {
+                                    wReduced[i] += invCovRed[i][j];
+                                }
+                            }
+                            
+                            // Map back to original indices
+                            for (let i = 0; i < m; i++) {
+                                w[activeIndices[i]] = wReduced[i];
+                            }
+                        }
+                    }
+                }
+                
+                // Ensure all non-negative
+                w = w.map(wi => Math.max(0, wi));
+                
+                // Normalize
+                const sum = w.reduce((a, b) => a + b, 0);
+                if (sum > 0) {
+                    w = w.map(wi => wi / sum);
+                } else {
+                    // Fallback to equal weights
+                    w = new Array(n).fill(1 / n);
+                }
+                
+                // Final cleanup
+                w = w.map(wi => wi < 0.001 ? 0 : wi);
+                const finalSum = w.reduce((a, b) => a + b, 0);
+                w = w.map(wi => wi / finalSum);
+                
+                console.log('Critical weights sum:', w.reduce((a,b) => a+b, 0).toFixed(6));
+                return { weights: w, vol: Math.sqrt(calcVariance(w, cov) * 252) };
+                
+            } catch (e) {
+                console.error('Critical line failed:', e);
+                // Fallback to equal weights
+                const w = new Array(n).fill(1 / n);
+                return { weights: w, vol: Math.sqrt(calcVariance(w, cov) * 252) };
+            }
+        }
+
+        // Helper: Calculate portfolio variance
+        function calcVariance(w, cov) {
+            let var_ = 0;
+            for (let i = 0; i < w.length; i++) {
+                for (let j = 0; j < w.length; j++) {
+                    var_ += w[i] * cov[i][j] * w[j];
+                }
+            }
+            return var_;
+        }
+
+        // Helper: Project to simplex
+        function projectSimplex(w) {
+            const n = w.length;
+            const sorted = w.map((v, i) => ({ v, i })).sort((a, b) => b.v - a.v);
+            let cumSum = 0, rho = 0;
+            
+            for (let i = 0; i < n; i++) {
+                cumSum += sorted[i].v;
+                const theta = (cumSum - 1) / (i + 1);
+                if (i === n - 1 || sorted[i].v - theta > sorted[i + 1].v - theta) {
+                    rho = i;
+                    break;
+                }
+            }
+            
+            cumSum = 0;
+            for (let i = 0; i <= rho; i++) cumSum += sorted[i].v;
+            const theta = (cumSum - 1) / (rho + 1);
+            
+            const proj = new Array(n);
+            for (let i = 0; i < n; i++) {
+                proj[sorted[i].i] = Math.max(0, sorted[i].v - theta);
+            }
+            
+            return proj;
+        }
+
+        // Helper: Invert matrix
+        function invertMatrix(m) {
+            const n = m.length;
+            const aug = m.map((row, i) => [...row, ...Array(n).fill(0).map((_, j) => i === j ? 1 : 0)]);
+            
+            for (let i = 0; i < n; i++) {
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) {
+                    if (Math.abs(aug[k][i]) > Math.abs(aug[maxRow][i])) maxRow = k;
+                }
+                [aug[i], aug[maxRow]] = [aug[maxRow], aug[i]];
+                
+                const div = aug[i][i];
+                for (let j = 0; j < 2 * n; j++) aug[i][j] /= div;
+                
+                for (let k = 0; k < n; k++) {
+                    if (k !== i) {
+                        const factor = aug[k][i];
+                        for (let j = 0; j < 2 * n; j++) {
+                            aug[k][j] -= factor * aug[i][j];
+                        }
+                    }
+                }
+            }
+            
+            return aug.map(row => row.slice(n));
+        }
+
+        // Display MVP results
+        function displayMVP() {
+            ['sqp', 'convex', 'critical'].forEach(method => {
+                const weights = mvp[method].weights;
+                const vol = mvp[method].vol;
+                
+                document.getElementById(`${method}Weights`).innerHTML = weights.map((w, i) => `
+                    <div class="bg-white p-2 rounded border">
+                        <p class="text-xs truncate">${allData[returns.codes[i]].name.substring(0, 30)}</p>
+                        <p class="text-lg font-bold">${(w * 100).toFixed(2)}%</p>
+                    </div>
+                `).join('');
+                
+                document.getElementById(`${method}Vol`).textContent = `${(vol * 100).toFixed(2)}%`;
+            });
+
+            // Comparison table
+            const table = document.getElementById('compTable');
+            table.innerHTML = returns.codes.map((code, i) => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm">${allData[code].name.substring(0, 30)}...</td>
+                    <td class="px-4 py-2 text-center font-bold text-blue-600">${(mvp.sqp.weights[i] * 100).toFixed(2)}%</td>
+                    <td class="px-4 py-2 text-center font-bold text-green-600">${(mvp.convex.weights[i] * 100).toFixed(2)}%</td>
+                    <td class="px-4 py-2 text-center font-bold text-purple-600">${(mvp.critical.weights[i] * 100).toFixed(2)}%</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('mvpContainer').classList.remove('hidden');
+        }
+
+        // Download method
+        function downloadMethod(method) {
+            if (!mvp || !returns) return;
+
+            const weights = mvp[method].weights;
+            const vol = mvp[method].vol;
+
+            // Returns CSV
+            const retHeaders = ['Date', ...returns.codes.map(c => `${allData[c].name}_Return`)];
+            const retRows = returns.dates.map(d => [d, ...returns.codes.map(c => returns.returns[c][d] || '')]);
+            const retCSV = [retHeaders.join(','), ...retRows.map(r => r.join(','))].join('\n');
+
+            // Weights CSV
+            const wHeaders = ['Fund', 'Weight', 'Weight_Pct'];
+            const wRows = returns.codes.map((c, i) => [
+                `"${allData[c].name}"`,
+                weights[i].toFixed(6),
+                `${(weights[i] * 100).toFixed(2)}%`
+            ]);
+            const wCSV = [wHeaders.join(','), ...wRows.map(r => r.join(',')), '', `Portfolio Volatility,${(vol * 100).toFixed(2)}%`].join('\n');
+
+            const combined = `=== Daily Returns ===\n${retCSV}\n\n\n=== ${method.toUpperCase()} MVP Weights ===\n${wCSV}`;
+            
+            const blob = new Blob([combined], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Portfolio_${method.toUpperCase()}_MVP_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Helper: Parse date
+        function parseDate(s) {
+            const [d, m, y] = s.split('-');
+            return new Date(y, m - 1, d);
+        }
+
+        // Messages
+        function showError(msg) {
+            document.getElementById('errorText').textContent = msg;
+            document.getElementById('errorBox').classList.remove('hidden');
+            document.getElementById('successBox').classList.add('hidden');
+        }
+
+        function showSuccess(msg) {
+            document.getElementById('successText').textContent = msg;
+            document.getElementById('successBox').classList.remove('hidden');
+            document.getElementById('errorBox').classList.add('hidden');
+        }
+
+        // Enter key search
+        document.getElementById('searchInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') searchFunds();
+        });
+    </script>
+</body>
+</html>
