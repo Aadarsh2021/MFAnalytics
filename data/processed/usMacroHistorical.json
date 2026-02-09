@@ -4164,7 +4164,8 @@
     "volatility": 0.1721967925084778,
     "realRate": 0.09602630038137061,
     "debtStress": 1.7924833754641152,
-    "volatilityRatio": 0.29103636410948625
+    "volatilityRatio": 0.29103636410948625,
+    "gdpNominal": 21933.217
   },
   {
     "date": "2019-11",
@@ -4227,7 +4228,8 @@
     "volatility": 0.11566572355895265,
     "realRate": -1.049767976845202,
     "debtStress": 1.7516262810965477,
-    "volatilityRatio": 0.22873998595429623
+    "volatilityRatio": 0.22873998595429623,
+    "gdpNominal": 21751.238
   },
   {
     "date": "2020-02",
@@ -4290,7 +4292,8 @@
     "volatility": 0.23824516011993668,
     "realRate": -0.2630472940411133,
     "debtStress": 1.7987113109178368,
-    "volatilityRatio": 0.5706617618337698
+    "volatilityRatio": 0.5706617618337698,
+    "gdpNominal": 19958.291
   },
   {
     "date": "2020-05",
@@ -4353,7 +4356,8 @@
     "volatility": 0.22702836258110157,
     "realRate": -0.9068647625897998,
     "debtStress": 1.6473369000323412,
-    "volatilityRatio": 0.6537350463699999
+    "volatilityRatio": 0.6537350463699999,
+    "gdpNominal": 21704.437
   },
   {
     "date": "2020-08",
@@ -4416,7 +4420,8 @@
     "volatility": 0.24149002250722285,
     "realRate": -1.1403863428671623,
     "debtStress": 1.656768829925591,
-    "volatilityRatio": 0.6678690814048167
+    "volatilityRatio": 0.6678690814048167,
+    "gdpNominal": 22087.16
   },
   {
     "date": "2020-11",
@@ -4479,7 +4484,8 @@
     "volatility": 0.26053427415795194,
     "realRate": -1.2653199782346147,
     "debtStress": 1.6871094105874989,
-    "volatilityRatio": 0.6808732112751784
+    "volatilityRatio": 0.6808732112751784,
+    "gdpNominal": 22680.693
   },
   {
     "date": "2021-02",
@@ -4542,7 +4548,8 @@
     "volatility": 0.14066562459770957,
     "realRate": -4.067373453318349,
     "debtStress": 1.7431893925864874,
-    "volatilityRatio": 0.351614730397116
+    "volatilityRatio": 0.351614730397116,
+    "gdpNominal": 23425.91
   },
   {
     "date": "2021-05",
@@ -4605,7 +4612,8 @@
     "volatility": 0.1386082819626981,
     "realRate": -5.169167647240969,
     "debtStress": 1.813071445783853,
-    "volatilityRatio": 0.37498033616891563
+    "volatilityRatio": 0.37498033616891563,
+    "gdpNominal": 23982.379
   },
   {
     "date": "2021-08",
@@ -4668,7 +4676,8 @@
     "volatility": 0.13127836942316887,
     "realRate": -6.146591220771449,
     "debtStress": 1.8563503670083459,
-    "volatilityRatio": 0.40697513271837044
+    "volatilityRatio": 0.40697513271837044,
+    "gdpNominal": 24813.6
   },
   {
     "date": "2021-11",
@@ -4731,7 +4740,8 @@
     "volatility": 0.12924648274245001,
     "realRate": -7.498082463000535,
     "debtStress": 1.9361279720259523,
-    "volatilityRatio": 0.3597656317721226
+    "volatilityRatio": 0.3597656317721226,
+    "gdpNominal": 25250.347
   },
   {
     "date": "2022-02",
@@ -4794,7 +4804,8 @@
     "volatility": 0.1625023681610937,
     "realRate": -7.905161744022502,
     "debtStress": 2.0781371974852942,
-    "volatilityRatio": 0.4029396886736033
+    "volatilityRatio": 0.4029396886736033,
+    "gdpNominal": 25861.292
   },
   {
     "date": "2022-05",
@@ -4857,7 +4868,8 @@
     "volatility": 0.20404336046380556,
     "realRate": -6.767778206754553,
     "debtStress": 2.2660934248561717,
-    "volatilityRatio": 0.6379543290072387
+    "volatilityRatio": 0.6379543290072387,
+    "gdpNominal": 26336.304
   },
   {
     "date": "2022-08",
@@ -4920,7 +4932,8 @@
     "volatility": 0.22331763665614296,
     "realRate": -4.677261470809462,
     "debtStress": 2.463097385974287,
-    "volatilityRatio": 0.6664103128585286
+    "volatilityRatio": 0.6664103128585286,
+    "gdpNominal": 26770.514
   },
   {
     "date": "2022-11",
@@ -4983,7 +4996,8 @@
     "volatility": 0.239469267736187,
     "realRate": -2.010296309929161,
     "debtStress": 2.5587703028845383,
-    "volatilityRatio": 0.7258829949061815
+    "volatilityRatio": 0.7258829949061815,
+    "gdpNominal": 27216.445
   },
   {
     "date": "2023-02",
@@ -5046,7 +5060,8 @@
     "volatility": 0.22107811936446997,
     "realRate": -0.11694748806232536,
     "debtStress": 2.639758610589902,
-    "volatilityRatio": 0.6845153233132155
+    "volatilityRatio": 0.6845153233132155,
+    "gdpNominal": 27530.055
   },
   {
     "date": "2023-05",
@@ -5109,7 +5124,8 @@
     "volatility": 0.19110728255367027,
     "realRate": 1.8396717976537502,
     "debtStress": 2.822116561298345,
-    "volatilityRatio": 0.3117813029416767
+    "volatilityRatio": 0.3117813029416767,
+    "gdpNominal": 28074.846
   },
   {
     "date": "2023-08",
@@ -5172,7 +5188,8 @@
     "volatility": 0.14690094668728945,
     "realRate": 2.0834624923232834,
     "debtStress": 2.985406650580148,
-    "volatilityRatio": 0.3006548962638254
+    "volatilityRatio": 0.3006548962638254,
+    "gdpNominal": 28424.722
   },
   {
     "date": "2023-11",
@@ -5235,7 +5252,9 @@
     "volatility": 0.1370470520529428,
     "realRate": 2.2220574060761153,
     "debtStress": 3.093806075603371,
-    "volatilityRatio": 0.24422921614246657
+    "volatilityRatio": 0.24422921614246657,
+    "gdpNominal": 28708.161,
+    "m2Money": 20773.3
   },
   {
     "date": "2024-02",
@@ -5256,7 +5275,8 @@
     "volatility": 0.13356248568250653,
     "realRate": 2.1635787923416903,
     "debtStress": 3.093806075603371,
-    "volatilityRatio": 0.25112841051186513
+    "volatilityRatio": 0.25112841051186513,
+    "m2Money": 20861.4
   },
   {
     "date": "2024-03",
@@ -5277,7 +5297,8 @@
     "volatility": 0.13318399968894856,
     "realRate": 1.8609985645282476,
     "debtStress": 3.093806075603371,
-    "volatilityRatio": 0.22761855884911886
+    "volatilityRatio": 0.22761855884911886,
+    "m2Money": 20901
   },
   {
     "date": "2024-04",
@@ -5298,7 +5319,9 @@
     "volatility": 0.14741751974178252,
     "realRate": 1.9759528888125697,
     "debtStress": 3.1593831071623106,
-    "volatilityRatio": 0.21847995344839582
+    "volatilityRatio": 0.21847995344839582,
+    "gdpNominal": 29147.044,
+    "m2Money": 20929.1
   },
   {
     "date": "2024-05",
@@ -5319,7 +5342,8 @@
     "volatility": 0.14973686303868827,
     "realRate": 2.091133603238858,
     "debtStress": 3.1593831071623106,
-    "volatilityRatio": 0.2416723186460836
+    "volatilityRatio": 0.2416723186460836,
+    "m2Money": 20989.7
   },
   {
     "date": "2024-06",
@@ -5340,7 +5364,8 @@
     "volatility": 0.14330604298836627,
     "realRate": 2.3599146001795566,
     "debtStress": 3.1593831071623106,
-    "volatilityRatio": 0.27670632542754414
+    "volatilityRatio": 0.27670632542754414,
+    "m2Money": 21053.1
   },
   {
     "date": "2024-07",
@@ -5361,7 +5386,9 @@
     "volatility": 0.14260649142996942,
     "realRate": 2.3915366938594627,
     "debtStress": 3.2545480126486983,
-    "volatilityRatio": 0.2793837872302312
+    "volatilityRatio": 0.2793837872302312,
+    "gdpNominal": 29511.664,
+    "m2Money": 21084.2
   },
   {
     "date": "2024-08",
@@ -5382,7 +5409,8 @@
     "volatility": 0.13796245794192616,
     "realRate": 2.7190859677661647,
     "debtStress": 3.2545480126486983,
-    "volatilityRatio": 0.2420327510827961
+    "volatilityRatio": 0.2420327510827961,
+    "m2Money": 21171.1
   },
   {
     "date": "2024-09",
@@ -5403,7 +5431,8 @@
     "volatility": 0.11590900560462865,
     "realRate": 2.6974585358553558,
     "debtStress": 3.2545480126486983,
-    "volatilityRatio": 0.21962975297216142
+    "volatilityRatio": 0.21962975297216142,
+    "m2Money": 21257.5
   },
   {
     "date": "2024-10",
@@ -5424,7 +5453,9 @@
     "volatility": 0.11104268184126136,
     "realRate": 2.2585965032032798,
     "debtStress": 3.266314607146171,
-    "volatilityRatio": 0.21145739299171562
+    "volatilityRatio": 0.21145739299171562,
+    "gdpNominal": 29825.182,
+    "m2Money": 21308.1
   },
   {
     "date": "2024-11",
@@ -5445,7 +5476,8 @@
     "volatility": 0.09663813957347235,
     "realRate": 1.925831599515715,
     "debtStress": 3.266314607146171,
-    "volatilityRatio": 0.21021052352508582
+    "volatilityRatio": 0.21021052352508582,
+    "m2Money": 21407.9
   },
   {
     "date": "2024-12",
@@ -5466,7 +5498,8 @@
     "volatility": 0.10504643160687802,
     "realRate": 1.6076337311934195,
     "debtStress": 3.266314607146171,
-    "volatilityRatio": 0.2214420181663017
+    "volatilityRatio": 0.2214420181663017,
+    "m2Money": 21424.5
   },
   {
     "date": "2025-01",
@@ -5487,7 +5520,9 @@
     "volatility": 0.10541892031262234,
     "realRate": 1.3305874871688879,
     "debtStress": 3.239346005492562,
-    "volatilityRatio": 0.24512431766945453
+    "volatilityRatio": 0.24512431766945453,
+    "gdpNominal": 30042.113,
+    "m2Money": 21492.5
   },
   {
     "date": "2025-02",
@@ -5508,7 +5543,8 @@
     "volatility": 0.10381629608131873,
     "realRate": 1.5157296268431315,
     "debtStress": 3.239346005492562,
-    "volatilityRatio": 0.23127886686873023
+    "volatilityRatio": 0.23127886686873023,
+    "m2Money": 21564.8
   },
   {
     "date": "2025-03",
@@ -5523,13 +5559,14 @@
     "gdpIndex": 23548.21,
     "debtToGDP": 120.54515,
     "interest_expense": 1144.212,
-    "cpiInflation": 2.4055852640280317,
-    "gdpGrowth": 2.0192730138857806,
+    "cpiInflation": 2.41,
+    "gdpGrowth": 2.02,
     "inflationVol": 0.5206295444120064,
     "volatility": 0.12409653567945127,
-    "realRate": 1.9244147359719683,
-    "debtStress": 3.239346005492562,
-    "volatilityRatio": 0.2603147722060032
+    "realRate": 1.92,
+    "debtStress": 3.24,
+    "volatilityRatio": 0.2603147722060032,
+    "m2Money": 21636.8
   },
   {
     "date": "2025-04",
@@ -5544,13 +5581,15 @@
     "sp500": 5569.06,
     "cbGoldBuying": 57.34123996666667,
     "goldPrice": 3280.35,
-    "cpiInflation": 2.3337465177498906,
-    "gdpGrowth": 2.0804665087611918,
+    "cpiInflation": 2.33,
+    "gdpGrowth": 2.08,
     "inflationVol": 0.511616655543946,
     "volatility": 0.11386548570927107,
-    "realRate": 1.9962534822501095,
-    "debtStress": 3.2557911519212905,
-    "volatilityRatio": 0.255808327771973
+    "realRate": 2,
+    "debtStress": 3.81,
+    "volatilityRatio": 0.255808327771973,
+    "gdpNominal": 30485.729,
+    "m2Money": 21770.7
   },
   {
     "date": "2025-05",
@@ -5565,13 +5604,14 @@
     "debtToGDP": 118.78171,
     "interest_expense": 1160.9,
     "goldPrice": 3280.35,
-    "cpiInflation": 2.3759340869898393,
-    "gdpGrowth": 2.0804665087611918,
+    "cpiInflation": 2.38,
+    "gdpGrowth": 2.08,
     "inflationVol": 0.4996928372640439,
     "volatility": 0.1191845793477007,
-    "realRate": 1.9540659130101607,
-    "debtStress": 3.2557911519212905,
-    "volatilityRatio": 0.24984641863202195
+    "realRate": 1.95,
+    "debtStress": 3.26,
+    "volatilityRatio": 0.24984641863202195,
+    "m2Money": 21827.6
   },
   {
     "date": "2025-06",
@@ -5586,13 +5626,14 @@
     "gdpIndex": 23770.976,
     "debtToGDP": 118.78171,
     "interest_expense": 1160.9,
-    "cpiInflation": 2.6726833178446263,
-    "gdpGrowth": 2.0804665087611918,
+    "cpiInflation": 2.67,
+    "gdpGrowth": 2.08,
     "inflationVol": 0.456026530698218,
     "volatility": 0.12320927037494611,
-    "realRate": 1.6573166821553738,
-    "debtStress": 3.2557911519212905,
-    "volatilityRatio": 0.228013265349109
+    "realRate": 1.66,
+    "debtStress": 3.26,
+    "volatilityRatio": 0.228013265349109,
+    "m2Money": 21942.5
   },
   {
     "date": "2025-07",
@@ -5607,13 +5648,15 @@
     "sp500": 6339.39,
     "cbGoldBuying": 73.28452566666667,
     "goldPrice": 3456.54,
-    "cpiInflation": 2.7318012794754543,
-    "gdpGrowth": 2.335167772142843,
+    "cpiInflation": 2.73,
+    "gdpGrowth": 2.34,
     "inflationVol": 0.4484078280639639,
     "volatility": 0.12368338657192898,
-    "realRate": 1.5981987205245458,
-    "debtStress": 3.327360289471902,
-    "volatilityRatio": 0.22420391403198195
+    "realRate": 1.6,
+    "debtStress": 3.86,
+    "volatilityRatio": 0.22420391403198195,
+    "gdpNominal": 31098.027,
+    "m2Money": 22028.6
   },
   {
     "date": "2025-08",
@@ -5628,13 +5671,14 @@
     "debtToGDP": 121.02875,
     "interest_expense": 1199.189,
     "goldPrice": 3456.54,
-    "cpiInflation": 2.9392196249335534,
-    "gdpGrowth": 2.335167772142843,
+    "cpiInflation": 2.94,
+    "gdpGrowth": 2.34,
     "inflationVol": 0.47142047206238086,
     "volatility": 0.12337741582973794,
-    "realRate": 1.3907803750664467,
-    "debtStress": 3.327360289471902,
-    "volatilityRatio": 0.23571023603119043
+    "realRate": 1.39,
+    "debtStress": 3.33,
+    "volatilityRatio": 0.23571023603119043,
+    "m2Money": 22108.2
   },
   {
     "date": "2025-09",
@@ -5649,13 +5693,14 @@
     "interest_expense": 1199.189,
     "cbGoldBuying": 73.28452566666667,
     "goldPrice": 3456.54,
-    "cpiInflation": 3.022699626172387,
-    "gdpGrowth": 2.335167772142843,
+    "cpiInflation": 3.02,
+    "gdpGrowth": 2.34,
     "inflationVol": 0.47603952365442026,
     "volatility": 0.12538480372948788,
-    "realRate": 1.1973003738276127,
-    "debtStress": 3.327360289471902,
-    "volatilityRatio": 0.23801976182721013
+    "realRate": 1.2,
+    "debtStress": 3.33,
+    "volatilityRatio": 0.23801976182721013,
+    "m2Money": 22211.9
   },
   {
     "date": "2025-10",
@@ -5670,13 +5715,14 @@
     "interest_expense": 1199.189,
     "cbGoldBuying": 73.28452566666667,
     "goldPrice": 3456.54,
-    "cpiInflation": 2.7899253400261115,
-    "gdpGrowth": 1.8667085662662952,
+    "cpiInflation": 2.79,
+    "gdpGrowth": 1.87,
     "inflationVol": 0.5374145329656915,
     "volatility": 0.12324708616000286,
-    "realRate": 1.3000746599738884,
-    "debtStress": 3.327360289471902,
-    "volatilityRatio": 0.26870726648284576
+    "realRate": 1.3,
+    "debtStress": 3.33,
+    "volatilityRatio": 0.26870726648284576,
+    "m2Money": 22297.8
   },
   {
     "date": "2025-11",
@@ -5691,13 +5737,14 @@
     "interest_expense": 1199.189,
     "cbGoldBuying": 73.28452566666667,
     "goldPrice": 3456.54,
-    "cpiInflation": 2.711969385272184,
-    "gdpGrowth": 1.8667085662662952,
+    "cpiInflation": 2.71,
+    "gdpGrowth": 1.87,
     "inflationVol": 0.5349527158837234,
     "volatility": 0.11545718089318488,
-    "realRate": 1.168030614727816,
-    "debtStress": 3.327360289471902,
-    "volatilityRatio": 0.2674763579418617
+    "realRate": 1.17,
+    "debtStress": 3.33,
+    "volatilityRatio": 0.2674763579418617,
+    "m2Money": 22322.1
   },
   {
     "date": "2025-12",
@@ -5712,20 +5759,21 @@
     "interest_expense": 1199.189,
     "cbGoldBuying": 73.28452566666667,
     "goldPrice": 3456.54,
-    "cpiInflation": 2.653312468710922,
-    "gdpGrowth": 1.8667085662662952,
+    "cpiInflation": 2.65,
+    "gdpGrowth": 1.87,
     "inflationVol": 0.5213311114637129,
     "volatility": 0.10956259937102153,
-    "realRate": 1.066687531289078,
-    "debtStress": 3.327360289471902,
-    "volatilityRatio": 0.26066555573185646
+    "realRate": 1.07,
+    "debtStress": 3.33,
+    "volatilityRatio": 0.26066555573185646,
+    "m2Money": 22411
   },
   {
     "date": "2026-01",
     "valDate": "2026-01-30",
     "repoRate": 3.64,
-    "gSecYield": 4.26,
-    "sp500": 6939.03,
+    "gSecYield": 4.17,
+    "sp500": 6944.82,
     "gdpIndex": 24026.834,
     "debtToGDP": 121.02875,
     "pceIndex": 128.093,
@@ -5733,19 +5781,20 @@
     "interest_expense": 1199.189,
     "cbGoldBuying": 73.28452566666667,
     "goldPrice": 3456.54,
-    "cpiInflation": 2.176215816425664,
-    "gdpGrowth": 2.032528162437819,
+    "cpiInflation": 2.18,
+    "gdpGrowth": 2.03,
     "inflationVol": 0.4866076111363341,
     "volatility": 0.10851340298817687,
-    "realRate": 1.4637841835743362,
-    "debtStress": 3.327360289471902,
-    "volatilityRatio": 0.24330380556816705
+    "realRate": 1.46,
+    "debtStress": 3.33,
+    "volatilityRatio": 0.24330380556816705,
+    "vix": 14.9
   },
   {
     "date": "2026-02",
     "valDate": "2026-02-06",
-    "gSecYield": 4.21,
-    "sp500": 6932.3,
+    "gSecYield": 4.23,
+    "sp500": 6933.4,
     "repoRate": 3.64,
     "gdpIndex": 24026.834,
     "debtToGDP": 121.02875,
@@ -5753,13 +5802,14 @@
     "cpiIndex": 326.03,
     "interest_expense": 1199.189,
     "cbGoldBuying": 73.28452566666667,
-    "goldPrice": 3456.54,
-    "cpiInflation": 1.956062856696117,
-    "gdpGrowth": 2.032528162437819,
+    "goldPrice": 5030.4,
+    "cpiInflation": 1.96,
+    "gdpGrowth": 2.03,
     "inflationVol": 0.5160660161384981,
     "volatility": 0.10582180240708713,
-    "realRate": 1.6839371433038832,
-    "debtStress": 3.327360289471902,
-    "volatilityRatio": 0.25803300806924906
+    "realRate": 1.68,
+    "debtStress": 3.33,
+    "volatilityRatio": 0.25803300806924906,
+    "vix": 17.76
   }
 ]
