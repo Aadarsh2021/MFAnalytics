@@ -382,14 +382,6 @@ export default function Step4ARegimeViews({
 
             const latestDetection = historicalDetections[historicalDetections.length - 1];
 
-            // MANUAL OVERRIDE LOGIC
-            // If the user has manually selected a regime, we force it here
-            // But we keep the underlying detection data for reference
-            if (regimeContext?.manualOverride) {
-                console.log("⚠️ Manual Override Active:", regimeContext.manualOverride);
-                latestDetection.dominant = regimeContext.manualOverride;
-                latestDetection.isManual = true;
-            }
 
             setRegimeDetection(latestDetection);
             setCurrentRegime(latestDetection.dominant);
@@ -637,26 +629,6 @@ export default function Step4ARegimeViews({
                             </div>
                         </div>
 
-                        {/* MANUAL OVERRIDE CONTROL */}
-                        <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg animate-fade-in">
-                            <div className="flex items-center gap-2">
-                                <Settings className="text-slate-400" size={18} />
-                                <span className="text-sm font-bold text-slate-600">Manual Override:</span>
-                            </div>
-                            <select
-                                value={regimeContext?.manualOverride || ''}
-                                onChange={(e) => setRegimeContext(prev => ({ ...prev, manualOverride: e.target.value || null }))}
-                                className={`text-sm font-bold px-3 py-1.5 rounded-lg border focus:ring-2 focus:ring-indigo-500 outline-none transition-all ${regimeContext?.manualOverride
-                                    ? 'bg-amber-100 border-amber-300 text-amber-800'
-                                    : 'bg-white border-slate-200 text-slate-700'
-                                    }`}
-                            >
-                                <option value="">Auto-Detect (AI)</option>
-                                {Object.values(REGIMES).map(r => (
-                                    <option key={r.id} value={r.id}>Force {r.shortName}</option>
-                                ))}
-                            </select>
-                        </div>
                     </div>
                 )}
             </div>
@@ -770,45 +742,25 @@ export default function Step4ARegimeViews({
                         <div className="flex items-center gap-2 mb-2">
                             <Target className="text-amber-600" size={18} />
                             <h4 className="font-bold text-amber-900 text-sm">Regime Selection Logic Insight (Bayesian)</h4>
-                            {regimeDetection.isManual && (
-                                <span className="ml-auto text-[10px] font-black bg-purple-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
-                                    <Settings size={10} /> MANUAL OVERRIDE
-                                </span>
-                            )}
-                            {regimeDetection.isSticky && !regimeDetection.isManual && (
-                                <span className="ml-auto text-[10px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full flex items-center gap-1">
-                                    <Lock size={10} /> STICKY LOCKED
-                                </span>
-                            )}
-                            {regimeDetection.dominant === 'REGIME_C' && !regimeCExitEligible && !regimeDetection.isSticky && !regimeDetection.isManual && (
-                                <span className="ml-auto text-[10px] font-bold bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">
-                                    HYSTERESIS ACTIVE
-                                </span>
-                            )}
                         </div>
                         <p className="text-xs text-amber-800 leading-relaxed">
-                            {regimeDetection.isManual
-                                ? <span>You have <strong>manually forced</strong> the system into <strong>{REGIMES[regimeDetection.dominant].name}</strong>. The AI's auto-detected probability distribution is shown above for reference.</span>
-                                : <span>The AI updated its belief to <strong>{REGIMES[regimeDetection.dominant].name}</strong> with {(regimeDetection.confidence * 100).toFixed(0)}% confidence scalar because:</span>
-                            }
+                            The AI updated its belief to <strong>{REGIMES[regimeDetection.dominant].name}</strong> with {(regimeDetection.confidence * 100).toFixed(0)}% confidence scalar because:
                         </p>
-                        {!regimeDetection.isManual && (
-                            <ul className="mt-2 space-y-1 text-xs text-amber-700 list-disc list-inside">
-                                {regimeDetection.dominant === 'REGIME_A' && (
-                                    <>
-                                        <li><strong>Real Rates:</strong> Currently {(regimeDetection.indicators.realRate || 0).toFixed(2)}% (Target &gt; 1.5%)</li>
-                                        <li><strong>Hedge Effectiveness:</strong> Bond-Equity correlation is {(regimeDetection.indicators.bondEquityCorr || 0).toFixed(2)}</li>
-                                        <li><strong>Volatility:</strong> Inflation/Growth ratio is {(regimeDetection.indicators.volatilityRatio || 1).toFixed(2)}</li>
-                                    </>
-                                )}
-                                {regimeDetection.dominant === 'REGIME_C' && (
-                                    <>
-                                        <li><strong>Repression Signal:</strong> Volatility ratio is {(regimeDetection.indicators.volatilityRatio || 1).toFixed(2)}</li>
-                                        <li><strong>Institutional:</strong> CB Gold buying Intensity is {(regimeDetection.indicators.cbGoldBuying || 0).toFixed(1)}</li>
-                                    </>
-                                )}
-                            </ul>
-                        )}
+                        <ul className="mt-2 space-y-1 text-xs text-amber-700 list-disc list-inside">
+                            {regimeDetection.dominant === 'REGIME_A' && (
+                                <>
+                                    <li><strong>Real Rates:</strong> Currently {(regimeDetection.indicators.realRate || 0).toFixed(2)}% (Target &gt; 1.5%)</li>
+                                    <li><strong>Hedge Effectiveness:</strong> Bond-Equity correlation is {(regimeDetection.indicators.bondEquityCorr || 0).toFixed(2)}</li>
+                                    <li><strong>Volatility:</strong> Inflation/Growth ratio is {(regimeDetection.indicators.volatilityRatio || 1).toFixed(2)}</li>
+                                </>
+                            )}
+                            {regimeDetection.dominant === 'REGIME_C' && (
+                                <>
+                                    <li><strong>Repression Signal:</strong> Volatility ratio is {(regimeDetection.indicators.volatilityRatio || 1).toFixed(2)}</li>
+                                    <li><strong>Institutional:</strong> CB Gold buying Intensity is {(regimeDetection.indicators.cbGoldBuying || 0).toFixed(1)}</li>
+                                </>
+                            )}
+                        </ul>
 
                         {/* Discipline Tracker for Regime C Exit */}
                         {regimeDetection.dominant === 'REGIME_C' && (
