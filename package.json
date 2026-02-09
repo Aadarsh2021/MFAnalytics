@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "update-macro": "node backend/scripts/fetch_fred_macro.mjs",
     "update-macro-india": "node backend/scripts/fetchIndianMacroData.mjs",
+    "update-supabase": "node backend/scripts/updateSupabaseData.mjs",
     "admin-server": "node backend/adminServer.mjs"
   },
   "dependencies": {
