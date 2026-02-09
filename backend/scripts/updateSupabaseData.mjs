@@ -1,5 +1,5 @@
 // Script to update Supabase with latest India macro data
-// This runs after fetchIndianMacroData.mjs to sync live data
+// Uses same 3-tier priority as static data: Government API → Manual Override → FRED
 
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
@@ -25,9 +25,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function updateSupabaseData() {
     try {
-        console.log('🚀 Starting Supabase data update...');
+        console.log('🚀 Starting Supabase live data update...');
+        console.log('📊 Using 3-tier priority: Government API → Manual Override → FRED');
 
-        // Read the latest historical data
+        // Read the latest historical data (already has 3-tier priority applied)
         const dataPath = path.join(__dirname, '../../data/processed/indiaMacroHistorical.json');
         const historicalData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
@@ -39,7 +40,19 @@ async function updateSupabaseData() {
             process.exit(1);
         }
 
-        console.log(`📊 Latest data date: ${latestEntry.date}`);
+        console.log(`📅 Latest data date: ${latestEntry.date}`);
+        console.log(`📋 Data sources used:`);
+
+        // Check which sources were used (based on data freshness indicators)
+        if (latestEntry.wpiSource) {
+            console.log(`   - WPI: ${latestEntry.wpiSource}`);
+        }
+        if (latestEntry.cpiSource) {
+            console.log(`   - CPI: ${latestEntry.cpiSource}`);
+        }
+        if (latestEntry.repoRateSource) {
+            console.log(`   - Repo Rate: ${latestEntry.repoRateSource}`);
+        }
 
         // Prepare data for Supabase
         const supabaseData = {
@@ -60,12 +73,17 @@ async function updateSupabaseData() {
             process.exit(1);
         }
 
-        console.log('✅ Supabase updated successfully!');
-        console.log(`📅 Data timestamp: ${supabaseData.updated_at}`);
-        console.log(`📊 Latest values:`);
-        console.log(`   - WPI Index: ${latestEntry.wpiIndex}`);
-        console.log(`   - CPI Index: ${latestEntry.cpiIndex}`);
-        console.log(`   - Repo Rate: ${latestEntry.repoRate}%`);
+        console.log('✅ Supabase live data updated successfully!');
+        console.log(`⏰ Timestamp: ${supabaseData.updated_at}`);
+        console.log(`\n📊 Latest values (with 3-tier priority):`);
+        console.log(`   - WPI Index: ${latestEntry.wpiIndex || 'N/A'}`);
+        console.log(`   - WPI Inflation: ${latestEntry.wpiInflation || 'N/A'}%`);
+        console.log(`   - CPI Index: ${latestEntry.cpiIndex || 'N/A'}`);
+        console.log(`   - CPI Inflation: ${latestEntry.cpiInflation || 'N/A'}%`);
+        console.log(`   - Repo Rate: ${latestEntry.repoRate || 'N/A'}%`);
+        console.log(`   - Real Rate: ${latestEntry.realRate || 'N/A'}%`);
+
+        console.log(`\n✅ Live data now matches Static data accuracy!`);
 
     } catch (error) {
         console.error('❌ Error updating Supabase:', error.message);
