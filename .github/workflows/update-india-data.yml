@@ -47,13 +47,13 @@ jobs:
           git diff --staged --quiet || git commit -m "🤖 Auto-update India macro data [skip ci]"
       
       - name: Pull latest changes
-        run: git pull --rebase origin main
+        run: git pull origin ${{ github.ref }} --rebase
 
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main
+          branch: ${{ github.ref }}
       
       - name: Build for production
         run: npm run build
