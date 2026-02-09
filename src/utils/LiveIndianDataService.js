@@ -102,6 +102,8 @@ export async function getLiveIndianData(staticData) {
             'REPO_PROXY': 'repoRate',
             'STOCK_INDEX': 'nifty', // Primary equity proxy for India
             'GDP': 'nominalGDP',
+            'REAL_GDP': 'realGDP', // Add mapping for realGDP
+            'WPI': 'wpiIndex', // Add mapping for wpiIndex
             'DEBT_TO_GDP': 'debtToGDP',
             'MONEY_SUPPLY': 'm3Money',
             'IND_PROD': 'industrialProd'
