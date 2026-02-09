@@ -1791,7 +1791,7 @@
   },
   {
     "date": "2012-02-01",
-    "repoRate": 9.5,
+    "repoRate": 7.75,
     "cpiIndex": 76.12369,
     "wpiIndex": 92.4496265076018,
     "gSecYield": 8.19,
@@ -1803,7 +1803,7 @@
     "cpiInflation": 7.57,
     "wpiInflation": 7.56,
     "gdpGrowth": 3.6,
-    "realRate": 1.93
+    "realRate": 0.18
   },
   {
     "date": "2012-03-01",
@@ -1823,10 +1823,11 @@
   },
   {
     "date": "2012-04-01",
-    "repoRate": 9,
+    "repoRate": 9.25,
     "cpiIndex": 78.41887,
     "wpiIndex": 94.887093119855,
     "realGDP": 22052234.4,
+    "gdpGrowth": 4.87,
     "gSecYield": 8.59,
     "forexReserves": 269.57,
     "inrUsd": 52.65,
@@ -1834,8 +1835,7 @@
     "nominalGDP": 1827637590410.41,
     "cpiInflation": 10.22,
     "wpiInflation": 7.5,
-    "gdpGrowth": 4.87,
-    "realRate": -1.22
+    "realRate": -0.97
   },
   {
     "date": "2012-05-01",
@@ -1847,10 +1847,10 @@
     "inrUsd": 56.38,
     "nominalGDP": 1827637590410.41,
     "realGDP": 22052234.4,
+    "gdpGrowth": 4.87,
     "bankCredit": 94946.113,
     "cpiInflation": 10.16,
     "wpiInflation": 7.9,
-    "gdpGrowth": 4.87,
     "realRate": -1.16
   },
   {
@@ -1863,10 +1863,10 @@
     "inrUsd": 55.57,
     "nominalGDP": 1827637590410.41,
     "realGDP": 22052234.4,
+    "gdpGrowth": 4.87,
     "bankCredit": 94946.113,
     "cpiInflation": 10.05,
     "wpiInflation": 7.4,
-    "gdpGrowth": 4.87,
     "realRate": -1.05
   },
   {
@@ -1875,6 +1875,7 @@
     "cpiIndex": 81.09659,
     "wpiIndex": 96.2465070614002,
     "realGDP": 21959458.8,
+    "gdpGrowth": 7.49,
     "gSecYield": 8.1,
     "forexReserves": 265.15,
     "inrUsd": 55.55,
@@ -1882,7 +1883,6 @@
     "nominalGDP": 1827637590410.41,
     "cpiInflation": 9.84,
     "wpiInflation": 7.55,
-    "gdpGrowth": 7.49,
     "realRate": -0.84
   },
   {
@@ -1895,10 +1895,10 @@
     "inrUsd": 55.52,
     "nominalGDP": 1827637590410.41,
     "realGDP": 21959458.8,
+    "gdpGrowth": 7.49,
     "bankCredit": 99383.948,
     "cpiInflation": 10.31,
     "wpiInflation": 7.77,
-    "gdpGrowth": 7.49,
     "realRate": -1.31
   },
   {
@@ -1911,10 +1911,10 @@
     "inrUsd": 52.92,
     "nominalGDP": 1827637590410.41,
     "realGDP": 21959458.8,
+    "gdpGrowth": 7.49,
     "bankCredit": 99383.948,
     "cpiInflation": 9.14,
     "wpiInflation": 7.57,
-    "gdpGrowth": 7.49,
     "realRate": -0.14
   },
   {
@@ -1923,6 +1923,7 @@
     "cpiIndex": 83.00925,
     "wpiIndex": 97.3340382146364,
     "realGDP": 23447672.1,
+    "gdpGrowth": 5.38,
     "gSecYield": 8.15,
     "forexReserves": 269.21,
     "inrUsd": 53.8,
@@ -1930,7 +1931,6 @@
     "nominalGDP": 1827637590410.41,
     "cpiInflation": 9.6,
     "wpiInflation": 6.83,
-    "gdpGrowth": 5.38,
     "realRate": -0.6
   },
   {
@@ -1943,10 +1943,10 @@
     "inrUsd": 54.26,
     "nominalGDP": 1827637590410.41,
     "realGDP": 23447672.1,
+    "gdpGrowth": 5.38,
     "bankCredit": 103525.86,
     "cpiInflation": 9.55,
     "wpiInflation": 6.46,
-    "gdpGrowth": 5.38,
     "realRate": -0.55
   },
   {
@@ -1959,10 +1959,10 @@
     "inrUsd": 54.86,
     "nominalGDP": 1827637590410.41,
     "realGDP": 23447672.1,
+    "gdpGrowth": 5.38,
     "bankCredit": 103525.86,
     "cpiInflation": 11.17,
     "wpiInflation": 6.32,
-    "gdpGrowth": 5.38,
     "realRate": -2.17
   },
   {
@@ -1972,13 +1972,13 @@
     "wpiIndex": 97.8778037912544,
     "nominalGDP": 1856721507621.58,
     "realGDP": 24670818.7,
+    "gdpGrowth": 4.3,
     "gSecYield": 7.87,
     "forexReserves": 270.77,
     "inrUsd": 53.32,
     "bankCredit": 103784.171,
     "cpiInflation": 11.62,
     "wpiInflation": 6.27,
-    "gdpGrowth": 4.3,
     "realRate": -2.62
   },
   {
@@ -1991,15 +1991,15 @@
     "inrUsd": 54.37,
     "nominalGDP": 1856721507621.58,
     "realGDP": 24670818.7,
+    "gdpGrowth": 4.3,
     "bankCredit": 103784.171,
     "cpiInflation": 12.06,
     "wpiInflation": 6.26,
-    "gdpGrowth": 4.3,
     "realRate": -3.31
   },
   {
     "date": "2013-03-01",
-    "repoRate": 8.5,
+    "repoRate": 8.65,
     "cpiIndex": 85.68696,
     "wpiIndex": 98.4215693678725,
     "gSecYield": 7.91,
@@ -2007,11 +2007,11 @@
     "inrUsd": 54.52,
     "nominalGDP": 1856721507621.58,
     "realGDP": 24670818.7,
+    "gdpGrowth": 4.3,
     "bankCredit": 103784.171,
     "cpiInflation": 11.44,
     "wpiInflation": 5.34,
-    "gdpGrowth": 4.3,
-    "realRate": -2.94
+    "realRate": -2.79
   },
   {
     "date": "2013-04-01",
@@ -2019,6 +2019,7 @@
     "cpiIndex": 86.45203000000001,
     "wpiIndex": 98.4215693678725,
     "realGDP": 23473963.7,
+    "gdpGrowth": 6.45,
     "gSecYield": 7.83,
     "forexReserves": 272.06,
     "inrUsd": 53.68,
@@ -2026,7 +2027,6 @@
     "nominalGDP": 1856721507621.58,
     "cpiInflation": 10.24,
     "wpiInflation": 3.72,
-    "gdpGrowth": 6.45,
     "realRate": -1.74
   },
   {
@@ -2039,10 +2039,10 @@
     "inrUsd": 56.5,
     "nominalGDP": 1856721507621.58,
     "realGDP": 23473963.7,
+    "gdpGrowth": 6.45,
     "bankCredit": 104381.965,
     "cpiInflation": 10.68,
     "wpiInflation": 3.13,
-    "gdpGrowth": 6.45,
     "realRate": -2.43
   },
   {
@@ -2055,18 +2055,19 @@
     "inrUsd": 59.52,
     "nominalGDP": 1856721507621.58,
     "realGDP": 23473963.7,
+    "gdpGrowth": 6.45,
     "bankCredit": 104381.965,
     "cpiInflation": 11.06,
     "wpiInflation": 4.56,
-    "gdpGrowth": 6.45,
     "realRate": -2.81
   },
   {
     "date": "2013-07-01",
-    "repoRate": 10.25,
+    "repoRate": 9.25,
     "cpiIndex": 89.89480999999999,
     "wpiIndex": 100.777886866551,
     "realGDP": 23570788.7,
+    "gdpGrowth": 7.34,
     "gSecYield": 7.72,
     "forexReserves": 259.06,
     "inrUsd": 60.77,
@@ -2074,8 +2075,7 @@
     "nominalGDP": 1856721507621.58,
     "cpiInflation": 10.85,
     "wpiInflation": 4.71,
-    "gdpGrowth": 7.34,
-    "realRate": -0.6
+    "realRate": -1.6
   },
   {
     "date": "2013-08-01",
@@ -2087,15 +2087,15 @@
     "inrUsd": 65.71,
     "nominalGDP": 1856721507621.58,
     "realGDP": 23570788.7,
+    "gdpGrowth": 7.34,
     "bankCredit": 105046.53,
     "cpiInflation": 10.75,
     "wpiInflation": 5.61,
-    "gdpGrowth": 7.34,
     "realRate": -0.5
   },
   {
     "date": "2013-09-01",
-    "repoRate": 9.5,
+    "repoRate": 9.875,
     "cpiIndex": 91.0424,
     "wpiIndex": 103.587342345744,
     "gSecYield": 8.6,
@@ -2103,18 +2103,19 @@
     "inrUsd": 62.58,
     "nominalGDP": 1856721507621.58,
     "realGDP": 23570788.7,
+    "gdpGrowth": 7.34,
     "bankCredit": 105046.53,
     "cpiInflation": 10.7,
     "wpiInflation": 6.23,
-    "gdpGrowth": 7.34,
-    "realRate": -1.2
+    "realRate": -0.82
   },
   {
     "date": "2013-10-01",
-    "repoRate": 8.75,
+    "repoRate": 9.125,
     "cpiIndex": 92.18999000000001,
     "wpiIndex": 103.859225134053,
     "realGDP": 24979973.4,
+    "gdpGrowth": 6.53,
     "gSecYield": 8.57,
     "forexReserves": 262.57,
     "inrUsd": 61.61,
@@ -2122,8 +2123,7 @@
     "nominalGDP": 1856721507621.58,
     "cpiInflation": 11.06,
     "wpiInflation": 6.7,
-    "gdpGrowth": 6.53,
-    "realRate": -2.31
+    "realRate": -1.94
   },
   {
     "date": "2013-11-01",
@@ -2135,10 +2135,10 @@
     "inrUsd": 62.39,
     "nominalGDP": 1856721507621.58,
     "realGDP": 24979973.4,
+    "gdpGrowth": 6.53,
     "bankCredit": 106808,
     "cpiInflation": 11.47,
     "wpiInflation": 6.52,
-    "gdpGrowth": 6.53,
     "realRate": -2.72
   },
   {
@@ -2151,27 +2151,27 @@
     "inrUsd": 61.92,
     "nominalGDP": 1856721507621.58,
     "realGDP": 24979973.4,
+    "gdpGrowth": 6.53,
     "bankCredit": 106808,
     "cpiInflation": 9.13,
     "wpiInflation": 5.88,
-    "gdpGrowth": 6.53,
     "realRate": -0.38
   },
   {
     "date": "2014-01-01",
-    "repoRate": 9,
+    "repoRate": 8.8,
     "cpiIndex": 90.65987,
     "wpiIndex": 102.952949173023,
     "nominalGDP": 2039126479154.52,
     "realGDP": 25988975.6,
+    "gdpGrowth": 5.34,
     "gSecYield": 8.76,
     "forexReserves": 273.39,
     "inrUsd": 62.63,
     "bankCredit": 110304.202,
     "cpiInflation": 7.24,
     "wpiInflation": 5.19,
-    "gdpGrowth": 5.34,
-    "realRate": 1.76
+    "realRate": 1.56
   },
   {
     "date": "2014-02-01",
@@ -2183,10 +2183,10 @@
     "inrUsd": 61.78,
     "nominalGDP": 2039126479154.52,
     "realGDP": 25988975.6,
+    "gdpGrowth": 5.34,
     "bankCredit": 110304.202,
     "cpiInflation": 6.73,
     "wpiInflation": 4.8,
-    "gdpGrowth": 5.34,
     "realRate": 2.27
   },
   {
@@ -2199,10 +2199,10 @@
     "inrUsd": 60,
     "nominalGDP": 2039126479154.52,
     "realGDP": 25988975.6,
+    "gdpGrowth": 5.34,
     "bankCredit": 110304.202,
     "cpiInflation": 6.7,
     "wpiInflation": 5.25,
-    "gdpGrowth": 5.34,
     "realRate": 2.3
   },
   {
@@ -2211,6 +2211,7 @@
     "cpiIndex": 92.57253,
     "wpiIndex": 103.406087153538,
     "realGDP": 25357505.9,
+    "gdpGrowth": 8.02,
     "gSecYield": 8.99,
     "forexReserves": 292.4,
     "inrUsd": 60.21,
@@ -2218,7 +2219,6 @@
     "nominalGDP": 2039126479154.52,
     "cpiInflation": 7.08,
     "wpiInflation": 5.06,
-    "gdpGrowth": 8.02,
     "realRate": 1.92
   },
   {
@@ -2231,10 +2231,10 @@
     "inrUsd": 59.16,
     "nominalGDP": 2039126479154.52,
     "realGDP": 25357505.9,
+    "gdpGrowth": 8.02,
     "bankCredit": 112527.876,
     "cpiInflation": 7.02,
     "wpiInflation": 5.71,
-    "gdpGrowth": 8.02,
     "realRate": 1.98
   },
   {
@@ -2247,10 +2247,10 @@
     "inrUsd": 60.06,
     "nominalGDP": 2039126479154.52,
     "realGDP": 25357505.9,
+    "gdpGrowth": 8.02,
     "bankCredit": 112527.876,
     "cpiInflation": 6.49,
     "wpiInflation": 4.63,
-    "gdpGrowth": 8.02,
     "realRate": 2.51
   },
   {
@@ -2259,6 +2259,7 @@
     "cpiIndex": 96.39783,
     "wpiIndex": 105.762404652217,
     "realGDP": 25622415.8,
+    "gdpGrowth": 8.7,
     "gSecYield": 8.66,
     "forexReserves": 301.13,
     "inrUsd": 60.55,
@@ -2266,7 +2267,6 @@
     "nominalGDP": 2039126479154.52,
     "cpiInflation": 7.23,
     "wpiInflation": 4.95,
-    "gdpGrowth": 8.7,
     "realRate": 1.77
   },
   {
@@ -2279,10 +2279,10 @@
     "inrUsd": 61.51,
     "nominalGDP": 2039126479154.52,
     "realGDP": 25622415.8,
+    "gdpGrowth": 8.7,
     "bankCredit": 117360.981,
     "cpiInflation": 6.75,
     "wpiInflation": 3.81,
-    "gdpGrowth": 8.7,
     "realRate": 2.25
   },
   {
@@ -2295,10 +2295,10 @@
     "inrUsd": 61.92,
     "nominalGDP": 2039126479154.52,
     "realGDP": 25622415.8,
+    "gdpGrowth": 8.7,
     "bankCredit": 117360.981,
     "cpiInflation": 6.3,
     "wpiInflation": 1.84,
-    "gdpGrowth": 8.7,
     "realRate": 2.7
   },
   {
@@ -2307,6 +2307,7 @@
     "cpiIndex": 96.78036,
     "wpiIndex": 104.765501095083,
     "realGDP": 26459471.3,
+    "gdpGrowth": 5.92,
     "gSecYield": 8.4,
     "forexReserves": 298.47,
     "inrUsd": 61.44,
@@ -2314,7 +2315,6 @@
     "nominalGDP": 2039126479154.52,
     "cpiInflation": 4.98,
     "wpiInflation": 0.87,
-    "gdpGrowth": 5.92,
     "realRate": 4.02
   },
   {
@@ -2327,10 +2327,10 @@
     "inrUsd": 62.2,
     "nominalGDP": 2039126479154.52,
     "realGDP": 26459471.3,
+    "gdpGrowth": 5.92,
     "bankCredit": 122464.72,
     "cpiInflation": 4.12,
     "wpiInflation": -0.17,
-    "gdpGrowth": 5.92,
     "realRate": 4.88
   },
   {
@@ -2343,27 +2343,27 @@
     "inrUsd": 63.04,
     "nominalGDP": 2039126479154.52,
     "realGDP": 26459471.3,
+    "gdpGrowth": 5.92,
     "bankCredit": 122464.72,
     "cpiInflation": 5.86,
     "wpiInflation": -1.15,
-    "gdpGrowth": 5.92,
     "realRate": 3.14
   },
   {
     "date": "2015-01-01",
-    "repoRate": 8.75,
+    "repoRate": 8.85,
     "cpiIndex": 97.1629,
     "wpiIndex": 100.415376482139,
     "nominalGDP": 2103588360044.94,
     "realGDP": 27837332.3,
+    "gdpGrowth": 7.11,
     "gSecYield": 7.79,
     "forexReserves": 310.61,
     "inrUsd": 62.01,
     "bankCredit": 123175.492,
     "cpiInflation": 7.17,
     "wpiInflation": -2.46,
-    "gdpGrowth": 7.11,
-    "realRate": 1.58
+    "realRate": 1.68
   },
   {
     "date": "2015-02-01",
@@ -2375,10 +2375,10 @@
     "inrUsd": 61.67,
     "nominalGDP": 2103588360044.94,
     "realGDP": 27837332.3,
+    "gdpGrowth": 7.11,
     "bankCredit": 123175.492,
     "cpiInflation": 6.3,
     "wpiInflation": -3.52,
-    "gdpGrowth": 7.11,
     "realRate": 2.45
   },
   {
@@ -2391,10 +2391,10 @@
     "inrUsd": 62.31,
     "nominalGDP": 2103588360044.94,
     "realGDP": 27837332.3,
+    "gdpGrowth": 7.11,
     "bankCredit": 123175.492,
     "cpiInflation": 6.28,
     "wpiInflation": -3.85,
-    "gdpGrowth": 7.11,
     "realRate": 2.22
   },
   {
@@ -2403,6 +2403,7 @@
     "cpiIndex": 97.92796,
     "wpiIndex": 99.8716109055207,
     "realGDP": 27282785.8,
+    "gdpGrowth": 7.59,
     "gSecYield": 7.84,
     "forexReserves": 333.73,
     "inrUsd": 63.58,
@@ -2410,7 +2411,6 @@
     "nominalGDP": 2103588360044.94,
     "cpiInflation": 5.79,
     "wpiInflation": -3.42,
-    "gdpGrowth": 7.59,
     "realRate": 2.71
   },
   {
@@ -2423,10 +2423,10 @@
     "inrUsd": 63.71,
     "nominalGDP": 2103588360044.94,
     "realGDP": 27282785.8,
+    "gdpGrowth": 7.59,
     "bankCredit": 123219.71,
     "cpiInflation": 5.74,
     "wpiInflation": -2.96,
-    "gdpGrowth": 7.59,
     "realRate": 2.76
   },
   {
@@ -2439,10 +2439,10 @@
     "inrUsd": 63.59,
     "nominalGDP": 2103588360044.94,
     "realGDP": 27282785.8,
+    "gdpGrowth": 7.59,
     "bankCredit": 123219.71,
     "cpiInflation": 6.1,
     "wpiInflation": -2.95,
-    "gdpGrowth": 7.59,
     "realRate": 2.15
   },
   {
@@ -2451,6 +2451,7 @@
     "cpiIndex": 100.6057,
     "wpiIndex": 100.687259270448,
     "realGDP": 27680871,
+    "gdpGrowth": 8.03,
     "gSecYield": 7.82,
     "forexReserves": 336.34,
     "inrUsd": 63.87,
@@ -2458,7 +2459,6 @@
     "nominalGDP": 2103588360044.94,
     "cpiInflation": 4.37,
     "wpiInflation": -4.8,
-    "gdpGrowth": 8.03,
     "realRate": 3.88
   },
   {
@@ -2471,10 +2471,10 @@
     "inrUsd": 66.39,
     "nominalGDP": 2103588360044.94,
     "realGDP": 27680871,
+    "gdpGrowth": 8.03,
     "bankCredit": 126989.932,
     "cpiInflation": 4.35,
     "wpiInflation": -6.14,
-    "gdpGrowth": 8.03,
     "realRate": 3.9
   },
   {
@@ -2487,10 +2487,10 @@
     "inrUsd": 65.5,
     "nominalGDP": 2103588360044.94,
     "realGDP": 27680871,
+    "gdpGrowth": 8.03,
     "bankCredit": 126989.932,
     "cpiInflation": 5.14,
     "wpiInflation": -5.58,
-    "gdpGrowth": 8.03,
     "realRate": 3.11
   },
   {
@@ -2499,6 +2499,7 @@
     "cpiIndex": 102.9009,
     "wpiIndex": 99.7809833094177,
     "realGDP": 28363873.9,
+    "gdpGrowth": 7.2,
     "gSecYield": 7.6,
     "forexReserves": 336.65,
     "inrUsd": 65.4,
@@ -2506,7 +2507,6 @@
     "nominalGDP": 2103588360044.94,
     "cpiInflation": 6.32,
     "wpiInflation": -4.76,
-    "gdpGrowth": 7.2,
     "realRate": 1.43
   },
   {
@@ -2519,10 +2519,10 @@
     "inrUsd": 66.43,
     "nominalGDP": 2103588360044.94,
     "realGDP": 28363873.9,
+    "gdpGrowth": 7.2,
     "bankCredit": 129969.55,
     "cpiInflation": 6.72,
     "wpiInflation": -3.68,
-    "gdpGrowth": 7.2,
     "realRate": 1.03
   },
   {
@@ -2535,10 +2535,10 @@
     "inrUsd": 66.19,
     "nominalGDP": 2103588360044.94,
     "realGDP": 28363873.9,
+    "gdpGrowth": 7.2,
     "bankCredit": 129969.55,
     "cpiInflation": 6.32,
     "wpiInflation": -2.41,
-    "gdpGrowth": 7.2,
     "realRate": 1.43
   },
   {
@@ -2548,13 +2548,13 @@
     "wpiIndex": 97.8778037912544,
     "nominalGDP": 2294796885663.16,
     "realGDP": 30367379.1,
+    "gdpGrowth": 9.09,
     "gSecYield": 7.67,
     "forexReserves": 333.08,
     "inrUsd": 67.87,
     "bankCredit": 128058.995,
     "cpiInflation": 5.91,
     "wpiInflation": -2.53,
-    "gdpGrowth": 9.09,
     "realRate": 1.84
   },
   {
@@ -2567,10 +2567,10 @@
     "inrUsd": 68.21,
     "nominalGDP": 2294796885663.16,
     "realGDP": 30367379.1,
+    "gdpGrowth": 9.09,
     "bankCredit": 128058.995,
     "cpiInflation": 5.53,
     "wpiInflation": -2.28,
-    "gdpGrowth": 9.09,
     "realRate": 2.22
   },
   {
@@ -2583,18 +2583,19 @@
     "inrUsd": 66.25,
     "nominalGDP": 2294796885663.16,
     "realGDP": 30367379.1,
+    "gdpGrowth": 9.09,
     "bankCredit": 128058.995,
     "cpiInflation": 5.51,
     "wpiInflation": -2,
-    "gdpGrowth": 9.09,
     "realRate": 2.24
   },
   {
     "date": "2016-04-01",
-    "repoRate": 7,
+    "repoRate": 7.15,
     "cpiIndex": 103.6659,
     "wpiIndex": 98.7840797522846,
     "realGDP": 29650877.8,
+    "gdpGrowth": 8.68,
     "gSecYield": 7.44,
     "forexReserves": 344.14,
     "inrUsd": 66.39,
@@ -2602,8 +2603,7 @@
     "nominalGDP": 2294796885663.16,
     "cpiInflation": 5.86,
     "wpiInflation": -1.09,
-    "gdpGrowth": 8.68,
-    "realRate": 1.14
+    "realRate": 1.29
   },
   {
     "date": "2016-05-01",
@@ -2615,10 +2615,10 @@
     "inrUsd": 67.12,
     "nominalGDP": 2294796885663.16,
     "realGDP": 29650877.8,
+    "gdpGrowth": 8.68,
     "bankCredit": 130165.625,
     "cpiInflation": 6.59,
     "wpiInflation": -0.9,
-    "gdpGrowth": 8.68,
     "realRate": 0.41
   },
   {
@@ -2631,10 +2631,10 @@
     "inrUsd": 67.51,
     "nominalGDP": 2294796885663.16,
     "realGDP": 29650877.8,
+    "gdpGrowth": 8.68,
     "bankCredit": 130165.625,
     "cpiInflation": 6.13,
     "wpiInflation": -0.09,
-    "gdpGrowth": 8.68,
     "realRate": 0.87
   },
   {
@@ -2643,6 +2643,7 @@
     "cpiIndex": 107.1087,
     "wpiIndex": 101.321652443169,
     "realGDP": 30357558.3,
+    "gdpGrowth": 9.67,
     "gSecYield": 7.35,
     "forexReserves": 346.01,
     "inrUsd": 66.77,
@@ -2650,7 +2651,6 @@
     "nominalGDP": 2294796885663.16,
     "cpiInflation": 6.46,
     "wpiInflation": 0.63,
-    "gdpGrowth": 9.67,
     "realRate": 0.54
   },
   {
@@ -2663,10 +2663,10 @@
     "inrUsd": 66.94,
     "nominalGDP": 2294796885663.16,
     "realGDP": 30357558.3,
+    "gdpGrowth": 9.67,
     "bankCredit": 125779.512,
     "cpiInflation": 5.3,
     "wpiInflation": 1.09,
-    "gdpGrowth": 9.67,
     "realRate": 1.7
   },
   {
@@ -2679,10 +2679,10 @@
     "inrUsd": 66.58,
     "nominalGDP": 2294796885663.16,
     "realGDP": 30357558.3,
+    "gdpGrowth": 9.67,
     "bankCredit": 125779.512,
     "cpiInflation": 4.14,
     "wpiInflation": 1.36,
-    "gdpGrowth": 9.67,
     "realRate": 2.86
   },
   {
@@ -2691,6 +2691,7 @@
     "cpiIndex": 106.3436,
     "wpiIndex": 101.04976965486,
     "realGDP": 30796216.1,
+    "gdpGrowth": 8.58,
     "gSecYield": 6.78,
     "forexReserves": 346.82,
     "inrUsd": 66.72,
@@ -2698,7 +2699,6 @@
     "nominalGDP": 2294796885663.16,
     "cpiInflation": 3.35,
     "wpiInflation": 1.27,
-    "gdpGrowth": 8.58,
     "realRate": 3.4
   },
   {
@@ -2711,10 +2711,10 @@
     "inrUsd": 68.56,
     "nominalGDP": 2294796885663.16,
     "realGDP": 30796216.1,
+    "gdpGrowth": 8.58,
     "bankCredit": 131497.57,
     "cpiInflation": 2.59,
     "wpiInflation": 1.82,
-    "gdpGrowth": 8.58,
     "realRate": 4.16
   },
   {
@@ -2727,10 +2727,10 @@
     "inrUsd": 67.92,
     "nominalGDP": 2294796885663.16,
     "realGDP": 30796216.1,
+    "gdpGrowth": 8.58,
     "bankCredit": 131497.57,
     "cpiInflation": 2.23,
     "wpiInflation": 2.1,
-    "gdpGrowth": 8.58,
     "realRate": 4.52
   },
   {
@@ -2740,13 +2740,13 @@
     "wpiIndex": 102.046673211993,
     "nominalGDP": 2651474262755.45,
     "realGDP": 32277283.1,
+    "gdpGrowth": 6.29,
     "gSecYield": 6.79,
     "forexReserves": 344.54,
     "inrUsd": 67.48,
     "bankCredit": 134321.869,
     "cpiInflation": 1.86,
     "wpiInflation": 4.26,
-    "gdpGrowth": 6.29,
     "realRate": 4.89
   },
   {
@@ -2759,10 +2759,10 @@
     "inrUsd": 66.67,
     "nominalGDP": 2651474262755.45,
     "realGDP": 32277283.1,
+    "gdpGrowth": 6.29,
     "bankCredit": 134321.869,
     "cpiInflation": 2.62,
     "wpiInflation": 5.51,
-    "gdpGrowth": 6.29,
     "realRate": 4.13
   },
   {
@@ -2775,10 +2775,10 @@
     "inrUsd": 64.85,
     "nominalGDP": 2651474262755.45,
     "realGDP": 32277283.1,
+    "gdpGrowth": 6.29,
     "bankCredit": 134321.869,
     "cpiInflation": 2.61,
     "wpiInflation": 5.11,
-    "gdpGrowth": 6.29,
     "realRate": 4.14
   },
   {
@@ -2787,6 +2787,7 @@
     "cpiIndex": 105.9611,
     "wpiIndex": 102.590438788611,
     "realGDP": 31463362.8,
+    "gdpGrowth": 6.11,
     "gSecYield": 7.16,
     "forexReserves": 353.7,
     "inrUsd": 64.27,
@@ -2794,7 +2795,6 @@
     "nominalGDP": 2651474262755.45,
     "cpiInflation": 2.21,
     "wpiInflation": 3.85,
-    "gdpGrowth": 6.11,
     "realRate": 4.29
   },
   {
@@ -2807,10 +2807,10 @@
     "inrUsd": 64.5,
     "nominalGDP": 2651474262755.45,
     "realGDP": 31463362.8,
+    "gdpGrowth": 6.11,
     "bankCredit": 145457.966,
     "cpiInflation": 1.09,
     "wpiInflation": 2.26,
-    "gdpGrowth": 6.11,
     "realRate": 5.41
   },
   {
@@ -2823,10 +2823,10 @@
     "inrUsd": 64.62,
     "nominalGDP": 2651474262755.45,
     "realGDP": 31463362.8,
+    "gdpGrowth": 6.11,
     "bankCredit": 145457.966,
     "cpiInflation": 1.08,
     "wpiInflation": 0.9,
-    "gdpGrowth": 6.11,
     "realRate": 5.42
   },
   {
@@ -2835,6 +2835,7 @@
     "cpiIndex": 109.0214,
     "wpiIndex": 103.224831961332,
     "realGDP": 31971954.9,
+    "gdpGrowth": 5.32,
     "gSecYield": 6.55,
     "forexReserves": 374.51,
     "inrUsd": 64.18,
@@ -2842,7 +2843,6 @@
     "nominalGDP": 2651474262755.45,
     "cpiInflation": 1.79,
     "wpiInflation": 1.88,
-    "gdpGrowth": 5.32,
     "realRate": 4.71
   },
   {
@@ -2855,10 +2855,10 @@
     "inrUsd": 63.93,
     "nominalGDP": 2651474262755.45,
     "realGDP": 31971954.9,
+    "gdpGrowth": 5.32,
     "bankCredit": 152812.742,
     "cpiInflation": 2.52,
     "wpiInflation": 3.24,
-    "gdpGrowth": 5.32,
     "realRate": 3.73
   },
   {
@@ -2871,10 +2871,10 @@
     "inrUsd": 65.3,
     "nominalGDP": 2651474262755.45,
     "realGDP": 31971954.9,
+    "gdpGrowth": 5.32,
     "bankCredit": 152812.742,
     "cpiInflation": 2.89,
     "wpiInflation": 3.14,
-    "gdpGrowth": 5.32,
     "realRate": 3.36
   },
   {
@@ -2883,6 +2883,7 @@
     "cpiIndex": 109.7864,
     "wpiIndex": 104.765501095083,
     "realGDP": 32849916.6,
+    "gdpGrowth": 6.67,
     "gSecYield": 6.94,
     "forexReserves": 379.33,
     "inrUsd": 64.75,
@@ -2890,7 +2891,6 @@
     "nominalGDP": 2651474262755.45,
     "cpiInflation": 3.24,
     "wpiInflation": 3.68,
-    "gdpGrowth": 6.67,
     "realRate": 3.01
   },
   {
@@ -2903,10 +2903,10 @@
     "inrUsd": 64.46,
     "nominalGDP": 2651474262755.45,
     "realGDP": 32849916.6,
+    "gdpGrowth": 6.67,
     "bankCredit": 167295.71,
     "cpiInflation": 3.97,
     "wpiInflation": 4.02,
-    "gdpGrowth": 6.67,
     "realRate": 2.28
   },
   {
@@ -2919,10 +2919,10 @@
     "inrUsd": 63.83,
     "nominalGDP": 2651474262755.45,
     "realGDP": 32849916.6,
+    "gdpGrowth": 6.67,
     "bankCredit": 167295.71,
     "cpiInflation": 4,
     "wpiInflation": 3.58,
-    "gdpGrowth": 6.67,
     "realRate": 2.25
   },
   {
@@ -2932,13 +2932,13 @@
     "wpiIndex": 105.128011479495,
     "nominalGDP": 2702929641648.74,
     "realGDP": 35160583.5,
+    "gdpGrowth": 8.93,
     "gSecYield": 7.22,
     "forexReserves": 401.55,
     "inrUsd": 63.58,
     "bankCredit": 164447.311,
     "cpiInflation": 5.11,
     "wpiInflation": 3.02,
-    "gdpGrowth": 8.93,
     "realRate": 1.14
   },
   {
@@ -2951,10 +2951,10 @@
     "inrUsd": 65.2,
     "nominalGDP": 2702929641648.74,
     "realGDP": 35160583.5,
+    "gdpGrowth": 8.93,
     "bankCredit": 164447.311,
     "cpiInflation": 4.74,
     "wpiInflation": 2.74,
-    "gdpGrowth": 8.93,
     "realRate": 1.51
   },
   {
@@ -2967,10 +2967,10 @@
     "inrUsd": 65.11,
     "nominalGDP": 2702929641648.74,
     "realGDP": 35160583.5,
+    "gdpGrowth": 8.93,
     "bankCredit": 164447.311,
     "cpiInflation": 4.36,
     "wpiInflation": 2.74,
-    "gdpGrowth": 8.93,
     "realRate": 1.89
   },
   {
@@ -2979,6 +2979,7 @@
     "cpiIndex": 110.169,
     "wpiIndex": 106.306170228835,
     "realGDP": 33823008.3,
+    "gdpGrowth": 7.5,
     "gSecYield": 7.55,
     "forexReserves": 399.53,
     "inrUsd": 66.5,
@@ -2986,7 +2987,6 @@
     "nominalGDP": 2702929641648.74,
     "cpiInflation": 3.97,
     "wpiInflation": 3.62,
-    "gdpGrowth": 7.5,
     "realRate": 2.28
   },
   {
@@ -2999,15 +2999,15 @@
     "inrUsd": 67.4,
     "nominalGDP": 2702929641648.74,
     "realGDP": 33823008.3,
+    "gdpGrowth": 7.5,
     "bankCredit": 167180.695,
     "cpiInflation": 3.96,
     "wpiInflation": 4.78,
-    "gdpGrowth": 7.5,
     "realRate": 2.29
   },
   {
     "date": "2018-06-01",
-    "repoRate": 6.5,
+    "repoRate": 6.45,
     "cpiIndex": 111.3165,
     "wpiIndex": 107.937466958689,
     "gSecYield": 7.94,
@@ -3015,11 +3015,11 @@
     "inrUsd": 68.46,
     "nominalGDP": 2702929641648.74,
     "realGDP": 33823008.3,
+    "gdpGrowth": 7.5,
     "bankCredit": 167180.695,
     "cpiInflation": 3.93,
     "wpiInflation": 5.68,
-    "gdpGrowth": 7.5,
-    "realRate": 2.57
+    "realRate": 2.52
   },
   {
     "date": "2018-07-01",
@@ -3027,6 +3027,7 @@
     "cpiIndex": 115.1419,
     "wpiIndex": 108.662487727513,
     "realGDP": 34036441.9,
+    "gdpGrowth": 6.46,
     "gSecYield": 7.8,
     "forexReserves": 383.78,
     "inrUsd": 68.54,
@@ -3034,7 +3035,6 @@
     "nominalGDP": 2702929641648.74,
     "cpiInflation": 5.61,
     "wpiInflation": 5.27,
-    "gdpGrowth": 6.46,
     "realRate": 0.89
   },
   {
@@ -3047,10 +3047,10 @@
     "inrUsd": 71,
     "nominalGDP": 2702929641648.74,
     "realGDP": 34036441.9,
+    "gdpGrowth": 6.46,
     "bankCredit": 168919.227,
     "cpiInflation": 5.61,
     "wpiInflation": 4.62,
-    "gdpGrowth": 6.46,
     "realRate": 1.14
   },
   {
@@ -3063,10 +3063,10 @@
     "inrUsd": 72.54,
     "nominalGDP": 2702929641648.74,
     "realGDP": 34036441.9,
+    "gdpGrowth": 6.46,
     "bankCredit": 168919.227,
     "cpiInflation": 5.61,
     "wpiInflation": 5.22,
-    "gdpGrowth": 6.46,
     "realRate": 1.14
   },
   {
@@ -3075,6 +3075,7 @@
     "cpiIndex": 115.5244,
     "wpiIndex": 110.565667245676,
     "realGDP": 34897608.9,
+    "gdpGrowth": 6.23,
     "gSecYield": 7.92,
     "forexReserves": 371.89,
     "inrUsd": 73.95,
@@ -3082,7 +3083,6 @@
     "nominalGDP": 2702929641648.74,
     "cpiInflation": 5.23,
     "wpiInflation": 5.54,
-    "gdpGrowth": 6.23,
     "realRate": 1.52
   },
   {
@@ -3095,10 +3095,10 @@
     "inrUsd": 69.62,
     "nominalGDP": 2702929641648.74,
     "realGDP": 34897608.9,
+    "gdpGrowth": 6.23,
     "bankCredit": 173523.29,
     "cpiInflation": 4.86,
     "wpiInflation": 4.47,
-    "gdpGrowth": 6.23,
     "realRate": 1.89
   },
   {
@@ -3111,10 +3111,10 @@
     "inrUsd": 69.58,
     "nominalGDP": 2702929641648.74,
     "realGDP": 34897608.9,
+    "gdpGrowth": 6.23,
     "bankCredit": 173523.29,
     "cpiInflation": 5.24,
     "wpiInflation": 3.46,
-    "gdpGrowth": 6.23,
     "realRate": 1.51
   },
   {
@@ -3124,18 +3124,18 @@
     "wpiIndex": 108.028094554792,
     "nominalGDP": 2835606256558.19,
     "realGDP": 37172100.4,
+    "gdpGrowth": 5.72,
     "gSecYield": 7.35,
     "forexReserves": 378.01,
     "inrUsd": 70.94,
     "bankCredit": 169343.843,
     "cpiInflation": 6.6,
     "wpiInflation": 2.76,
-    "gdpGrowth": 5.72,
     "realRate": 0.15
   },
   {
     "date": "2019-02-01",
-    "repoRate": 6.5,
+    "repoRate": 6.5625,
     "cpiIndex": 117.43700000000001,
     "wpiIndex": 108.299977343101,
     "gSecYield": 7.43,
@@ -3143,11 +3143,11 @@
     "inrUsd": 70.83,
     "nominalGDP": 2835606256558.19,
     "realGDP": 37172100.4,
+    "gdpGrowth": 5.72,
     "bankCredit": 169343.843,
     "cpiInflation": 6.97,
     "wpiInflation": 2.93,
-    "gdpGrowth": 5.72,
-    "realRate": -0.47
+    "realRate": -0.41
   },
   {
     "date": "2019-03-01",
@@ -3159,10 +3159,10 @@
     "inrUsd": 69.16,
     "nominalGDP": 2835606256558.19,
     "realGDP": 37172100.4,
+    "gdpGrowth": 5.72,
     "bankCredit": 169343.843,
     "cpiInflation": 7.67,
     "wpiInflation": 3.1,
-    "gdpGrowth": 5.72,
     "realRate": -1.17
   },
   {
@@ -3171,6 +3171,7 @@
     "cpiIndex": 119.3497,
     "wpiIndex": 109.750018880749,
     "realGDP": 35546415.1,
+    "gdpGrowth": 5.1,
     "gSecYield": 7.42,
     "forexReserves": 396.24,
     "inrUsd": 69.64,
@@ -3178,7 +3179,6 @@
     "nominalGDP": 2835606256558.19,
     "cpiInflation": 8.33,
     "wpiInflation": 3.24,
-    "gdpGrowth": 5.1,
     "realRate": -2.08
   },
   {
@@ -3191,10 +3191,10 @@
     "inrUsd": 69.63,
     "nominalGDP": 2835606256558.19,
     "realGDP": 35546415.1,
+    "gdpGrowth": 5.1,
     "bankCredit": 168654.462,
     "cpiInflation": 8.65,
     "wpiInflation": 2.79,
-    "gdpGrowth": 5.1,
     "realRate": -2.4
   },
   {
@@ -3207,10 +3207,10 @@
     "inrUsd": 68.92,
     "nominalGDP": 2835606256558.19,
     "realGDP": 35546415.1,
+    "gdpGrowth": 5.1,
     "bankCredit": 168654.462,
     "cpiInflation": 8.59,
     "wpiInflation": 2.02,
-    "gdpGrowth": 5.1,
     "realRate": -2.59
   },
   {
@@ -3219,6 +3219,7 @@
     "cpiIndex": 122.0274,
     "wpiIndex": 109.931274072955,
     "realGDP": 35499454.5,
+    "gdpGrowth": 4.3,
     "gSecYield": 6.6,
     "forexReserves": 403.71,
     "inrUsd": 68.81,
@@ -3226,12 +3227,11 @@
     "nominalGDP": 2835606256558.19,
     "cpiInflation": 5.98,
     "wpiInflation": 1.17,
-    "gdpGrowth": 4.3,
     "realRate": 0.02
   },
   {
     "date": "2019-08-01",
-    "repoRate": 5.65,
+    "repoRate": 5.72,
     "cpiIndex": 122.4099,
     "wpiIndex": 110.112529265161,
     "gSecYield": 6.62,
@@ -3239,11 +3239,11 @@
     "inrUsd": 71.45,
     "nominalGDP": 2835606256558.19,
     "realGDP": 35499454.5,
+    "gdpGrowth": 4.3,
     "bankCredit": 169412.916,
     "cpiInflation": 6.31,
     "wpiInflation": 1.17,
-    "gdpGrowth": 4.3,
-    "realRate": -0.66
+    "realRate": -0.59
   },
   {
     "date": "2019-09-01",
@@ -3255,10 +3255,10 @@
     "inrUsd": 70.64,
     "nominalGDP": 2835606256558.19,
     "realGDP": 35499454.5,
+    "gdpGrowth": 4.3,
     "bankCredit": 169412.916,
     "cpiInflation": 6.98,
     "wpiInflation": 0.33,
-    "gdpGrowth": 4.3,
     "realRate": -1.33
   },
   {
@@ -3267,6 +3267,7 @@
     "cpiIndex": 124.3226,
     "wpiIndex": 110.565667245676,
     "realGDP": 36033750.5,
+    "gdpGrowth": 3.26,
     "gSecYield": 6.54,
     "forexReserves": 418.51,
     "inrUsd": 71.01,
@@ -3274,7 +3275,6 @@
     "nominalGDP": 2835606256558.19,
     "cpiInflation": 7.62,
     "wpiInflation": 0,
-    "gdpGrowth": 3.26,
     "realRate": -2.22
   },
   {
@@ -3287,10 +3287,10 @@
     "inrUsd": 71.75,
     "nominalGDP": 2835606256558.19,
     "realGDP": 36033750.5,
+    "gdpGrowth": 3.26,
     "bankCredit": 173380.53,
     "cpiInflation": 8.61,
     "wpiInflation": 0.58,
-    "gdpGrowth": 3.26,
     "realRate": -3.21
   },
   {
@@ -3303,10 +3303,10 @@
     "inrUsd": 71.36,
     "nominalGDP": 2835606256558.19,
     "realGDP": 36033750.5,
+    "gdpGrowth": 3.26,
     "bankCredit": 173380.53,
     "cpiInflation": 9.63,
     "wpiInflation": 2.76,
-    "gdpGrowth": 3.26,
     "realRate": -4.23
   },
   {
@@ -3316,13 +3316,13 @@
     "wpiIndex": 111.834453591118,
     "nominalGDP": 2674851578587.27,
     "realGDP": 38266786.4,
+    "gdpGrowth": 2.94,
     "gSecYield": 6.82,
     "forexReserves": 442.65,
     "inrUsd": 71.53,
     "bankCredit": 172111.798,
     "cpiInflation": 7.49,
     "wpiInflation": 3.52,
-    "gdpGrowth": 2.94,
     "realRate": -2.09
   },
   {
@@ -3335,15 +3335,15 @@
     "inrUsd": 72.53,
     "nominalGDP": 2674851578587.27,
     "realGDP": 38266786.4,
+    "gdpGrowth": 2.94,
     "bankCredit": 172111.798,
     "cpiInflation": 6.84,
     "wpiInflation": 2.26,
-    "gdpGrowth": 2.94,
     "realRate": -1.44
   },
   {
     "date": "2020-03-01",
-    "repoRate": 4.65,
+    "repoRate": 5.21,
     "cpiIndex": 124.7051,
     "wpiIndex": 109.115625708028,
     "gSecYield": 6.7,
@@ -3351,11 +3351,11 @@
     "inrUsd": 75.39,
     "nominalGDP": 2674851578587.27,
     "realGDP": 38266786.4,
+    "gdpGrowth": 2.94,
     "bankCredit": 172111.798,
     "cpiInflation": 5.5,
     "wpiInflation": 0.42,
-    "gdpGrowth": 2.94,
-    "realRate": -0.85
+    "realRate": -0.29
   },
   {
     "date": "2020-04-01",
@@ -3363,6 +3363,7 @@
     "cpiIndex": 125.8527,
     "wpiIndex": 108.028094554792,
     "realGDP": 27323061.6,
+    "gdpGrowth": -23.13,
     "gSecYield": 6.77,
     "forexReserves": 449.11,
     "inrUsd": 75.08,
@@ -3370,12 +3371,11 @@
     "nominalGDP": 2674851578587.27,
     "cpiInflation": 5.45,
     "wpiInflation": -1.57,
-    "gdpGrowth": -23.13,
     "realRate": -0.8
   },
   {
     "date": "2020-05-01",
-    "repoRate": 4.25,
+    "repoRate": 4.49,
     "cpiIndex": 126.2353,
     "wpiIndex": 106.487425421041,
     "gSecYield": 5.92,
@@ -3383,11 +3383,11 @@
     "inrUsd": 75.59,
     "nominalGDP": 2674851578587.27,
     "realGDP": 27323061.6,
+    "gdpGrowth": -23.13,
     "bankCredit": 173144.763,
     "cpiInflation": 5.1,
     "wpiInflation": -3.37,
-    "gdpGrowth": -23.13,
-    "realRate": -0.85
+    "realRate": -0.61
   },
   {
     "date": "2020-06-01",
@@ -3399,10 +3399,10 @@
     "inrUsd": 75.53,
     "nominalGDP": 2674851578587.27,
     "realGDP": 27323061.6,
+    "gdpGrowth": -23.13,
     "bankCredit": 173144.763,
     "cpiInflation": 5.06,
     "wpiInflation": -1.81,
-    "gdpGrowth": -23.13,
     "realRate": -0.81
   },
   {
@@ -3411,6 +3411,7 @@
     "cpiIndex": 128.5304,
     "wpiIndex": 109.659391284646,
     "realGDP": 33426564.1,
+    "gdpGrowth": -5.84,
     "gSecYield": 5.81,
     "forexReserves": 497.25,
     "inrUsd": 74.9,
@@ -3418,7 +3419,6 @@
     "nominalGDP": 2674851578587.27,
     "cpiInflation": 5.33,
     "wpiInflation": -0.25,
-    "gdpGrowth": -5.84,
     "realRate": -1.08
   },
   {
@@ -3431,10 +3431,10 @@
     "inrUsd": 73.25,
     "nominalGDP": 2674851578587.27,
     "realGDP": 33426564.1,
+    "gdpGrowth": -5.84,
     "bankCredit": 177922.168,
     "cpiInflation": 5.63,
     "wpiInflation": 0.41,
-    "gdpGrowth": -5.84,
     "realRate": -1.38
   },
   {
@@ -3447,10 +3447,10 @@
     "inrUsd": 73.54,
     "nominalGDP": 2674851578587.27,
     "realGDP": 33426564.1,
+    "gdpGrowth": -5.84,
     "bankCredit": 177922.168,
     "cpiInflation": 5.64,
     "wpiInflation": 1.32,
-    "gdpGrowth": -5.84,
     "realRate": -1.39
   },
   {
@@ -3459,6 +3459,7 @@
     "cpiIndex": 131.6603,
     "wpiIndex": 112.015708783325,
     "realGDP": 36673379.2,
+    "gdpGrowth": 1.78,
     "gSecYield": 5.94,
     "forexReserves": 523.97,
     "inrUsd": 74.59,
@@ -3466,12 +3467,11 @@
     "nominalGDP": 2674851578587.27,
     "cpiInflation": 5.9,
     "wpiInflation": 1.31,
-    "gdpGrowth": 1.78,
     "realRate": -1.65
   },
   {
     "date": "2020-11-01",
-    "repoRate": 4.25,
+    "repoRate": 2.25,
     "cpiIndex": 132.101,
     "wpiIndex": 113.37512272487,
     "gSecYield": 5.9,
@@ -3479,11 +3479,11 @@
     "inrUsd": 74.01,
     "nominalGDP": 2674851578587.27,
     "realGDP": 36673379.2,
+    "gdpGrowth": 1.78,
     "bankCredit": 185559.41,
     "cpiInflation": 5.28,
     "wpiInflation": 2.29,
-    "gdpGrowth": 1.78,
-    "realRate": -1.03
+    "realRate": -3.03
   },
   {
     "date": "2020-12-01",
@@ -3495,10 +3495,10 @@
     "inrUsd": 73.01,
     "nominalGDP": 2674851578587.27,
     "realGDP": 36673379.2,
+    "gdpGrowth": 1.78,
     "bankCredit": 185559.41,
     "cpiInflation": 3.69,
     "wpiInflation": 1.95,
-    "gdpGrowth": 1.78,
     "realRate": 0.56
   },
   {
@@ -3508,13 +3508,13 @@
     "wpiIndex": 114.643909070312,
     "nominalGDP": 3167270623260.47,
     "realGDP": 39525684.4,
+    "gdpGrowth": 3.29,
     "gSecYield": 5.94,
     "forexReserves": 554.1,
     "inrUsd": 72.84,
     "bankCredit": 185528.914,
     "cpiInflation": 3.16,
     "wpiInflation": 2.51,
-    "gdpGrowth": 3.29,
     "realRate": 1.09
   },
   {
@@ -3527,10 +3527,10 @@
     "inrUsd": 73.92,
     "nominalGDP": 3167270623260.47,
     "realGDP": 39525684.4,
+    "gdpGrowth": 3.29,
     "bankCredit": 185528.914,
     "cpiInflation": 4.49,
     "wpiInflation": 4.83,
-    "gdpGrowth": 3.29,
     "realRate": -0.24
   },
   {
@@ -3543,10 +3543,10 @@
     "inrUsd": 73.14,
     "nominalGDP": 3167270623260.47,
     "realGDP": 39525684.4,
+    "gdpGrowth": 3.29,
     "bankCredit": 185528.914,
     "cpiInflation": 5.67,
     "wpiInflation": 7.89,
-    "gdpGrowth": 3.29,
     "realRate": -1.42
   },
   {
@@ -3555,6 +3555,7 @@
     "cpiIndex": 132.3214,
     "wpiIndex": 119.628426855978,
     "realGDP": 33507301.3,
+    "gdpGrowth": 22.63,
     "gSecYield": 6.28,
     "forexReserves": 552.74,
     "inrUsd": 74,
@@ -3562,7 +3563,6 @@
     "nominalGDP": 3167270623260.47,
     "cpiInflation": 5.14,
     "wpiInflation": 10.74,
-    "gdpGrowth": 22.63,
     "realRate": -0.89
   },
   {
@@ -3575,10 +3575,10 @@
     "inrUsd": 72.42,
     "nominalGDP": 3167270623260.47,
     "realGDP": 33507301.3,
+    "gdpGrowth": 22.63,
     "bankCredit": 188893.704,
     "cpiInflation": 5.26,
     "wpiInflation": 13.11,
-    "gdpGrowth": 22.63,
     "realRate": -1.01
   },
   {
@@ -3591,10 +3591,10 @@
     "inrUsd": 74.33,
     "nominalGDP": 3167270623260.47,
     "realGDP": 33507301.3,
+    "gdpGrowth": 22.63,
     "bankCredit": 188893.704,
     "cpiInflation": 5.58,
     "wpiInflation": 12.07,
-    "gdpGrowth": 22.63,
     "realRate": -1.33
   },
   {
@@ -3603,6 +3603,7 @@
     "cpiIndex": 135.2961,
     "wpiIndex": 122.347254739068,
     "realGDP": 36724381.4,
+    "gdpGrowth": 9.87,
     "gSecYield": 6.21,
     "forexReserves": 582.67,
     "inrUsd": 74.34,
@@ -3610,7 +3611,6 @@
     "nominalGDP": 3167270623260.47,
     "cpiInflation": 5.26,
     "wpiInflation": 11.57,
-    "gdpGrowth": 9.87,
     "realRate": -1.01
   },
   {
@@ -3623,10 +3623,10 @@
     "inrUsd": 72.95,
     "nominalGDP": 3167270623260.47,
     "realGDP": 36724381.4,
+    "gdpGrowth": 9.87,
     "bankCredit": 193612.038,
     "cpiInflation": 4.81,
     "wpiInflation": 11.64,
-    "gdpGrowth": 9.87,
     "realRate": -0.56
   },
   {
@@ -3639,10 +3639,10 @@
     "inrUsd": 74.16,
     "nominalGDP": 3167270623260.47,
     "realGDP": 36724381.4,
+    "gdpGrowth": 9.87,
     "bankCredit": 193612.038,
     "cpiInflation": 4.4,
     "wpiInflation": 11.8,
-    "gdpGrowth": 9.87,
     "realRate": -0.15
   },
   {
@@ -3651,6 +3651,7 @@
     "cpiIndex": 137.6098,
     "wpiIndex": 127.51302771694,
     "realGDP": 38701077.8,
+    "gdpGrowth": 5.53,
     "gSecYield": 6.36,
     "forexReserves": 602.27,
     "inrUsd": 75,
@@ -3658,7 +3659,6 @@
     "nominalGDP": 3167270623260.47,
     "cpiInflation": 4.52,
     "wpiInflation": 13.83,
-    "gdpGrowth": 5.53,
     "realRate": -0.27
   },
   {
@@ -3671,10 +3671,10 @@
     "inrUsd": 75.1,
     "nominalGDP": 3167270623260.47,
     "realGDP": 38701077.8,
+    "gdpGrowth": 5.53,
     "bankCredit": 206288.94,
     "cpiInflation": 4.84,
     "wpiInflation": 14.87,
-    "gdpGrowth": 5.53,
     "realRate": -0.59
   },
   {
@@ -3687,10 +3687,10 @@
     "inrUsd": 74.39,
     "nominalGDP": 3167270623260.47,
     "realGDP": 38701077.8,
+    "gdpGrowth": 5.53,
     "bankCredit": 206288.94,
     "cpiInflation": 5.56,
     "wpiInflation": 14.27,
-    "gdpGrowth": 5.53,
     "realRate": -1.31
   },
   {
@@ -3700,13 +3700,13 @@
     "wpiIndex": 130.322483196133,
     "nominalGDP": 3346107287730.93,
     "realGDP": 41285702.1,
+    "gdpGrowth": 4.45,
     "gSecYield": 6.64,
     "forexReserves": 591.02,
     "inrUsd": 74.6,
     "bankCredit": 210002.714,
     "cpiInflation": 5.84,
     "wpiInflation": 13.68,
-    "gdpGrowth": 4.45,
     "realRate": -1.59
   },
   {
@@ -3719,10 +3719,10 @@
     "inrUsd": 75.49,
     "nominalGDP": 3346107287730.93,
     "realGDP": 41285702.1,
+    "gdpGrowth": 4.45,
     "bankCredit": 210002.714,
     "cpiInflation": 5.04,
     "wpiInflation": 13.43,
-    "gdpGrowth": 4.45,
     "realRate": -0.79
   },
   {
@@ -3735,10 +3735,10 @@
     "inrUsd": 75.87,
     "nominalGDP": 3346107287730.93,
     "realGDP": 41285702.1,
+    "gdpGrowth": 4.45,
     "bankCredit": 210002.714,
     "cpiInflation": 5.35,
     "wpiInflation": 14.63,
-    "gdpGrowth": 4.45,
     "realRate": -1.1
   },
   {
@@ -3747,6 +3747,7 @@
     "cpiIndex": 140.6947,
     "wpiIndex": 138.025828864889,
     "realGDP": 38027690.7,
+    "gdpGrowth": 13.49,
     "gSecYield": 7.11,
     "forexReserves": 554.65,
     "inrUsd": 76.48,
@@ -3754,7 +3755,6 @@
     "nominalGDP": 3346107287730.93,
     "cpiInflation": 6.33,
     "wpiInflation": 15.38,
-    "gdpGrowth": 13.49,
     "realRate": -2.08
   },
   {
@@ -3767,15 +3767,15 @@
     "inrUsd": 77.59,
     "nominalGDP": 3346107287730.93,
     "realGDP": 38027690.7,
+    "gdpGrowth": 13.49,
     "bankCredit": 216999.289,
     "cpiInflation": 6.97,
     "wpiInflation": 16.63,
-    "gdpGrowth": 13.49,
     "realRate": -2.32
   },
   {
     "date": "2022-06-01",
-    "repoRate": 5.15,
+    "repoRate": 5.03,
     "cpiIndex": 142.3474,
     "wpiIndex": 140.835284344083,
     "gSecYield": 7.53,
@@ -3783,11 +3783,11 @@
     "inrUsd": 79.02,
     "nominalGDP": 3346107287730.93,
     "realGDP": 38027690.7,
+    "gdpGrowth": 13.49,
     "bankCredit": 216999.289,
     "cpiInflation": 6.16,
     "wpiInflation": 16.23,
-    "gdpGrowth": 13.49,
-    "realRate": -1.01
+    "realRate": -1.13
   },
   {
     "date": "2022-07-01",
@@ -3795,6 +3795,7 @@
     "cpiIndex": 143.1186,
     "wpiIndex": 139.566497998641,
     "realGDP": 38912507.3,
+    "gdpGrowth": 5.96,
     "gSecYield": 7.4,
     "forexReserves": 534.69,
     "inrUsd": 79.33,
@@ -3802,296 +3803,295 @@
     "nominalGDP": 3346107287730.93,
     "cpiInflation": 5.78,
     "wpiInflation": 14.07,
-    "gdpGrowth": 5.96,
     "realRate": -0.63
   },
   {
     "date": "2022-08-01",
+    "repoRate": 5.65,
     "cpiIndex": 143.4492,
     "wpiIndex": 138.841477229816,
     "gSecYield": 7.27,
     "forexReserves": 520.84,
     "inrUsd": 79.45,
-    "repoRate": 5.15,
     "nominalGDP": 3346107287730.93,
     "realGDP": 38912507.3,
+    "gdpGrowth": 5.96,
     "bankCredit": 226943.004,
     "cpiInflation": 5.85,
     "wpiInflation": 12.48,
-    "gdpGrowth": 5.96,
-    "realRate": -0.7
+    "realRate": -0.2
   },
   {
     "date": "2022-09-01",
+    "repoRate": 5.75,
     "cpiIndex": 144.6611,
     "wpiIndex": 137.663318480477,
     "gSecYield": 7.28,
     "forexReserves": 495.19,
     "inrUsd": 81.37,
-    "repoRate": 5.15,
     "nominalGDP": 3346107287730.93,
     "realGDP": 38912507.3,
+    "gdpGrowth": 5.96,
     "bankCredit": 226943.004,
     "cpiInflation": 6.49,
     "wpiInflation": 10.55,
-    "gdpGrowth": 5.96,
-    "realRate": -1.34
+    "realRate": -0.74
   },
   {
     "date": "2022-10-01",
+    "repoRate": 6.15,
     "cpiIndex": 145.9832,
     "wpiIndex": 138.569594441507,
     "realGDP": 40575777.8,
+    "gdpGrowth": 4.84,
     "gSecYield": 7.46,
     "forexReserves": 496.56,
     "inrUsd": 82.73,
     "bankCredit": 232338.92,
-    "repoRate": 5.15,
     "nominalGDP": 3346107287730.93,
     "cpiInflation": 6.08,
     "wpiInflation": 8.67,
-    "gdpGrowth": 4.84,
-    "realRate": -0.93
+    "realRate": 0.07
   },
   {
     "date": "2022-11-01",
+    "repoRate": 6.15,
     "cpiIndex": 145.9832,
     "wpiIndex": 138.207084057095,
     "gSecYield": 7.36,
     "forexReserves": 513.37,
     "inrUsd": 81.43,
-    "repoRate": 5.15,
     "nominalGDP": 3346107287730.93,
     "realGDP": 40575777.8,
+    "gdpGrowth": 4.84,
     "bankCredit": 232338.92,
     "cpiInflation": 5.41,
     "wpiInflation": 6.12,
-    "gdpGrowth": 4.84,
-    "realRate": -0.26
+    "realRate": 0.74
   },
   {
     "date": "2022-12-01",
+    "repoRate": 6.43,
     "cpiIndex": 145.7628,
     "wpiIndex": 136.303904538932,
     "gSecYield": 7.29,
     "forexReserves": 521.42,
     "inrUsd": 82.72,
-    "repoRate": 5.15,
     "nominalGDP": 3346107287730.93,
     "realGDP": 40575777.8,
+    "gdpGrowth": 4.84,
     "bankCredit": 232338.92,
     "cpiInflation": 5.5,
     "wpiInflation": 4.95,
-    "gdpGrowth": 4.84,
-    "realRate": -0.35
+    "realRate": 0.93
   },
   {
     "date": "2023-01-01",
+    "repoRate": 6.5,
     "cpiIndex": 146.3137,
     "nominalGDP": 3638489096033.86,
     "realGDP": 44133158,
+    "gdpGrowth": 6.9,
     "gSecYield": 7.39,
     "forexReserves": 530.59,
     "inrUsd": 81.69,
     "bankCredit": 238567.897,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "cpiInflation": 6.16,
     "wpiInflation": 4.59,
-    "gdpGrowth": 6.9,
-    "realRate": -1.01
+    "realRate": 0.34
   },
   {
     "date": "2023-02-01",
+    "repoRate": 6.69,
     "cpiIndex": 146.2036,
     "gSecYield": 7.33,
     "forexReserves": 521.18,
     "inrUsd": 82.57,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "realGDP": 44133158,
+    "gdpGrowth": 6.9,
     "bankCredit": 238567.897,
     "cpiInflation": 6.16,
     "wpiInflation": 3.51,
-    "gdpGrowth": 6.9,
-    "realRate": -1.01
+    "realRate": 0.53
   },
   {
     "date": "2023-03-01",
+    "repoRate": 6.75,
     "cpiIndex": 146.8646,
     "gSecYield": 7.36,
     "forexReserves": 533.28,
     "inrUsd": 82.19,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "realGDP": 44133158,
+    "gdpGrowth": 6.9,
     "bankCredit": 238567.897,
     "cpiInflation": 5.79,
     "wpiInflation": 1.01,
-    "gdpGrowth": 6.9,
-    "realRate": -0.64
+    "realRate": 0.96
   },
   {
     "date": "2023-04-01",
+    "repoRate": 6.75,
     "cpiIndex": 147.8562,
     "realGDP": 41701144.4,
+    "gdpGrowth": 9.66,
     "gSecYield": 7.18,
     "forexReserves": 544.55,
     "inrUsd": 81.84,
     "bankCredit": 250409.812,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "cpiInflation": 5.09,
     "wpiInflation": -1.25,
-    "gdpGrowth": 9.66,
-    "realRate": 0.06
+    "realRate": 1.66
   },
   {
     "date": "2023-05-01",
+    "repoRate": 6.75,
     "cpiIndex": 148.4071,
     "gSecYield": 7.01,
     "forexReserves": 545.7,
     "inrUsd": 82.68,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "realGDP": 41701144.4,
+    "gdpGrowth": 9.66,
     "bankCredit": 250409.812,
     "cpiInflation": 4.42,
     "wpiInflation": -2.97,
-    "gdpGrowth": 9.66,
-    "realRate": 0.73
+    "realRate": 2.33
   },
   {
     "date": "2023-06-01",
+    "repoRate": 6.75,
     "cpiIndex": 150.2801,
     "gSecYield": 7.05,
     "forexReserves": 551.2,
     "inrUsd": 82.06,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "realGDP": 41701144.4,
+    "gdpGrowth": 9.66,
     "bankCredit": 250409.812,
     "cpiInflation": 5.57,
     "wpiInflation": -3.22,
-    "gdpGrowth": 9.66,
-    "realRate": -0.42
+    "realRate": 1.18
   },
   {
     "date": "2023-07-01",
+    "repoRate": 6.75,
     "cpiIndex": 153.9159,
     "realGDP": 42548057.9,
+    "gdpGrowth": 9.34,
     "gSecYield": 7.11,
     "forexReserves": 560.73,
     "inrUsd": 82.24,
     "bankCredit": 253174.102,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "cpiInflation": 7.54,
     "wpiInflation": -2.34,
-    "gdpGrowth": 9.34,
-    "realRate": -2.39
+    "realRate": -0.79
   },
   {
     "date": "2023-08-01",
+    "repoRate": 6.75,
     "cpiIndex": 153.365,
     "gSecYield": 7.18,
     "forexReserves": 553.21,
     "inrUsd": 82.78,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "realGDP": 42548057.9,
+    "gdpGrowth": 9.34,
     "bankCredit": 253174.102,
     "cpiInflation": 6.91,
     "wpiInflation": -1.83,
-    "gdpGrowth": 9.34,
-    "realRate": -1.76
+    "realRate": -0.16
   },
   {
     "date": "2023-09-01",
+    "repoRate": 6.75,
     "cpiIndex": 151.49200000000002,
     "gSecYield": 7.17,
     "forexReserves": 544.41,
     "inrUsd": 83.08,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "realGDP": 42548057.9,
+    "gdpGrowth": 9.34,
     "bankCredit": 253174.102,
     "cpiInflation": 4.72,
     "wpiInflation": -0.99,
-    "gdpGrowth": 9.34,
-    "realRate": 0.43
+    "realRate": 2.03
   },
   {
     "date": "2023-10-01",
+    "repoRate": 6.75,
     "cpiIndex": 152.4836,
     "realGDP": 44436382.4,
+    "gdpGrowth": 9.51,
     "gSecYield": 7.35,
     "forexReserves": 542.08,
     "inrUsd": 83.26,
     "bankCredit": 267213.733,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "cpiInflation": 4.45,
     "wpiInflation": -1.64,
-    "gdpGrowth": 9.51,
-    "realRate": 0.7
+    "realRate": 2.3
   },
   {
     "date": "2023-11-01",
+    "repoRate": 6.75,
     "cpiIndex": 153.2548,
     "gSecYield": 7.27,
     "forexReserves": 556.54,
     "inrUsd": 83.36,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "realGDP": 44436382.4,
+    "gdpGrowth": 9.51,
     "bankCredit": 267213.733,
     "cpiInflation": 4.98,
     "wpiInflation": -1.38,
-    "gdpGrowth": 9.51,
-    "realRate": 0.17
+    "realRate": 1.77
   },
   {
     "date": "2023-12-01",
+    "repoRate": 6.75,
     "cpiIndex": 152.9243,
     "gSecYield": 7.22,
     "forexReserves": 574.51,
     "inrUsd": 83.19,
-    "repoRate": 5.15,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3638489096033.86,
     "realGDP": 44436382.4,
+    "gdpGrowth": 9.51,
     "bankCredit": 267213.733,
     "cpiInflation": 4.91,
     "wpiInflation": 0,
-    "gdpGrowth": 9.51,
-    "realRate": 0.24
+    "realRate": 1.84
   },
   {
     "date": "2024-01-01",
     "cpiIndex": 153.0345,
     "nominalGDP": 3909891533858.08,
     "realGDP": 47820324.7,
+    "gdpGrowth": 8.35,
     "gSecYield": 7.2,
     "forexReserves": 572,
     "inrUsd": 83.02,
     "bankCredit": 275913.192,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "cpiInflation": 4.59,
     "wpiInflation": 0,
-    "gdpGrowth": 8.35,
-    "realRate": 0.56
+    "realRate": 2.16
   },
   {
     "date": "2024-02-01",
@@ -4099,15 +4099,15 @@
     "gSecYield": 7.09,
     "forexReserves": 577.13,
     "inrUsd": 82.87,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 47820324.7,
+    "gdpGrowth": 8.35,
     "bankCredit": 275913.192,
     "cpiInflation": 4.9,
     "wpiInflation": 0,
-    "gdpGrowth": 8.35,
-    "realRate": 0.25
+    "realRate": 1.85
   },
   {
     "date": "2024-03-01",
@@ -4115,31 +4115,31 @@
     "gSecYield": 7.07,
     "forexReserves": 593.74,
     "inrUsd": 83.34,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 47820324.7,
+    "gdpGrowth": 8.35,
     "bankCredit": 275913.192,
     "cpiInflation": 4.2,
     "wpiInflation": 0,
-    "gdpGrowth": 8.35,
-    "realRate": 0.95
+    "realRate": 2.55
   },
   {
     "date": "2024-04-01",
     "cpiIndex": 153.5853,
     "realGDP": 44416639.5,
+    "gdpGrowth": 6.51,
     "gSecYield": 7.15,
     "forexReserves": 584.31,
     "inrUsd": 83.44,
     "bankCredit": 283801.621,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "cpiInflation": 3.87,
     "wpiInflation": 0,
-    "gdpGrowth": 6.51,
-    "realRate": 1.28
+    "realRate": 2.88
   },
   {
     "date": "2024-05-01",
@@ -4147,15 +4147,15 @@
     "gSecYield": 7.05,
     "forexReserves": 595.02,
     "inrUsd": 83.43,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 44416639.5,
+    "gdpGrowth": 6.51,
     "bankCredit": 283801.621,
     "cpiInflation": 3.86,
     "wpiInflation": 0,
-    "gdpGrowth": 6.51,
-    "realRate": 1.29
+    "realRate": 2.89
   },
   {
     "date": "2024-06-01",
@@ -4163,31 +4163,31 @@
     "gSecYield": 7.02,
     "forexReserves": 595.47,
     "inrUsd": 83.33,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 44416639.5,
+    "gdpGrowth": 6.51,
     "bankCredit": 283801.621,
     "cpiInflation": 3.67,
     "wpiInflation": 0,
-    "gdpGrowth": 6.51,
-    "realRate": 1.48
+    "realRate": 3.08
   },
   {
     "date": "2024-07-01",
     "cpiIndex": 157.2212,
     "realGDP": 44935865.6,
+    "gdpGrowth": 5.61,
     "gSecYield": 7.01,
     "forexReserves": 612.13,
     "inrUsd": 83.73,
     "bankCredit": 288246.948,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "cpiInflation": 2.15,
     "wpiInflation": 0,
-    "gdpGrowth": 5.61,
-    "realRate": 3
+    "realRate": 4.6
   },
   {
     "date": "2024-08-01",
@@ -4195,15 +4195,15 @@
     "gSecYield": 6.91,
     "forexReserves": 620.49,
     "inrUsd": 83.83,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 44935865.6,
+    "gdpGrowth": 5.61,
     "bankCredit": 288246.948,
     "cpiInflation": 2.44,
     "wpiInflation": 0,
-    "gdpGrowth": 5.61,
-    "realRate": 2.71
+    "realRate": 4.31
   },
   {
     "date": "2024-09-01",
@@ -4211,31 +4211,31 @@
     "gSecYield": 6.83,
     "forexReserves": 640.05,
     "inrUsd": 83.76,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 44935865.6,
+    "gdpGrowth": 5.61,
     "bankCredit": 288246.948,
     "cpiInflation": 4.22,
     "wpiInflation": 0,
-    "gdpGrowth": 5.61,
-    "realRate": 0.93
+    "realRate": 2.53
   },
   {
     "date": "2024-10-01",
     "cpiIndex": 159.2043,
     "realGDP": 47265418.3,
+    "gdpGrowth": 6.37,
     "gSecYield": 6.79,
     "forexReserves": 612.41,
     "inrUsd": 84.06,
     "bankCredit": 299475.917,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "cpiInflation": 4.41,
     "wpiInflation": 0,
-    "gdpGrowth": 6.37,
-    "realRate": 0.74
+    "realRate": 2.34
   },
   {
     "date": "2024-11-01",
@@ -4243,15 +4243,15 @@
     "gSecYield": 6.82,
     "forexReserves": 592.22,
     "inrUsd": 84.48,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 47265418.3,
+    "gdpGrowth": 6.37,
     "bankCredit": 299475.917,
     "cpiInflation": 3.88,
     "wpiInflation": 0,
-    "gdpGrowth": 6.37,
-    "realRate": 1.27
+    "realRate": 2.87
   },
   {
     "date": "2024-12-01",
@@ -4259,31 +4259,31 @@
     "gSecYield": 6.78,
     "forexReserves": 569.54,
     "inrUsd": 85.55,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 47265418.3,
+    "gdpGrowth": 6.37,
     "bankCredit": 299475.917,
     "cpiInflation": 3.53,
     "wpiInflation": 0,
-    "gdpGrowth": 6.37,
-    "realRate": 1.62
+    "realRate": 3.22
   },
   {
     "date": "2025-01-01",
     "cpiIndex": 157.77200000000002,
     "realGDP": 51351631.1,
+    "gdpGrowth": 7.38,
     "gSecYield": 6.76,
     "forexReserves": 559.69,
     "inrUsd": 86.54,
     "bankCredit": 308225.21,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "cpiInflation": 3.1,
     "wpiInflation": 0,
-    "gdpGrowth": 7.38,
-    "realRate": 2.05
+    "realRate": 3.65
   },
   {
     "date": "2025-02-01",
@@ -4291,15 +4291,15 @@
     "gSecYield": 6.73,
     "forexReserves": 565.37,
     "inrUsd": 87.5,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 51351631.1,
+    "gdpGrowth": 7.38,
     "bankCredit": 308225.21,
     "cpiInflation": 2.59,
     "wpiInflation": 0,
-    "gdpGrowth": 7.38,
-    "realRate": 2.56
+    "realRate": 4.16
   },
   {
     "date": "2025-03-01",
@@ -4307,174 +4307,174 @@
     "gSecYield": 6.68,
     "forexReserves": 590.19,
     "inrUsd": 85.43,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 51351631.1,
+    "gdpGrowth": 7.38,
     "bankCredit": 308225.21,
     "cpiInflation": 2.95,
     "wpiInflation": 0,
-    "gdpGrowth": 7.38,
-    "realRate": 2.2
+    "realRate": 3.8
   },
   {
     "date": "2025-04-01",
     "realGDP": 47886233.6,
+    "gdpGrowth": 7.81,
     "gSecYield": 6.46,
     "forexReserves": 604.3,
     "inrUsd": 84.49,
     "bankCredit": 319253.725,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "cpiInflation": 2.58,
     "wpiInflation": 0,
-    "gdpGrowth": 7.81,
-    "realRate": 2.57
+    "realRate": 4.17
   },
   {
     "date": "2025-05-01",
     "gSecYield": 6.27,
     "forexReserves": 607.89,
     "inrUsd": 85.5,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 47886233.6,
+    "gdpGrowth": 7.81,
     "bankCredit": 319253.725,
     "cpiInflation": 2.22,
     "wpiInflation": 0,
-    "gdpGrowth": 7.81,
-    "realRate": 2.93
+    "realRate": 4.53
   },
   {
     "date": "2025-06-01",
     "gSecYield": 6.31,
     "forexReserves": 614.82,
     "inrUsd": 85.74,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 47886233.6,
+    "gdpGrowth": 7.81,
     "bankCredit": 319253.725,
     "cpiInflation": 1.13,
     "wpiInflation": 0,
-    "gdpGrowth": 7.81,
-    "realRate": 4.02
+    "realRate": 5.62
   },
   {
     "date": "2025-07-01",
     "realGDP": 48633401.7,
+    "gdpGrowth": 8.23,
     "gSecYield": 6.35,
     "forexReserves": 605.88,
     "inrUsd": 87.6,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "bankCredit": 319253.725,
     "cpiInflation": 0.21,
     "wpiInflation": 0,
-    "gdpGrowth": 8.23,
-    "realRate": 4.94
+    "realRate": 6.54
   },
   {
     "date": "2025-08-01",
     "gSecYield": 6.52,
     "forexReserves": 608.04,
     "inrUsd": 88.18,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 48633401.7,
+    "gdpGrowth": 8.23,
     "bankCredit": 319253.725,
     "cpiInflation": 0.28,
     "wpiInflation": 0,
-    "gdpGrowth": 8.23,
-    "realRate": 4.87
+    "realRate": 6.47
   },
   {
     "date": "2025-09-01",
     "gSecYield": 6.59,
     "forexReserves": 602.64,
     "inrUsd": 88.78,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 48633401.7,
+    "gdpGrowth": 8.23,
     "bankCredit": 319253.725,
     "cpiInflation": -0.21,
     "wpiInflation": 0,
-    "gdpGrowth": 8.23,
-    "realRate": 5.36
+    "realRate": 6.96
   },
   {
     "date": "2025-10-01",
     "gSecYield": 6.48,
     "forexReserves": 587.99,
     "inrUsd": 88.75,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 48633401.7,
+    "gdpGrowth": 2.89,
     "bankCredit": 319253.725,
     "cpiInflation": -1.04,
     "wpiInflation": 0,
-    "gdpGrowth": 2.89,
-    "realRate": 6.19
+    "realRate": 7.79
   },
   {
     "date": "2025-11-01",
     "gSecYield": 6.54,
     "forexReserves": 581.19,
     "inrUsd": 89.43,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 48633401.7,
+    "gdpGrowth": 2.89,
     "bankCredit": 319253.725,
     "cpiInflation": -1.04,
     "wpiInflation": 0,
-    "gdpGrowth": 2.89,
-    "realRate": 6.19
+    "realRate": 7.79
   },
   {
     "date": "2025-12-01",
     "gSecYield": 6.63,
     "inrUsd": 89.84,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 136.303904538932,
     "nominalGDP": 3909891533858.08,
     "realGDP": 48633401.7,
+    "gdpGrowth": 2.89,
     "forexReserves": 581.19,
     "bankCredit": 319253.725,
     "cpiInflation": -0.49,
     "wpiInflation": 0,
-    "gdpGrowth": 2.89,
-    "realRate": 5.64
+    "realRate": 7.24
   },
   {
     "date": "2026-01-02",
     "inrUsd": 91.98,
-    "repoRate": 5.15,
+    "repoRate": 6.75,
     "cpiIndex": 157.5517,
     "wpiIndex": 154,
     "nominalGDP": 3909891533858.08,
     "realGDP": 48633401.7,
+    "gdpGrowth": -5.29,
     "gSecYield": 6.63,
     "forexReserves": 581.19,
     "bankCredit": 319253.725,
-    "cpiInflation": -0.14,
+    "cpiInflation": 3.2,
     "wpiInflation": 0.83,
-    "gdpGrowth": -5.29,
-    "realRate": 5.29
+    "realRate": 6.89
   }
 ]

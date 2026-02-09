@@ -369,7 +369,9 @@ export function processMacroData(data) {
 
         // Calculate Volatility (INR/USD change)
         let volatility = 0;
-        if (prevRow && row.inrUsd && prevRow.inrUsd) {
+        if (row.vix !== undefined && row.vix !== null) {
+            volatility = row.vix;
+        } else if (prevRow && row.inrUsd && prevRow.inrUsd) {
             volatility = Math.abs((row.inrUsd - prevRow.inrUsd) / prevRow.inrUsd) * 100 * Math.sqrt(12); // Annualized
         }
 
@@ -380,7 +382,7 @@ export function processMacroData(data) {
         const termPremium = row.termPremium || (row.india_yield_curve_slope || (row.gSecYield ? row.gSecYield - 6.5 : 0));
 
         // Global Liquidity Proxy (M2/M3 Growth / GDP proxy)
-        const globalLiquidity = row.globalLiquidity || (row.global_liquidity || (row.m3Money ? row.m3Money / 1000 : (row.bankCredit ? row.bankCredit + 2 : 12)));
+        const globalLiquidity = row.globalLiquidity || (row.global_liquidity || (row.m2Money ? row.m2Money / 1000 : (row.m3Money ? row.m3Money / 1000 : (row.bankCredit ? row.bankCredit + 2 : 12))));
 
         // Equity Earnings Breadth
         const equityEarningsBreadth = row.equityEarningsBreadth || (row.equity_earnings_breadth || 65);

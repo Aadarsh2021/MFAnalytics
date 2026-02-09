@@ -14,7 +14,7 @@ const SERIES = {
     INR_USD: 'DEXINUS',
     GSEC: 'INDIRLTLT01STM',
     BANK_CREDIT: 'CRDQINAPABIS', // Total Credit
-    REPO_PROXY: 'INTDSRINM193N',
+    REPO_PROXY: 'IRSTCB01INM156N', // Direct Central Bank Rate (Repo)
     STOCK_INDEX: 'STXINDINM', // India Stock Index (Nifty Proxy)
     DEBT_TO_GDP: 'GGGDTAINA188N', // General Government Gross Debt (% of GDP)
     MONEY_SUPPLY: 'MABMM301INM189N', // M3 for India
@@ -173,6 +173,12 @@ export async function getLiveIndianData(staticData) {
             }
             if (manualOverrides.repoRate) {
                 lastRow.repoRate = manualOverrides.repoRate.value
+            }
+            if (manualOverrides.inrUsd) {
+                lastRow.inrUsd = manualOverrides.inrUsd.value
+            }
+            if (manualOverrides.forexReserves) {
+                lastRow.forexReserves = manualOverrides.forexReserves.value
             }
         }
 

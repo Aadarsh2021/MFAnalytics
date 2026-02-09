@@ -36,7 +36,7 @@ export default function Step7FinalReport({
     try {
         const handleDownload = (method) => {
             try {
-                downloadReport(method, returns, allData, mvpResults, blResult, regimeResult)
+                downloadReport(method, returns, allData, mvpResults, blResult, regimeResult, regimeContext)
                 showMessage('success', `Downloaded ${method.toUpperCase()} Report + Returns CSV!`)
             } catch (e) {
                 showMessage('error', 'Download failed: ' + e.message)
@@ -355,7 +355,14 @@ export default function Step7FinalReport({
                             </div>
                             <div>
                                 <h2 className="text-4xl font-black tracking-tighter">Analysis Results</h2>
-                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs mt-2">Optimization Complete • {returns?.codes.length} Funds Analyzed</p>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Optimization Complete • {returns?.codes.length} Funds Analyzed</p>
+                                    {regimeContext && (
+                                        <span className="text-[10px] font-black px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full uppercase flex items-center gap-1 border border-emerald-500/30">
+                                            <ShieldCheck size={10} /> Verified {regimeContext.detection?.region || 'Macro'} Context
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -575,7 +582,7 @@ export default function Step7FinalReport({
                         )}
 
                         {stats && (
-                            <KeyInsights stats={stats} path={optimizationPath} />
+                            <KeyInsights stats={stats} path={optimizationPath} regimeContext={regimeContext} />
                         )}
 
                         <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2.5rem] p-8 text-white shadow-xl">
@@ -718,11 +725,16 @@ function StepItem({ icon, text }) {
 }
 
 
-function KeyInsights({ stats, path }) {
+function KeyInsights({ stats, path, regimeContext }) {
     if (!stats) return null
 
     // Helper for currency
-    const fmtMoney = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
+    const isIndia = regimeContext?.detection?.region === 'India';
+    const fmtMoney = (n) => new Intl.NumberFormat(isIndia ? 'en-IN' : 'en-US', {
+        style: 'currency',
+        currency: isIndia ? 'INR' : 'USD',
+        maximumFractionDigits: 0
+    }).format(n)
     const fmtPct = (n) => (n * 100).toFixed(2) + '%'
 
     // 1. Return

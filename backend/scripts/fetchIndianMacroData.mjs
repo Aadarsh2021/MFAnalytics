@@ -14,11 +14,12 @@ const OUTPUT_FILE = path.join(PROCESSED_DIR, 'indiaMacroHistorical.json');
 
 // Mappings: Internal Key -> FRED Series ID (Equipping with full set)
 const FRED_MAPPINGS = {
-    repoRate: 'INTDSRINM193N',         // Discount Rate (Proxy for Repo)
+    repoRate: 'IRSTCB01INM156N',      // Central Bank Rate (Direct Repo)
     cpiIndex: 'INDCPIALLMINMEI',      // Consumer Price Index (2015=100)
-    wpiIndex: 'WPIATT01INM661N',      // Wholesale Price Index (Monthly, Verified)
-    nominalGDP: 'MKTGDPINA646NWDB',   // GDP at Market Prices (Annual LCU)
-    realGDP: 'NGDPRNSAXDCINQ',        // Real GDP (Quarterly, NSA, Verified)
+    wpiIndex: 'WPIATT01INM661N',      // Wholesale Price Index (Monthly)
+    nominalGDP: 'MKTGDPINA646NWDB',   // GDP at Market Prices
+    realGDP: 'NGDPRNSAXDCINQ',        // Real GDP (Quarterly)
+    gdpGrowth: 'INDGDPRQPSMEI',       // GDP Growth Rate (YoY Quarterly)
     gSecYield: 'INDIRLTLT01STM',      // 10Y Government Bond Yield
     forexReserves: 'TRESEGINM052N',   // Foreign Exchange Reserves
     inrUsd: 'DEXINUS',                // INR/USD Exchange Rate

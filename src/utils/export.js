@@ -1,4 +1,4 @@
-export function downloadReport(method, returns, allData, mvpResults, blResult, regimeResult) {
+export function downloadReport(method, returns, allData, mvpResults, blResult, regimeResult, regimeContext) {
     let weights, vol, methodName
 
     if (method === 'blacklitterman') {
@@ -43,8 +43,23 @@ export function downloadReport(method, returns, allData, mvpResults, blResult, r
         `Portfolio Volatility,${(vol * 100).toFixed(2)}%`
     ].join('\n')
 
-    // 3. Combined Export
-    const combinedData = retCSV + '\n\n\n' + wCSV
+    // 3. Prepare Macro Summary Section (Authenticated Context)
+    let macroCSV = ''
+    if (regimeContext && regimeContext.detection) {
+        const det = regimeContext.detection
+        macroCSV = [
+            '=== Authenticated Macro Context ===',
+            `Region,${det.region || 'India'}`,
+            `Dominant Regime,${det.dominant}`,
+            `Detection Confidence,${(det.confidence * 100).toFixed(0)}%`,
+            `Risk-Free Rate (G-Sec),${(regimeContext.riskFreeRate * 100).toFixed(2)}%`,
+            `Analysis Timestamp,${regimeContext.timestamp}`,
+            ''
+        ].join('\n')
+    }
+
+    // 4. Combined Export
+    const combinedData = macroCSV + '\n' + retCSV + '\n\n\n' + wCSV
     const blob = new Blob([combinedData], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')

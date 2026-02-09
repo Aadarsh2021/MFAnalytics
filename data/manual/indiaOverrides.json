@@ -1,5 +1,5 @@
 {
-    "lastUpdated": "2026-02-09T15:54:00+05:30",
+    "lastUpdated": "2026-02-09T19:10:00+05:30",
     "source": "Manual entry from official sources",
     "note": "Update this file monthly with latest data from PIB/MoSPI/RBI releases",
     "indicators": {
@@ -15,24 +15,36 @@
         "cpi": {
             "date": "2026-01-01",
             "index": 157.5517,
-            "inflation": -0.14,
+            "inflation": 3.2,
             "source": "MoSPI - Jan 2026",
             "sourceUrl": "https://mospi.gov.in/",
             "enteredAt": "2026-02-09T15:54:00+05:30"
         },
         "repoRate": {
             "date": "2026-02-01",
-            "value": 5.15,
+            "value": 5.25,
             "source": "RBI Monetary Policy - Feb 2026",
             "sourceUrl": "https://rbi.org.in/",
             "enteredAt": "2026-02-09T15:54:00+05:30"
         },
         "gdpGrowth": {
             "date": "2025-10-01",
-            "value": -5.29,
+            "value": 7.0,
             "source": "MoSPI GDP Estimates Q3 FY26",
             "sourceUrl": "https://mospi.gov.in/",
             "enteredAt": "2026-02-09T15:54:00+05:30"
+        },
+        "inrUsd": {
+            "date": "2026-02-09",
+            "value": 90.62,
+            "source": "Live Market - Feb 9, 2026",
+            "enteredAt": "2026-02-09T19:10:00+05:30"
+        },
+        "forexReserves": {
+            "date": "2026-02-01",
+            "value": 723.8,
+            "source": "RBI Press Release - Feb 2026",
+            "enteredAt": "2026-02-09T19:10:00+05:30"
         }
     }
 }

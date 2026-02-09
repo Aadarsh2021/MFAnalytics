@@ -27,16 +27,22 @@ export default function Step5ARegimeOptimization({
     const [backtestData, setBacktestData] = useState(null)
     const [showAdvanced, setShowAdvanced] = useState(false)
     const [params, setParams] = useState({
-        riskFreeRate: 0.04,
+        riskFreeRate: regimeContext?.riskFreeRate || 0.04,
         riskAversion: 2.5,
         tau: 0.025
     })
 
+    useEffect(() => {
+        if (regimeContext?.riskFreeRate) {
+            setParams(prev => ({ ...prev, riskFreeRate: regimeContext.riskFreeRate }));
+        }
+    }, [regimeContext?.riskFreeRate])
+
 
     useEffect(() => {
-        // Auto-run optimization on mount
+        // Auto-run optimization on mount and whenever parameters reflect user intent
         runOptimization()
-    }, [])
+    }, [params.riskAversion, params.tau, params.riskFreeRate, currentRegime])
 
     const runOptimization = async () => {
         setOptimizing(true)

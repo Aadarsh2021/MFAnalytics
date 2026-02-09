@@ -415,7 +415,7 @@ function OptimizerApp() {
                             {currentStep === '4B' && <Step4BBlackLittermanViews {...appState} selectedRegimeId={selectedRegimeId} setSelectedRegimeId={setSelectedRegimeId} />}
                             {currentStep === '5B' && <Step5BlackLitterman {...appState} />}
 
-                            {currentStep === 6 && <Step6MonteCarlo {...appState} />}
+                            {currentStep === 6 && <Step6MonteCarlo {...appState} macroData={macroData} regimeContext={regimeContext} />}
                             {currentStep === 7 && <Step7FinalReport {...appState} selectedRegimeId={selectedRegimeId} />}
                         </ErrorBoundary>
                     </div>

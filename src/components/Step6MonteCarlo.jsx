@@ -11,7 +11,9 @@ export default function Step6MonteCarlo({
     goToStep,
     addActivity,
     showMessage,
-    allData
+    allData,
+    macroData,
+    regimeContext
 }) {
     const [simulations, setSimulations] = useState(10000)
     const [years, setYears] = useState(10)
@@ -186,9 +188,17 @@ export default function Step6MonteCarlo({
     }
 
     const formatCurrency = (val) => {
-        if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`
-        if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`
-        return `₹${val.toLocaleString()}`
+        const isIndia = regimeContext?.detection?.region === 'India';
+        if (isIndia) {
+            if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
+            if (val >= 100000) return `₹${(val / 100000).toFixed(2)} L`;
+            return `₹${Math.round(val).toLocaleString('en-IN')}`;
+        } else {
+            // US / International
+            if (val >= 1000000) return `$${(val / 1000000).toFixed(2)}M`;
+            if (val >= 1000) return `$${(val / 1000).toFixed(1)}k`;
+            return `$${Math.round(val).toLocaleString('en-US')}`;
+        }
     }
 
     const portfolioStats = useMemo(() => {
@@ -233,11 +243,16 @@ export default function Step6MonteCarlo({
                         </div>
                         <div>
                             <h2 className="text-3xl font-black text-slate-800 tracking-tight">Step 6: Probabilistic Simulation</h2>
-                            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs mt-1">Monte Carlo • 1000+ Scenarios</p>
+                            <div className="flex items-center gap-2 mt-1">
+                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Monte Carlo • 1000+ Scenarios</p>
+                                {regimeContext && (
+                                    <span className="text-[10px] font-black px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full uppercase flex items-center gap-1">
+                                        <Shield size={10} /> Verified {regimeContext.detection?.region || 'Macro'} Context
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
-
-
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-10">
@@ -292,8 +307,22 @@ export default function Step6MonteCarlo({
                                         </defs>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                                         <XAxis dataKey="year" tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }} axisLine={false} />
-                                        <YAxis tickFormatter={val => `₹${(val / 100000).toFixed(0)}L`} tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }} axisLine={false} width={60} />
-                                        <Tooltip content={<SimulationTooltip />} />
+                                        <YAxis
+                                            tickFormatter={val => {
+                                                const isIndia = regimeContext?.detection?.region === 'India';
+                                                if (isIndia) {
+                                                    if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)}Cr`;
+                                                    if (val >= 100000) return `₹${(val / 100000).toFixed(0)}L`;
+                                                    return `₹${val}`;
+                                                }
+                                                if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+                                                return `$${(val / 1000).toFixed(0)}k`;
+                                            }}
+                                            tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                                            axisLine={false}
+                                            width={60}
+                                        />
+                                        <Tooltip content={<SimulationTooltip regimeContext={regimeContext} />} />
                                         <Area type="monotone" dataKey="p95" stroke="#10b981" strokeWidth={2} fill="transparent" strokeDasharray="5 5" name="Optimistic" />
                                         <Area type="monotone" dataKey="p50" stroke="#ec4899" strokeWidth={4} fill="url(#colorP50)" name="Median Path" />
                                         <Area type="monotone" dataKey="p05" stroke="#f43f5e" strokeWidth={2} fill="transparent" strokeDasharray="5 5" name="Pessimistic" />
@@ -333,7 +362,7 @@ export default function Step6MonteCarlo({
             {/* Full Width Key Insights */}
             {results && portfolioStats && (
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 animate-fade-in">
-                    <KeyInsights stats={portfolioStats} />
+                    <KeyInsights stats={portfolioStats} regimeContext={regimeContext} />
                 </div>
             )}
 
@@ -385,23 +414,29 @@ function OutcomeCard({ title, value, label, color }) {
     )
 }
 
-function SimulationTooltip({ active, payload, label }) {
+function SimulationTooltip({ active, payload, label, regimeContext }) {
     if (active && payload && payload.length) {
+        const isIndia = regimeContext?.detection?.region === 'India';
+        const formatVal = (val) => {
+            if (isIndia) return `₹${Math.round(val).toLocaleString('en-IN')}`;
+            return `$${Math.round(val).toLocaleString('en-US')}`;
+        };
+
         return (
             <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-white/10 blur-backdrop">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Year {label}</p>
                 <div className="space-y-1.5">
                     <div className="flex justify-between gap-6">
                         <span className="text-xs font-bold text-emerald-400">Bull Case (95%):</span>
-                        <span className="text-xs font-black">₹{payload[0].value.toLocaleString()}</span>
+                        <span className="text-xs font-black">{formatVal(payload[0].value)}</span>
                     </div>
                     <div className="flex justify-between gap-6">
                         <span className="text-xs font-bold text-pink-400">Median (50%):</span>
-                        <span className="text-xs font-black">₹{payload[1].value.toLocaleString()}</span>
+                        <span className="text-xs font-black">{formatVal(payload[1].value)}</span>
                     </div>
                     <div className="flex justify-between gap-6">
                         <span className="text-xs font-bold text-rose-400">Bear Case (5%):</span>
-                        <span className="text-xs font-black">₹{payload[2].value.toLocaleString()}</span>
+                        <span className="text-xs font-black">{formatVal(payload[2].value)}</span>
                     </div>
                 </div>
             </div>
@@ -455,11 +490,16 @@ function MetricCardPortfolio({ title, value, sub, color }) {
     )
 }
 
-function KeyInsights({ stats }) {
+function KeyInsights({ stats, regimeContext }) {
     if (!stats) return null
 
     // Helper for currency
-    const fmtMoney = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
+    const isIndia = regimeContext?.detection?.region === 'India';
+    const fmtMoney = (n) => new Intl.NumberFormat(isIndia ? 'en-IN' : 'en-US', {
+        style: 'currency',
+        currency: isIndia ? 'INR' : 'USD',
+        maximumFractionDigits: 0
+    }).format(n)
     const fmtPct = (n) => (n * 100).toFixed(2) + '%'
 
     // 1. Return

@@ -48,20 +48,62 @@ export default function Step4ARegimeViews({
                     .maybeSingle();
 
                 if (!error && data && data.data) {
-                    console.log(`✅ Supabase Cache found for ${selectedRegion}.`);
-                    // Optionally set data if we want auto-load from cloud
+                    console.log(`✅ Supabase Cache found for ${selectedRegion}. Last updated: ${data.last_updated}`);
+                    // Auto-load if we don't have macroData yet
+                    if (!macroData) {
+                        setMacroData(processMacroData(data.data));
+                        if (data.last_updated) {
+                            setRegimeContext(prev => ({ ...prev, lastUpdated: data.last_updated }));
+                        }
+                    }
                 }
             } catch (e) {
                 console.warn('Supabase check failed', e);
             }
         };
         checkCloudCache();
-    }, [selectedRegion]);
+    }, [selectedRegion, macroData]);
+
+    // --- Manual Overrides Loading ---
+    const loadUSManualOverrides = async () => {
+        try {
+            const response = await fetch('/data/manual/usOverrides.json');
+            if (response.ok) {
+                const data = await response.json();
+                return data.indicators || {};
+            }
+        } catch (e) {
+            console.warn('US Manual overrides not available:', e.message);
+        }
+        return {};
+    };
 
     // --- Live US Data Fetching (Client-Side for Firebase Free Tier) ---
     const fetchLiveUSData = async () => {
         setIsLiveUpdating(true);
         try {
+            // 0. Check Supabase Cache First (Fastest)
+            const { data: cache, error: cacheErr } = await supabase
+                .from('macro_data')
+                .select('data, last_updated')
+                .eq('id', 'us_macro')
+                .maybeSingle();
+
+            if (!cacheErr && cache && cache.data) {
+                const lastUpdate = new Date(cache.last_updated);
+                const now = new Date();
+                const diffHours = (now - lastUpdate) / (1000 * 60 * 60);
+
+                if (diffHours < 24) {
+                    console.log('⚡ Using fresh US Supabase cache (less than 24h old)');
+                    setMacroData(processMacroData(cache.data));
+                    setIsLiveUpdating(false);
+                    return;
+                }
+            }
+
+            // 1. Fallback to FRED API if cache is old or missing
+            console.log('📡 Cache stale or missing, fetching from FRED...');
             // FRED API Key (Public/Free Tier Key - exposing in frontend is acceptable for free/personal apps)
             // Ideally use an env var: import.meta.env.VITE_FRED_API_KEY
             const API_KEY = '5e1b06fcd9ed77b5a46c643fd982a485';
@@ -74,7 +116,10 @@ export default function Step4ARegimeViews({
                 'CPIAUCSL': 'cpiIndex',
                 'A091RC1Q027SBEA': 'interest_expense',
                 'DGS10': 'gSecYield',
-                'SP500': 'sp500'
+                'SP500': 'sp500',
+                'GOLDAMGBD228NLBM': 'goldPrice',
+                'VIXCLS': 'vix',
+                'M2SL': 'm2Money'
             };
 
             const today = new Date();
@@ -245,6 +290,17 @@ export default function Step4ARegimeViews({
                 }
             }
 
+            // 3.5 Apply Manual Overrides for US
+            const usManualOverrides = await loadUSManualOverrides();
+            if (Object.keys(usManualOverrides).length > 0) {
+                const lastRow = newData[newData.length - 1];
+                console.log('🎯 Applying US manual overrides to the latest data point...');
+                if (usManualOverrides.goldPrice) lastRow.goldPrice = usManualOverrides.goldPrice.value;
+                if (usManualOverrides.sp500) lastRow.sp500 = usManualOverrides.sp500.value;
+                if (usManualOverrides.repoRate) lastRow.repoRate = usManualOverrides.repoRate.value;
+                if (usManualOverrides.gSecYield) lastRow.gSecYield = usManualOverrides.gSecYield.value;
+            }
+
             // 4. Update State Immediately (Remove Loading Indicator)
             const processed = processMacroData(newData);
             setMacroData(processed);
@@ -281,6 +337,28 @@ export default function Step4ARegimeViews({
     const fetchLiveIndiaData = async () => {
         setIsLiveUpdating(true);
         try {
+            // 0. Check Supabase Cache First (Fastest)
+            const { data: cache, error: cacheErr } = await supabase
+                .from('macro_data')
+                .select('data, last_updated')
+                .eq('id', 'india_macro')
+                .maybeSingle();
+
+            if (!cacheErr && cache && cache.data) {
+                const lastUpdate = new Date(cache.last_updated);
+                const now = new Date();
+                const diffHours = (now - lastUpdate) / (1000 * 60 * 60);
+
+                if (diffHours < 24) {
+                    console.log('⚡ Using fresh India Supabase cache (less than 24h old)');
+                    setMacroData(processMacroData(cache.data));
+                    setIsLiveUpdating(false);
+                    return;
+                }
+            }
+
+            // 1. Fallback to FRED API
+            console.log('📡 Cache stale or missing, fetching from India live service...');
             const currentData = indiaMacroHistorical;
             const updatedData = await getLiveIndianData(currentData);
             const processed = processMacroData(updatedData);
@@ -339,7 +417,8 @@ export default function Step4ARegimeViews({
             // Set context for final report
             setRegimeContext({
                 detection: latestDetection,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                riskFreeRate: (macroData[macroData.length - 1].gSecYield || 7.0) / 100
             });
 
             // Check if we should exit Regime C (requires history)

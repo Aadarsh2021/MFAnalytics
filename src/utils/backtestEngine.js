@@ -307,8 +307,10 @@ function calculatePortfolioReturnForPeriod(weights, returns, startDate, endDate,
 
             if (macroPoint && prevMacroPoint && assetClass) {
                 if (assetClass === 'EQUITY') {
-                    // Use S&P 500 % change
-                    if (macroPoint.sp500 && prevMacroPoint.sp500) {
+                    // Use Nifty (India) or S&P 500 (US) % change
+                    if (macroPoint.nifty && prevMacroPoint.nifty) {
+                        proxyReturn = (macroPoint.nifty / prevMacroPoint.nifty) - 1;
+                    } else if (macroPoint.sp500 && prevMacroPoint.sp500) {
                         proxyReturn = (macroPoint.sp500 / prevMacroPoint.sp500) - 1;
                     }
                 } else if (assetClass === 'GOLD') {
