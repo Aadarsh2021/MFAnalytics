@@ -25,6 +25,7 @@ export default function Step4ARegimeViews({
     setCurrentRegime,
     backtestResults,
     setBacktestResults,
+    regimeContext,
     setRegimeContext
 }) {
     const [regimeDetection, setRegimeDetection] = useState(null)
