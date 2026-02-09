@@ -1,5 +1,5 @@
-// Script to update Supabase with latest India macro data
-// Simplified version - directly updates the data without region column
+// Updated Supabase sync script with upsert logic
+// Uses ON CONFLICT to update existing records or insert new ones
 
 import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
@@ -42,34 +42,38 @@ async function updateSupabaseData() {
 
         console.log(`📅 Latest data date: ${latestEntry.date}`);
 
-        // Prepare data for Supabase - insert as new row with timestamp
+        // Prepare data for Supabase
         const supabaseData = {
             country: 'India',
             date: latestEntry.date,
-            wpi_index: latestEntry.wpiIndex,
-            wpi_inflation: latestEntry.wpiInflation,
-            cpi_index: latestEntry.cpiIndex,
-            cpi_inflation: latestEntry.cpiInflation,
-            repo_rate: latestEntry.repoRate,
-            real_rate: latestEntry.realRate,
-            nominal_gdp: latestEntry.nominalGDP,
-            real_gdp: latestEntry.realGDP,
-            gsec_yield: latestEntry.gSecYield,
-            forex_reserves: latestEntry.forexReserves,
-            inr_usd: latestEntry.inrUsd,
-            bank_credit: latestEntry.bankCredit,
+            wpi_index: latestEntry.wpiIndex || null,
+            wpi_inflation: latestEntry.wpiInflation || null,
+            cpi_index: latestEntry.cpiIndex || null,
+            cpi_inflation: latestEntry.cpiInflation || null,
+            repo_rate: latestEntry.repoRate || null,
+            real_rate: latestEntry.realRate || null,
+            nominal_gdp: latestEntry.nominalGDP || null,
+            real_gdp: latestEntry.realGDP || null,
+            gsec_yield: latestEntry.gSecYield || null,
+            forex_reserves: latestEntry.forexReserves || null,
+            inr_usd: latestEntry.inrUsd || null,
+            bank_credit: latestEntry.bankCredit || null,
             updated_at: new Date().toISOString()
         };
 
-        // Insert to Supabase
+        // Upsert to Supabase (insert or update based on country+date unique constraint)
         const { data, error } = await supabase
             .from('macro_data')
-            .insert([supabaseData]);
+            .upsert(supabaseData, {
+                onConflict: 'country,date'
+            })
+            .select();
 
         if (error) {
             console.error('❌ Supabase update failed:', error.message);
-            console.log('ℹ️  This is normal - continuing workflow...');
-            // Don't exit with error - let workflow continue
+            console.log('ℹ️  Please run the SQL migration first:');
+            console.log('   supabase/migrations/create_macro_data_table.sql');
+            console.log('ℹ️  Continuing workflow...');
             return;
         }
 
@@ -82,13 +86,14 @@ async function updateSupabaseData() {
         console.log(`   - CPI Inflation: ${latestEntry.cpiInflation || 'N/A'}%`);
         console.log(`   - Repo Rate: ${latestEntry.repoRate || 'N/A'}%`);
         console.log(`   - Real Rate: ${latestEntry.realRate || 'N/A'}%`);
+        console.log(`   - Forex Reserves: $${latestEntry.forexReserves || 'N/A'}B`);
 
         console.log(`\n✅ Live data now matches Static data accuracy!`);
+        console.log(`✅ Upsert successful - data updated in Supabase`);
 
     } catch (error) {
         console.error('❌ Error updating Supabase:', error.message);
         console.log('ℹ️  Continuing workflow despite Supabase error...');
-        // Don't exit with error - let workflow continue
     }
 }
 
