@@ -1,5 +1,5 @@
 
-import { fetchWithCache } from './apiOptimized'
+import { fetchWithCache, fetchWithProxy } from './apiOptimized'
 
 // FRED API Key (Public key from existing python script)
 const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY
@@ -25,14 +25,12 @@ const SERIES = {
  * Fetch latest observation from FRED
  */
 async function fetchFredSeries(seriesId) {
-    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=13` // Fetch 13 months to calculate YoY if needed
-    const encodedUrl = encodeURIComponent(url)
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodedUrl}`
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=13`
 
     try {
-        const response = await fetchWithCache(proxyUrl)
-        if (response.observations && response.observations.length > 0) {
-            return response.observations.map(obs => ({
+        const data = await fetchWithProxy(url);
+        if (data.observations && data.observations.length > 0) {
+            return data.observations.map(obs => ({
                 date: obs.date,
                 value: parseFloat(obs.value)
             })).filter(obs => !isNaN(obs.value))

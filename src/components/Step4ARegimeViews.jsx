@@ -11,6 +11,7 @@ import BacktestResults from './BacktestResults'
 import SixPillarsDashboard from './SixPillarsDashboard'
 
 import { supabase } from '../utils/supabase'
+import { fetchWithProxy } from '../utils/apiOptimized'
 
 export default function Step4ARegimeViews({
     selectedFunds,
@@ -42,19 +43,41 @@ export default function Step4ARegimeViews({
     useEffect(() => {
         const checkCloudCache = async () => {
             try {
+                // Fetch latest data from specific country
+                const country = selectedRegion === 'US' ? 'US' : 'India';
                 const { data, error } = await supabase
                     .from('macro_data')
-                    .select('data, last_updated')
-                    .eq('id', selectedRegion === 'US' ? 'us_macro' : 'india_macro')
+                    .select('*')
+                    .eq('country', country)
+                    .order('date', { ascending: false })
+                    .limit(1)
                     .maybeSingle();
 
-                if (!error && data && data.data) {
-                    console.log(`✅ Supabase Cache found for ${selectedRegion}. Last updated: ${data.last_updated}`);
+                if (!error && data) {
+                    // Map back to format expected by processMacroData
+                    const mappedData = [{
+                        date: data.date,
+                        wpiIndex: data.wpi_index,
+                        wpiInflation: data.wpi_inflation,
+                        cpiIndex: data.cpi_index,
+                        cpiInflation: data.cpi_inflation,
+                        repoRate: data.repo_rate,
+                        realRate: data.real_rate,
+                        nominalGDP: data.nominal_gdp,
+                        realGDP: data.real_gdp,
+                        gSecYield: data.gsec_yield,
+                        forexReserves: data.forex_reserves,
+                        inrUsd: data.inr_usd,
+                        bankCredit: data.bank_credit,
+                        valDate: data.date
+                    }];
+
+                    console.log(`✅ Supabase Cache found for ${selectedRegion}. Date: ${data.date}`);
                     // Auto-load if we don't have macroData yet
                     if (!macroData) {
-                        setMacroData(processMacroData(data.data));
-                        if (data.last_updated) {
-                            setRegimeContext(prev => ({ ...prev, lastUpdated: data.last_updated }));
+                        setMacroData(processMacroData(mappedData));
+                        if (data.updated_at) {
+                            setRegimeContext(prev => ({ ...prev, lastUpdated: data.updated_at }));
                         }
                     }
                 }
@@ -86,18 +109,36 @@ export default function Step4ARegimeViews({
             // 0. Check Supabase Cache First (Fastest)
             const { data: cache, error: cacheErr } = await supabase
                 .from('macro_data')
-                .select('data, last_updated')
-                .eq('id', 'us_macro')
+                .select('*')
+                .eq('country', 'US')
+                .order('date', { ascending: false })
+                .limit(1)
                 .maybeSingle();
 
-            if (!cacheErr && cache && cache.data) {
-                const lastUpdate = new Date(cache.last_updated);
+            if (!cacheErr && cache) {
+                const lastUpdate = new Date(cache.updated_at);
                 const now = new Date();
                 const diffHours = (now - lastUpdate) / (1000 * 60 * 60);
 
                 if (diffHours < 24) {
                     console.log('⚡ Using fresh US Supabase cache (less than 24h old)');
-                    setMacroData(processMacroData(cache.data));
+                    const mappedCache = [{
+                        date: cache.date,
+                        wpiIndex: cache.wpi_index,
+                        wpiInflation: cache.wpi_inflation,
+                        cpiIndex: cache.cpi_index,
+                        cpiInflation: cache.cpi_inflation,
+                        repoRate: cache.repo_rate,
+                        realRate: cache.real_rate,
+                        nominalGDP: cache.nominal_gdp,
+                        realGDP: cache.real_gdp,
+                        gSecYield: cache.gsec_yield,
+                        forexReserves: cache.forex_reserves,
+                        inrUsd: cache.inr_usd,
+                        bankCredit: cache.bank_credit,
+                        valDate: cache.date
+                    }];
+                    setMacroData(processMacroData(mappedCache));
                     setIsLiveUpdating(false);
                     return;
                 }
@@ -131,55 +172,8 @@ export default function Step4ARegimeViews({
             // 1. Fetch latest data with Proxy Fallback
             const fetchSeries = async (seriesId) => {
                 const targetUrl = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${API_KEY}&file_type=json&observation_start=${startDateStr}`;
-                const encodedUrl = encodeURIComponent(targetUrl);
-
-                // Different proxies handle URLs differently
-                // Test Results (Node): AllOrigins (OK), CodeTabs (OK), ThingProxy (Fail)
-                // We trust AllOrigins/CodeTabs more.
-                const proxies = [
-                    `https://api.allorigins.win/raw?url=${encodedUrl}`,
-                    `https://corsproxy.io/?${encodedUrl}`,
-                    `https://api.codetabs.com/v1/proxy?quest=${encodedUrl}`,
-                    `https://cors-anywhere.herokuapp.com/${targetUrl}`, // Restricted/Last Resort
-                    `https://thingproxy.freeboard.io/fetch/${targetUrl}`
-                ];
-
-                let lastError;
-                for (const proxyUrl of proxies) {
-                    try {
-                        const controller = new AbortController();
-                        const id = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
-                        const res = await fetch(proxyUrl, { signal: controller.signal });
-                        clearTimeout(id);
-
-                        if (!res.ok) throw new Error(`Status ${res.status}`);
-
-                        const text = await res.text();
-                        if (!text || text.trim().length === 0) throw new Error('Empty response');
-
-                        try {
-                            const data = JSON.parse(text);
-                            // Some proxies wrap results
-                            if (data.contents && typeof data.contents === 'string') {
-                                const inner = JSON.parse(data.contents);
-                                if (inner.observations) return inner.observations;
-                            }
-                            if (data.observations) return data.observations;
-                            throw new Error('No observations in JSON');
-                        } catch (parseError) {
-                            // If it's not JSON, maybe it's raw observations?
-                            console.warn(`Proxy ${proxyUrl} returned non-JSON structure`);
-                            throw parseError;
-                        }
-
-                    } catch (e) {
-                        console.warn(`Proxy failed: ${proxyUrl}`, e.message);
-                        lastError = e;
-                        // Continue to next proxy
-                    }
-                }
-                throw lastError || new Error('All proxies failed');
+                const data = await fetchWithProxy(targetUrl);
+                return data.observations;
             };
 
             // 2. Sequential Fetching with Short Delay (Balanced Approach)

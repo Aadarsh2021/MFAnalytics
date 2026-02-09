@@ -32,6 +32,41 @@ function setCachedData(key, data) {
 }
 
 // ============================================
+// PROXY ROTATION FOR FRED/EXTERNAL APIS
+// ============================================
+
+const PROXIES = [
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    (url) => `https://cors-anywhere.herokuapp.com/${url}`
+];
+
+export async function fetchWithProxy(targetUrl, options = {}) {
+    let lastError;
+
+    for (const wrapProxy of PROXIES) {
+        try {
+            const proxyUrl = wrapProxy(targetUrl);
+            const response = await fetch(proxyUrl, {
+                ...options,
+                signal: AbortSignal.timeout(8000) // 8s timeout per proxy
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data;
+            }
+        } catch (e) {
+            lastError = e;
+            console.warn(`Proxy failed: ${wrapProxy.name || 'anonymous'}, trying next...`);
+        }
+    }
+
+    throw lastError || new Error(`All proxies failed for ${targetUrl}`);
+}
+
+// ============================================
 // OPTIMIZED FETCH WITH CACHING
 // ============================================
 
