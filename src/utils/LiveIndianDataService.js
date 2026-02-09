@@ -42,31 +42,11 @@ async function fetchFredSeries(seriesId) {
 }
 
 /**
- * Load manual overrides from JSON file
- */
-async function loadManualOverrides() {
-    try {
-        const response = await fetch('/data/manual/indiaOverrides.json')
-        if (response.ok) {
-            const data = await response.json()
-            console.log('📋 Manual overrides loaded for live data')
-            return data.indicators || {}
-        }
-    } catch (e) {
-        console.warn('Manual overrides not available:', e.message)
-    }
-    return {}
-}
-
-/**
  * Get Live Indian Macro Data
- * Now uses 3-tier priority: Manual Override > FRED > Static
+ * Now uses 2-tier priority: FRED > Static
  */
 export async function getLiveIndianData(staticData) {
     console.log('🔄 Fetching live Indian data with priority system and merge logic...')
-
-    // Load manual overrides first
-    const manualOverrides = await loadManualOverrides()
 
     try {
         // Fetch key indicators in parallel
@@ -155,30 +135,6 @@ export async function getLiveIndianData(staticData) {
 
         // Sort by date to ensure continuity
         newData.sort((a, b) => a.date.localeCompare(b.date))
-
-        // Apply manual overrides to the tip
-        if (Object.keys(manualOverrides).length > 0) {
-            const lastRow = newData[newData.length - 1]
-            console.log('🎯 Applying manual overrides to the latest data point...')
-
-            if (manualOverrides.wpi) {
-                lastRow.wpiIndex = manualOverrides.wpi.index
-                lastRow.wpiInflation = manualOverrides.wpi.inflation
-            }
-            if (manualOverrides.cpi) {
-                lastRow.cpiIndex = manualOverrides.cpi.index
-                lastRow.cpiInflation = manualOverrides.cpi.inflation
-            }
-            if (manualOverrides.repoRate) {
-                lastRow.repoRate = manualOverrides.repoRate.value
-            }
-            if (manualOverrides.inrUsd) {
-                lastRow.inrUsd = manualOverrides.inrUsd.value
-            }
-            if (manualOverrides.forexReserves) {
-                lastRow.forexReserves = manualOverrides.forexReserves.value
-            }
-        }
 
         return newData
 

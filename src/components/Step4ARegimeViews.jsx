@@ -88,20 +88,6 @@ export default function Step4ARegimeViews({
         checkCloudCache();
     }, [selectedRegion, macroData]);
 
-    // --- Manual Overrides Loading ---
-    const loadUSManualOverrides = async () => {
-        try {
-            const response = await fetch('/data/manual/usOverrides.json');
-            if (response.ok) {
-                const data = await response.json();
-                return data.indicators || {};
-            }
-        } catch (e) {
-            console.warn('US Manual overrides not available:', e.message);
-        }
-        return {};
-    };
-
     // --- Live US Data Fetching (Client-Side for Firebase Free Tier) ---
     const fetchLiveUSData = async () => {
         setIsLiveUpdating(true);
@@ -283,17 +269,6 @@ export default function Step4ARegimeViews({
                 if (cur.interest_expense && nominalGDPValue) {
                     cur.debtStress = Number(((cur.interest_expense / nominalGDPValue) * 100).toFixed(2));
                 }
-            }
-
-            // 3.5 Apply Manual Overrides for US
-            const usManualOverrides = await loadUSManualOverrides();
-            if (Object.keys(usManualOverrides).length > 0) {
-                const lastRow = newData[newData.length - 1];
-                console.log('🎯 Applying US manual overrides to the latest data point...');
-                if (usManualOverrides.goldPrice) lastRow.goldPrice = usManualOverrides.goldPrice.value;
-                if (usManualOverrides.sp500) lastRow.sp500 = usManualOverrides.sp500.value;
-                if (usManualOverrides.repoRate) lastRow.repoRate = usManualOverrides.repoRate.value;
-                if (usManualOverrides.gSecYield) lastRow.gSecYield = usManualOverrides.gSecYield.value;
             }
 
             // 4. Update State Immediately (Remove Loading Indicator)
