@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { LogOut } from 'lucide-react'
+import { LogOut, Activity } from 'lucide-react'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import MessageBox from '../components/MessageBox'
@@ -16,6 +16,7 @@ import Step4SetViews from '../components/Step4SetViews'
 import Step5BlackLitterman from '../components/Step5BlackLitterman'
 import Step6MonteCarlo from '../components/Step6MonteCarlo'
 import Step7FinalReport from '../components/Step7FinalReport'
+import ErrorBoundary from '../components/ErrorBoundary'
 
 // New components for Dual-Path Optimization
 import Step4ChooseOptimizationPath from '../components/Step4ChooseOptimizationPath'
@@ -56,6 +57,98 @@ function OptimizerApp() {
     const [regimeContext, setRegimeContext] = useState(null)
     const [weightMethod, setWeightMethod] = useState('market_cap')
     const [customWeights, setCustomWeights] = useState({})
+    const [isDashboardOpen, setIsDashboardOpen] = useState(false)
+
+    // --- State Persistence ---
+
+    // 1. Initial Load from LocalStorage
+    useEffect(() => {
+        const saved = localStorage.getItem('mfp_optimizer_state')
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved)
+                if (parsed.currentStep) setCurrentStep(parsed.currentStep)
+                if (parsed.selectedFunds) setSelectedFunds(parsed.selectedFunds)
+                if (parsed.allData) setAllData(parsed.allData)
+                if (parsed.aligned) setAligned(parsed.aligned)
+                if (parsed.returns) setReturns(parsed.returns)
+                if (parsed.mvpResults) setMvpResults(parsed.mvpResults)
+                if (parsed.views) setViews(parsed.views)
+                if (parsed.blResult) setBlResult(parsed.blResult)
+                if (parsed.regimeResult) setRegimeResult(parsed.regimeResult)
+                if (parsed.optimizationPath) setOptimizationPath(parsed.optimizationPath)
+                if (parsed.selectedRegimeId) setSelectedRegimeId(parsed.selectedRegimeId)
+                if (parsed.currentRegime) setCurrentRegime(parsed.currentRegime)
+                if (parsed.regimeContext) setRegimeContext(parsed.regimeContext)
+                if (parsed.weightMethod) setWeightMethod(parsed.weightMethod)
+                if (parsed.customWeights) setCustomWeights(parsed.customWeights)
+                if (parsed.dataQuality) setDataQuality(parsed.dataQuality)
+
+                console.log("Restored state from localStorage")
+            } catch (e) {
+                console.error("Failed to parse saved state", e)
+            }
+        }
+    }, [])
+
+    // 3. Handle Browser Back Button
+    useEffect(() => {
+        const handlePopState = (event) => {
+            if (event.state && event.state.step) {
+                // User pressed back button, go to previous step
+                setCurrentStep(event.state.step)
+            } else {
+                // No state, go to step 1 instead of logging out
+                event.preventDefault()
+                setCurrentStep(1)
+                window.history.pushState({ step: 1 }, '', '/optimizer?step=1')
+            }
+        }
+
+        window.addEventListener('popstate', handlePopState)
+
+        // Initialize history state on mount
+        if (!window.history.state || !window.history.state.step) {
+            window.history.replaceState({ step: currentStep }, '', `/optimizer?step=${currentStep}`)
+        }
+
+        return () => window.removeEventListener('popstate', handlePopState)
+    }, [])
+
+    // 2. Save to LocalStorage on Change
+    useEffect(() => {
+        const stateToSave = {
+            currentStep,
+            selectedFunds,
+            allData,
+            aligned,
+            returns,
+            mvpResults,
+            views,
+            blResult,
+            regimeResult,
+            optimizationPath,
+            selectedRegimeId,
+            currentRegime,
+            regimeContext,
+            weightMethod,
+            customWeights,
+            dataQuality
+        }
+        localStorage.setItem('mfp_optimizer_state', JSON.stringify(stateToSave))
+    }, [
+        currentStep, selectedFunds, allData, aligned, returns,
+        mvpResults, views, blResult, regimeResult,
+        optimizationPath, selectedRegimeId, currentRegime,
+        regimeContext, weightMethod, customWeights, dataQuality
+    ])
+
+    const resetOptimizer = () => {
+        if (window.confirm('Are you sure you want to reset all progress?')) {
+            localStorage.removeItem('mfp_optimizer_state')
+            window.location.reload()
+        }
+    }
 
     const showMessage = (type, text) => {
         setMessage({ type, text })
@@ -64,23 +157,43 @@ function OptimizerApp() {
 
     const goToStep = (step) => {
         setCurrentStep(step)
+        // Push state to browser history for back button support
+        window.history.pushState({ step }, '', `/optimizer?step=${step}`)
     }
 
     const addActivity = (action, status, details = '', duration = null) => {
-        const activity = {
-            timestamp: new Date().toISOString(),
-            step: currentStep,
-            action,
-            status,
-            details,
-            duration
-        }
-        setActivityLog(prev => [...prev, activity])
+        setActivityLog(prev => {
+            // Prevent duplicate logs within the same minute for the same action/details
+            const now = new Date();
+            const lastActivity = prev[prev.length - 1];
+            if (lastActivity &&
+                lastActivity.action === action &&
+                lastActivity.details === details &&
+                (now - new Date(lastActivity.timestamp)) < 10000) { // 10 second debounce
+                return prev;
+            }
+
+            const activity = {
+                timestamp: now.toISOString(),
+                step: currentStep,
+                action,
+                status,
+                details,
+                duration
+            }
+            return [...prev, activity]
+        })
     }
 
     const addInsight = (category, type, title, message, action = null, metrics = null) => {
-        const insight = { category, type, title, message, action, metrics }
-        setInsights(prev => [...prev, insight])
+        setInsights(prev => {
+            // Prevent duplicate insights (check by category, title and message)
+            if (prev.some(i => i.title === title && i.message === message)) {
+                return prev;
+            }
+            const insight = { category, type, title, message, action, metrics }
+            return [...prev, insight]
+        })
     }
 
     const updateStepTiming = (step, duration, details = [], warnings = 0) => {
@@ -163,6 +276,18 @@ function OptimizerApp() {
         regimeResult, setRegimeResult // NEW
     }
 
+    const handleStepReset = () => {
+        if (currentStep === 7) goToStep(6);
+        else if (currentStep === 6) goToStep(5);
+        else if (currentStep === 5) {
+            goToStep(optimizationPath === 'regime' ? '5A' : '4B');
+        }
+        else if (currentStep === '5A') goToStep('4A');
+        else if (currentStep === '4A' || currentStep === '4B') goToStep(4);
+        else if (typeof currentStep === 'number' && currentStep > 1) goToStep(currentStep - 1);
+        else goToStep(1);
+    }
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
     const toggleSidebar = () => setIsSidebarOpen(prev => !prev)
@@ -184,6 +309,13 @@ function OptimizerApp() {
                             <LogOut className="w-4 h-4" />
                             Logout
                         </button>
+                        <button
+                            onClick={resetOptimizer}
+                            className="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors text-sm font-bold"
+                            title="Clear progress and start over"
+                        >
+                            Reset Progress
+                        </button>
                     </div>
                 </div>
 
@@ -199,43 +331,93 @@ function OptimizerApp() {
                             onLoadHistory={onLoadHistory}
                             isOpen={isSidebarOpen}
                             toggleSidebar={toggleSidebar}
+                            optimizationPath={optimizationPath}
                         />
                     </div>
 
                     {/* Main Content Area */}
                     <div className="space-y-6">
-                        {/* Enhanced Tracking Panels */}
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                            <StatusTracker activityLog={activityLog} currentOperation={currentOperation} />
-                            <ProgressTimeline stepTimings={stepTimings} currentStep={currentStep} />
+                        {/* Collapsible Analysis Dashboard */}
+                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 transition-all duration-500">
+                            <button
+                                onClick={() => setIsDashboardOpen(!isDashboardOpen)}
+                                className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-slate-50 to-indigo-50/30 hover:bg-slate-100/50 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Activity className={`text-indigo-600 transition-transform duration-500 ${isDashboardOpen ? 'rotate-180' : ''}`} size={24} />
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-800 tracking-tight">ANALYSIS HEALTH & STATUS</h3>
+                                        {!isDashboardOpen && (
+                                            <div className="flex items-center gap-4 mt-1">
+                                                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                                                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                                                    {activityLog.filter(a => a.status === 'success').length} SUCCESS
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
+                                                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                                                    {insights.filter(i => i.type === 'warning').length} WARNINGS
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className={`p-2 rounded-xl bg-white shadow-sm border border-slate-200 text-slate-400 transform transition-transform duration-300 ${isDashboardOpen ? 'rotate-180' : ''}`}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                </div>
+                            </button>
+
+                            <div className={`transition-all duration-500 ease-in-out ${isDashboardOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'} overflow-hidden`}>
+                                <div className="p-8 space-y-8 border-t border-slate-100">
+                                    {/* Enhanced Tracking Panels */}
+                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                                        <StatusTracker activityLog={activityLog} currentOperation={currentOperation} />
+                                        <ProgressTimeline
+                                            stepTimings={stepTimings}
+                                            currentStep={currentStep}
+                                            optimizationPath={optimizationPath}
+                                        />
+                                    </div>
+
+                                    {dataQuality && (
+                                        <div className="border-t border-slate-50 pt-8">
+                                            <DataQualityPanel dataQuality={dataQuality} />
+                                        </div>
+                                    )}
+                                    {insights.length > 0 && (
+                                        <div className="border-t border-slate-50 pt-8">
+                                            <InsightsPanel insights={insights} />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
-                        {dataQuality && <DataQualityPanel dataQuality={dataQuality} />}
-                        {insights.length > 0 && <InsightsPanel insights={insights} />}
-
                         {/* Step Content */}
-                        {currentStep === 1 && <Step1SearchFunds {...appState} />}
-                        {currentStep === 2 && <Step2FetchData {...appState} />}
-                        {currentStep === 3 && <Step3MVPAnalysis {...appState} />}
+                        <ErrorBoundary key={currentStep} onReset={handleStepReset}>
+                            {currentStep === 1 && <Step1SearchFunds {...appState} />}
+                            {currentStep === 2 && <Step2FetchData {...appState} />}
+                            {currentStep === 3 && <Step3MVPAnalysis {...appState} />}
 
-                        {/* Phase 4: Path Selection */}
-                        {currentStep === 4 && (
-                            <Step4ChooseOptimizationPath
-                                setOptimizationPath={setOptimizationPath}
-                                goToStep={goToStep}
-                            />
-                        )}
+                            {/* Phase 4: Path Selection */}
+                            {currentStep === 4 && (
+                                <Step4ChooseOptimizationPath
+                                    selectedFunds={selectedFunds}
+                                    setOptimizationPath={setOptimizationPath}
+                                    goToStep={goToStep}
+                                />
+                            )}
 
-                        {/* Path A: Regime Optimization */}
-                        {currentStep === '4A' && <Step4ARegimeViews {...appState} />}
-                        {currentStep === '5A' && <Step5ARegimeOptimization {...appState} />}
+                            {/* Path A: Regime Optimization */}
+                            {currentStep === '4A' && <Step4ARegimeViews {...appState} />}
+                            {currentStep === '5A' && <Step5ARegimeOptimization {...appState} />}
 
-                        {/* Path B: Black-Litterman Optimization */}
-                        {currentStep === '4B' && <Step4BBlackLittermanViews {...appState} selectedRegimeId={selectedRegimeId} setSelectedRegimeId={setSelectedRegimeId} />}
-                        {currentStep === 5 && <Step5BlackLitterman {...appState} />}
+                            {/* Path B: Black-Litterman Optimization */}
+                            {currentStep === '4B' && <Step4BBlackLittermanViews {...appState} selectedRegimeId={selectedRegimeId} setSelectedRegimeId={setSelectedRegimeId} />}
+                            {currentStep === '5B' && <Step5BlackLitterman {...appState} />}
 
-                        {currentStep === 6 && <Step6MonteCarlo {...appState} />}
-                        {currentStep === 7 && <Step7FinalReport {...appState} selectedRegimeId={selectedRegimeId} />}
+                            {currentStep === 6 && <Step6MonteCarlo {...appState} />}
+                            {currentStep === 7 && <Step7FinalReport {...appState} selectedRegimeId={selectedRegimeId} />}
+                        </ErrorBoundary>
                     </div>
                 </div>
             </div>

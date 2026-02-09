@@ -8,12 +8,12 @@ export function matrixMultiply(A, B) {
   // Handle vector × matrix or matrix × vector
   const isAVector = !Array.isArray(A[0])
   const isBVector = !Array.isArray(B[0])
-  
+
   if (isAVector && isBVector) {
     // Dot product
     return A.reduce((sum, a, i) => sum + a * B[i], 0)
   }
-  
+
   if (isAVector) {
     // Vector × Matrix
     const m = B[0].length
@@ -25,7 +25,7 @@ export function matrixMultiply(A, B) {
     }
     return result
   }
-  
+
   if (isBVector) {
     // Matrix × Vector
     const n = A.length
@@ -37,13 +37,13 @@ export function matrixMultiply(A, B) {
     }
     return result
   }
-  
+
   // Matrix × Matrix
   const n = A.length
   const m = B[0].length
   const p = B.length
   const result = Array(n).fill(0).map(() => Array(m).fill(0))
-  
+
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < m; j++) {
       for (let k = 0; k < p; k++) {
@@ -51,7 +51,7 @@ export function matrixMultiply(A, B) {
       }
     }
   }
-  
+
   return result
 }
 
@@ -60,48 +60,48 @@ export function transpose(matrix) {
   if (isVector) {
     return matrix.map(x => [x])
   }
-  
+
   const n = matrix.length
   const m = matrix[0].length
   const result = Array(m).fill(0).map(() => Array(n).fill(0))
-  
+
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < m; j++) {
       result[j][i] = matrix[i][j]
     }
   }
-  
+
   return result
 }
 
 export function matrixAdd(A, B) {
   const isAVector = !Array.isArray(A[0])
   const isBVector = !Array.isArray(B[0])
-  
+
   if (isAVector && isBVector) {
     return A.map((a, i) => a + B[i])
   }
-  
+
   const n = A.length
   const m = A[0].length
   const result = Array(n).fill(0).map(() => Array(m).fill(0))
-  
+
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < m; j++) {
       result[i][j] = A[i][j] + B[i][j]
     }
   }
-  
+
   return result
 }
 
 export function matrixScale(matrix, scalar) {
   const isVector = !Array.isArray(matrix[0])
-  
+
   if (isVector) {
     return matrix.map(x => x * scalar)
   }
-  
+
   return matrix.map(row => row.map(x => x * scalar))
 }
 
@@ -128,13 +128,13 @@ export function matrixDiag(vector) {
 
 export function matrixInverse(matrix) {
   const n = matrix.length
-  
+
   // Create augmented matrix [A | I]
   const aug = matrix.map((row, i) => [
     ...row,
     ...Array(n).fill(0).map((_, j) => i === j ? 1 : 0)
   ])
-  
+
   // Forward elimination with partial pivoting
   for (let i = 0; i < n; i++) {
     // Find pivot
@@ -144,21 +144,26 @@ export function matrixInverse(matrix) {
         maxRow = k
       }
     }
-    
+
     // Swap rows
     [aug[i], aug[maxRow]] = [aug[maxRow], aug[i]]
-    
+
     // Check for singularity
-    if (Math.abs(aug[i][i]) < 1e-10) {
-      throw new Error('Matrix is singular or nearly singular')
+    if (Math.abs(aug[i][i]) < 1e-18) {
+      console.warn('Matrix is nearly singular at pivot', i, 'Value:', aug[i][i], '- Adding emergency ridge')
+      aug[i][i] += 1e-9 // Emergency stabilization
     }
-    
+
     // Scale pivot row
     const pivot = aug[i][i]
+    if (Math.abs(pivot) < 1e-24) {
+      throw new Error('Matrix is singular or nearly singular (Zero Pivot)')
+    }
+
     for (let j = 0; j < 2 * n; j++) {
       aug[i][j] /= pivot
     }
-    
+
     // Eliminate column
     for (let k = 0; k < n; k++) {
       if (k !== i) {
@@ -169,7 +174,7 @@ export function matrixInverse(matrix) {
       }
     }
   }
-  
+
   // Extract inverse from right half
   return aug.map(row => row.slice(n))
 }
@@ -181,11 +186,11 @@ export function matrixInverse(matrix) {
 export function choleskyDecomposition(matrix) {
   const n = matrix.length
   const L = Array(n).fill(0).map(() => Array(n).fill(0))
-  
+
   for (let i = 0; i < n; i++) {
     for (let j = 0; j <= i; j++) {
       let sum = 0
-      
+
       if (i === j) {
         for (let k = 0; k < j; k++) {
           sum += L[j][k] * L[j][k]
@@ -203,7 +208,7 @@ export function choleskyDecomposition(matrix) {
       }
     }
   }
-  
+
   return L
 }
 
@@ -213,16 +218,16 @@ export function choleskyDecomposition(matrix) {
 
 export function validateMatrix(matrix, options = {}) {
   const { symmetric = false, positiveDef = false } = options
-  
+
   // Check dimensions
   const n = matrix.length
   if (n === 0) throw new Error('Empty matrix')
-  
+
   const m = matrix[0].length
   if (!matrix.every(row => row.length === m)) {
     throw new Error('Inconsistent matrix dimensions')
   }
-  
+
   // Check for NaN/Inf
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < m; j++) {
@@ -231,7 +236,7 @@ export function validateMatrix(matrix, options = {}) {
       }
     }
   }
-  
+
   // Check symmetry
   if (symmetric && n === m) {
     for (let i = 0; i < n; i++) {
@@ -242,7 +247,7 @@ export function validateMatrix(matrix, options = {}) {
       }
     }
   }
-  
+
   // Check positive definiteness (via Cholesky)
   if (positiveDef) {
     try {
@@ -251,7 +256,7 @@ export function validateMatrix(matrix, options = {}) {
       throw new Error('Matrix is not positive definite')
     }
   }
-  
+
   return true
 }
 
@@ -259,16 +264,16 @@ export function validateWeights(weights, tol = 1e-6) {
   const sum = weights.reduce((a, b) => a + b, 0)
   const allPositive = weights.every(w => w >= -tol)
   const sumCorrect = Math.abs(sum - 1.0) < tol
-  
+
   if (!allPositive) {
     const negWeights = weights.filter(w => w < -tol)
     throw new Error(`Negative weights: ${negWeights.join(', ')}`)
   }
-  
+
   if (!sumCorrect) {
     throw new Error(`Weights sum to ${sum.toFixed(6)}, not 1.0`)
   }
-  
+
   return true
 }
 
@@ -279,10 +284,10 @@ export function validateWeights(weights, tol = 1e-6) {
 export function conditionNumber(matrix) {
   // Estimate condition number (simplified)
   // κ(A) = ||A|| ||A^-1||
-  
+
   const n = matrix.length
   let normA = 0
-  
+
   // Frobenius norm
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
@@ -290,18 +295,18 @@ export function conditionNumber(matrix) {
     }
   }
   normA = Math.sqrt(normA)
-  
+
   try {
     const invA = matrixInverse(matrix)
     let normInvA = 0
-    
+
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         normInvA += invA[i][j] * invA[i][j]
       }
     }
     normInvA = Math.sqrt(normInvA)
-    
+
     return normA * normInvA
   } catch (e) {
     return Infinity

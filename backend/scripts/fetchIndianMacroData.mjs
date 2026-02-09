@@ -1,171 +1,277 @@
-/**
- * Fetch Indian Macro Data from RBI Database on Indian Economy
- * Run: node scripts/fetchIndianMacroData.mjs
- */
-
-import https from 'https';
 import fs from 'fs';
 import path from 'path';
+import https from 'https';
+import { config } from 'dotenv';
+import { fetchLatestWPI, fetchLatestCPI, isDataRecent } from '../utils/governmentDataFetcher.mjs';
 
-// RBI DBIE API endpoints (CSV export format)
-// Note: RBI doesn't have a pure REST API, so we'll use their CSV export URLs
-const RBI_BASE = 'https://dbie.rbi.org.in/DBIE/dbie.rbi';
+// Load environment variables from .env file
+config();
 
-/**
- * Indian Macro Indicators Configuration
- */
-const INDIAN_INDICATORS = {
-    // Policy Rate (Repo Rate)
-    repoRate: {
-        url: `${RBI_BASE}?site=statistics`,
-        tableCode: '2',
-        seriesCode: 'Repo_Rate',
-        description: 'RBI Repo Rate'
-    },
-    // GDP Growth (Quarterly, need to interpolate)
-    gdpGrowth: {
-        url: `${RBI_BASE}?site=statistics`,
-        tableCode: '41',
-        seriesCode: 'GDP_Growth_YoY',
-        description: 'Real GDP Growth Rate'
-    },
-    // CPI Inflation
-    cpiInflation: {
-        url: `${RBI_BASE}?site=statistics`,
-        tableCode: '36',
-        seriesCode: 'CPI_Combined',
-        description: 'Consumer Price Index'
-    },
-    // WPI Inflation
-    wpiInflation: {
-        url: `${RBI_BASE}?site=statistics`,
-        tableCode: '38',
-        seriesCode: 'WPI_All',
-        description: 'Wholesale Price Index'
-    },
-    // 10Y G-Sec Yield
-    gSecYield: {
-        url: `${RBI_BASE}?site=statistics`,
-        tableCode: '19',
-        seriesCode: 'GSEC_10Y',
-        description: '10-Year Government Securities Yield'
-    },
-    // Foreign Reserves
-    forexReserves: {
-        url: `${RBI_BASE}?site=statistics`,
-        tableCode: '5',
-        seriesCode: 'FX_Reserves',
-        description: 'Foreign Exchange Reserves'
-    },
-    // INR/USD Exchange Rate
-    inrUsd: {
-        url: `${RBI_BASE}?site=statistics`,
-        tableCode: '9',
-        seriesCode: 'INR_USD',
-        description: 'INR/USD Exchange Rate'
-    },
-    // Bank Credit Growth
-    bankCredit: {
-        url: `${RBI_BASE}?site=statistics`,
-        tableCode: '14',
-        seriesCode: 'Bank_Credit',
-        description: 'Scheduled Commercial Banks Credit'
-    }
+// --- Configuration ---
+const DATA_DIR = path.join(process.cwd(), 'data');
+const PROCESSED_DIR = path.join(DATA_DIR, 'processed');
+const OUTPUT_FILE = path.join(PROCESSED_DIR, 'indiaMacroHistorical.json');
+
+// Mappings: Internal Key -> FRED Series ID (Equipping with full set)
+const FRED_MAPPINGS = {
+    repoRate: 'INTDSRINM193N',         // Discount Rate (Proxy for Repo)
+    cpiIndex: 'INDCPIALLMINMEI',      // Consumer Price Index (2015=100)
+    wpiIndex: 'WPIATT01INM661N',      // Wholesale Price Index (Monthly, Verified)
+    nominalGDP: 'MKTGDPINA646NWDB',   // GDP at Market Prices (Annual LCU)
+    realGDP: 'NGDPRNSAXDCINQ',        // Real GDP (Quarterly, NSA, Verified)
+    gSecYield: 'INDIRLTLT01STM',      // 10Y Government Bond Yield
+    forexReserves: 'TRESEGINM052N',   // Foreign Exchange Reserves
+    inrUsd: 'DEXINUS',                // INR/USD Exchange Rate
+    bankCredit: 'CRDQINAPABIS'        // Total Credit to Private Sector
 };
 
-/**
- * Alternative: Use data.gov.in APIs for some indicators
- * This is a more reliable programmatic approach
- */
-const DATA_GOV_IN_APIS = {
-    cpiInflation: 'https://api.data.gov.in/resource/...',  // Replace with actual resource ID
-    // Add more as needed
-};
+// API Key - Passed via environment variable or command line
+const API_KEY = process.env.FRED_API_KEY || process.argv[2];
 
-console.log('⚠️  RBI Data Fetch Script');
-console.log('='.repeat(60));
-console.log('NOTE: RBI does not provide a public REST API for DBIE data.');
-console.log('This script demonstrates the structure needed.');
-console.log('');
-console.log('👉 RECOMMENDED APPROACH:');
-console.log('1. Manually download CSV files from https://dbie.rbi.org.in');
-console.log('2. Place them in data/india/ folder');
-console.log('3. Run consolidateIndianMacro.mjs to process them');
-console.log('');
-console.log('OR');
-console.log('');
-console.log('Use external API aggregators like:');
-console.log('- tradingeconomics.com/india/indicators');
-console.log('- quandl.com (CEIC India Data)');
-console.log('='.repeat(60));
-
-/**
- * For demonstration: Create a sample Indian macro dataset
- * In production, you would fetch this from APIs or process CSVs
- */
-function generateSampleIndianData() {
-    console.log('\\n📊 Generating sample Indian macro dataset...');
-
-    const startDate = new Date('2002-01-01');
-    const endDate = new Date('2025-12-01');
-    const data = [];
-
-    let currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-
-        // Simulate Indian economic cycles
-        const cycle = Math.sin((year - 2002) * 0.5);
-        const crisis2008 = (year === 2008 || year === 2009) ? -2 : 0;
-        const covid2020 = (year === 2020) ? -5 : 0;
-        const tightening2022 = (year >= 2022 && year <= 2023) ? 1.5 : 0;
-
-        data.push({
-            date: currentDate.toISOString().slice(0, 10),
-
-            // Repo Rate (4% to 6.5% typical range)
-            repoRate: 5.5 + cycle * 1.5 + tightening2022,
-
-            // GDP Growth (3% to 8.5% range)
-            gdpGrowth: 6.5 + cycle * 2 + crisis2008 + covid2020,
-
-            // CPI Inflation (2% to 7% range)
-            cpiInflation: 4.5 + cycle * 1.5 + (year >= 2022 ? 1 : 0),
-
-            // WPI Inflation (can be more volatile)
-            wpiInflation: 5.0 + cycle * 2.5 + (year >= 2021 ? 2 : 0),
-
-            // 10Y G-Sec Yield (6% to 8% range)
-            gSecYield: 7.0 + cycle * 1.0 + tightening2022 * 0.5,
-
-            // Foreign Reserves (in billion USD, growing trend)
-            forexReserves: 100 + (year - 2002) * 15 + cycle * 20,
-
-            // INR/USD (40 to 83 range, depreciating trend)
-            inrUsd: 45 + (year - 2002) * 1.5 + cycle * 2 + (crisis2008 * 2),
-
-            // Bank Credit Growth (10% to 18% range)
-            bankCredit: 14 + cycle * 3 + crisis2008 * -5 + covid2020 * -3
-        });
-
-        currentDate.setMonth(currentDate.getMonth() + 1);
-    }
-
-    return data;
+if (!API_KEY) {
+    console.error('❌ Error: FRED_API_KEY is missing.');
+    console.error('   Usage: node backend/scripts/fetchIndianMacroData.mjs <YOUR_API_KEY>');
+    process.exit(1);
 }
 
-// Generate sample data
-const indianMacroData = generateSampleIndianData();
+// Manual Override File (for latest official data)
+const MANUAL_OVERRIDE_FILE = path.join(DATA_DIR, 'manual', 'indiaOverrides.json');
 
-// Save to file
-const outputPath = path.join(process.cwd(), 'src', 'data', 'indiaMacroHistorical.json');
-fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-fs.writeFileSync(outputPath, JSON.stringify(indianMacroData, null, 2));
+// Load manual overrides if available
+function loadManualOverrides() {
+    try {
+        if (fs.existsSync(MANUAL_OVERRIDE_FILE)) {
+            const data = JSON.parse(fs.readFileSync(MANUAL_OVERRIDE_FILE, 'utf-8'));
+            console.log('📋 Manual overrides loaded from official sources');
+            return data.indicators || {};
+        }
+    } catch (e) {
+        console.warn('⚠️ Could not load manual overrides:', e.message);
+    }
+    return {};
+}
 
-console.log(`\\n✅ Sample Indian macro data generated: ${outputPath}`);
-console.log(`📅 Date range: ${indianMacroData[0].date} to ${indianMacroData[indianMacroData.length - 1].date}`);
-console.log(`📊 Total data points: ${indianMacroData.length} months`);
-console.log(`\\n⚠️  IMPORTANT: This is SAMPLE DATA for development.`);
-console.log(`   For production use, replace with actual RBI data.`);
+// --- Helper Functions ---
+
+const fetchJSON = async (url) => {
+    return new Promise((resolve, reject) => {
+        https.get(url, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(data));
+                } catch (e) {
+                    reject(new Error(`Failed to parse JSON: ${data.substring(0, 100)}...`));
+                }
+            });
+        }).on('error', reject);
+    });
+};
+
+const fetchSeries = async (seriesId) => {
+    console.log(`📡 Fetching ${seriesId}...`);
+    const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${API_KEY}&file_type=json`;
+    try {
+        const data = await fetchJSON(url);
+        if (!data.observations) throw new Error('No observations found');
+        return data.observations.map(obs => ({
+            date: obs.date,
+            value: parseFloat(obs.value)
+        })).filter(obs => !isNaN(obs.value));
+    } catch (e) {
+        console.error(`   ⚠️ Failed to fetch ${seriesId}: ${e.message}`);
+        return [];
+    }
+};
+
+// --- Main Execution ---
+
+async function run() {
+    console.log('🚀 Starting Comprehensive Indian Macro Data Alignment...');
+
+    // Try to fetch latest data from government APIs first (automatic)
+    let govWPI = null;
+    let govCPI = null;
+
+    try {
+        console.log('\n🌐 Attempting automatic fetch from Indian government APIs...');
+        [govWPI, govCPI] = await Promise.all([
+            fetchLatestWPI().catch(() => null),
+            fetchLatestCPI().catch(() => null)
+        ]);
+
+        if (govWPI || govCPI) {
+            console.log('   ✅ Government API data fetched successfully');
+        } else {
+            console.log('   ℹ️ Government APIs unavailable, using FRED + manual overrides');
+        }
+    } catch (e) {
+        console.log('   ℹ️ Government API fetch skipped:', e.message);
+    }
+
+    // Load manual overrides (priority over FRED, but government API has highest priority)
+    const manualOverrides = loadManualOverrides();
+
+    const combinedData = {}; // Key: YYYY-MM
+
+    // 1. Fetch FRED Data
+    for (const [key, seriesId] of Object.entries(FRED_MAPPINGS)) {
+        const obsList = await fetchSeries(seriesId);
+
+        obsList.forEach(obs => {
+            const yyyyMm = obs.date.substring(0, 7); // YYYY-MM
+
+            if (!combinedData[yyyyMm]) {
+                combinedData[yyyyMm] = {
+                    date: obs.date,
+                };
+            }
+
+            // Standardize: Take last value for the month
+            combinedData[yyyyMm][key] = obs.value;
+        });
+    }
+
+    // 2. Processing & Interpolation
+    const sortedDates = Object.keys(combinedData).sort();
+    let result = sortedDates.map(d => combinedData[d]);
+
+    // Forward fill missing values (handle quarterly GDP or occasional gaps)
+    const indicators = Object.keys(FRED_MAPPINGS);
+    indicators.forEach(k => {
+        let lastVal = null;
+        for (let i = 0; i < result.length; i++) {
+            if (result[i][k] !== undefined && result[i][k] !== null) {
+                lastVal = result[i][k];
+            } else if (lastVal !== null) {
+                result[i][k] = lastVal;
+            }
+        }
+    });
+
+    // 3. Derived Metrics (Matching Static Backup Schema)
+    for (let i = 12; i < result.length; i++) {
+        // CPI Inflation (YoY)
+        if (result[i].cpiIndex && result[i - 12].cpiIndex) {
+            result[i].cpiInflation = Number((((result[i].cpiIndex / result[i - 12].cpiIndex) - 1) * 100).toFixed(2));
+        }
+
+        // WPI Inflation (YoY)
+        if (result[i].wpiIndex && result[i - 12].wpiIndex) {
+            result[i].wpiInflation = Number((((result[i].wpiIndex / result[i - 12].wpiIndex) - 1) * 100).toFixed(2));
+        }
+
+        // GDP Growth (YoY) - Using Real GDP if available
+        if (result[i].realGDP && result[i - 12].realGDP) {
+            result[i].gdpGrowth = Number((((result[i].realGDP / result[i - 12].realGDP) - 1) * 100).toFixed(2));
+        } else if (result[i].nominalGDP && result[i - 12].nominalGDP) {
+            result[i].gdpGrowth = Number((((result[i].nominalGDP / result[i - 12].nominalGDP) - 1) * 100).toFixed(2));
+        }
+
+        // Real Rate
+        const currentRepo = result[i].repoRate || 6.5;
+        const currentInf = result[i].cpiInflation || 0;
+        result[i].realRate = Number((currentRepo - currentInf).toFixed(2));
+
+        // Forex normalization (Trillions/Billions check) - FRED TRESEGINM052N is in Millions of USD
+        // Standard dashboard expects Billions
+        if (result[i].forexReserves > 1000) {
+            result[i].forexReserves = Number((result[i].forexReserves / 1000).toFixed(2));
+        }
+    }
+
+    // 4. Apply Manual Overrides (Priority over FRED for latest data)
+    if (Object.keys(manualOverrides).length > 0) {
+        console.log('\n🔄 Applying manual overrides from official sources...');
+
+        // Apply WPI override
+        if (manualOverrides.wpi && manualOverrides.wpi.date) {
+            const wpiDate = manualOverrides.wpi.date.substring(0, 7); // YYYY-MM
+            const wpiEntry = result.find(r => r.date.startsWith(wpiDate));
+            if (wpiEntry) {
+                wpiEntry.wpiIndex = manualOverrides.wpi.index;
+                wpiEntry.wpiInflation = manualOverrides.wpi.inflation;
+                console.log(`   ✅ WPI updated: ${manualOverrides.wpi.inflation}% (${manualOverrides.wpi.source})`);
+            }
+        }
+
+        // Apply CPI override
+        if (manualOverrides.cpi && manualOverrides.cpi.date) {
+            const cpiDate = manualOverrides.cpi.date.substring(0, 7);
+            const cpiEntry = result.find(r => r.date.startsWith(cpiDate));
+            if (cpiEntry) {
+                cpiEntry.cpiIndex = manualOverrides.cpi.index;
+                cpiEntry.cpiInflation = manualOverrides.cpi.inflation;
+                console.log(`   ✅ CPI updated: ${manualOverrides.cpi.inflation}% (${manualOverrides.cpi.source})`);
+            }
+        }
+
+        // Apply Repo Rate override
+        if (manualOverrides.repoRate && manualOverrides.repoRate.date) {
+            const repoDate = manualOverrides.repoRate.date.substring(0, 7);
+            const repoEntry = result.find(r => r.date.startsWith(repoDate));
+            if (repoEntry) {
+                repoEntry.repoRate = manualOverrides.repoRate.value;
+                // Recalculate real rate
+                repoEntry.realRate = Number((repoEntry.repoRate - (repoEntry.cpiInflation || 0)).toFixed(2));
+                console.log(`   ✅ Repo Rate updated: ${manualOverrides.repoRate.value}% (${manualOverrides.repoRate.source})`);
+            }
+        }
+    }
+
+    // 5. Apply Government API Data (HIGHEST PRIORITY - most recent official data)
+    if (govWPI || govCPI) {
+        console.log('\n🏛️ Applying government API data (highest priority)...');
+
+        // Apply Government WPI
+        if (govWPI && govWPI.date) {
+            const wpiDate = govWPI.date.substring(0, 7);
+            const wpiEntry = result.find(r => r.date.startsWith(wpiDate));
+            if (wpiEntry) {
+                wpiEntry.wpiIndex = govWPI.index;
+                wpiEntry.wpiInflation = govWPI.inflation;
+                console.log(`   ✅ WPI updated: ${govWPI.inflation}% (data.gov.in - ${govWPI.date})`);
+            }
+        }
+
+        // Apply Government CPI
+        if (govCPI && govCPI.date) {
+            const cpiDate = govCPI.date.substring(0, 7);
+            const cpiEntry = result.find(r => r.date.startsWith(cpiDate));
+            if (cpiEntry) {
+                cpiEntry.cpiIndex = govCPI.index;
+                cpiEntry.cpiInflation = govCPI.inflation;
+                // Recalculate real rate with new CPI
+                cpiEntry.realRate = Number((cpiEntry.repoRate - govCPI.inflation).toFixed(2));
+                console.log(`   ✅ CPI updated: ${govCPI.inflation}% (data.gov.in - ${govCPI.date})`);
+            }
+        }
+    }
+
+    // Filter to baseline
+    result = result.filter(d => parseInt(d.date.substring(0, 4)) >= 2002);
+
+    // Save
+    if (!fs.existsSync(PROCESSED_DIR)) fs.mkdirSync(PROCESSED_DIR, { recursive: true });
+
+    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(result, null, 2));
+    console.log(`\n✅ Successfully updated ${OUTPUT_FILE}`);
+    console.log(`   Total Entries: ${result.length}`);
+    if (result.length > 0) {
+        const last = result[result.length - 1];
+        console.log(`\n📊 Latest Data State:`);
+        console.log(`   Date: ${last.date}`);
+        console.log(`   CPI Inflation: ${last.cpiInflation !== undefined ? last.cpiInflation : 'N/A'}%`);
+        console.log(`   WPI Inflation: ${last.wpiInflation !== undefined ? last.wpiInflation : 'N/A'}%`);
+        console.log(`   GDP Growth: ${last.gdpGrowth !== undefined ? last.gdpGrowth : 'N/A'}%`);
+        console.log(`   Repo Rate: ${last.repoRate}%`);
+        console.log(`   Real Rate: ${last.realRate}%`);
+        console.log(`   Forex: $${last.forexReserves}B`);
+    }
+}
+
+run().catch(err => {
+    console.error('❌ Critical Alignment Error:', err);
+    process.exit(1);
+});

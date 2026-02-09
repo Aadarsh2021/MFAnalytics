@@ -5,6 +5,7 @@ import FundCategoryPanel from './FundCategoryPanel'
 import AdvancedFundFilter from './AdvancedFundFilter'
 import { supabase } from '../utils/supabase'
 import { categorizeFundImproved, getCategoryColor, mapSEBICategoryToSimple } from '../utils/fundCategorization'
+import { getMFApiUrl } from '../utils/corsProxy'
 
 
 
@@ -42,7 +43,7 @@ export default function Step1SearchFunds({
 
             setMasterLoading(true)
             try {
-                const res = await fetch('https://api.mfapi.in/mf')
+                const res = await fetch(getMFApiUrl(''))
                 const data = await res.json()
                 if (Array.isArray(data)) {
                     window.mfMasterList = data // Cache globally
@@ -222,7 +223,7 @@ export default function Step1SearchFunds({
     return (
         <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">
-                🔍 Step 1: Search & Select Mutual Funds
+                🔍 Step 1: Funds Selection
             </h2>
 
             {/* Search Box */}

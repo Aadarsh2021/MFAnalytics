@@ -1,10 +1,15 @@
-export function downloadReport(method, returns, allData, mvpResults, blResult) {
+export function downloadReport(method, returns, allData, mvpResults, blResult, regimeResult) {
     let weights, vol, methodName
 
     if (method === 'blacklitterman') {
         weights = blResult.weights
         vol = blResult.vol
         methodName = 'Black-Litterman'
+    } else if (method === 'regime') {
+        // Convert weight object {code: weight} to aligned array
+        weights = returns.codes.map(c => regimeResult.weights[c] || 0)
+        vol = regimeResult.vol
+        methodName = 'Regime-Optimized'
     } else {
         weights = mvpResults[method].weights
         vol = mvpResults[method].vol

@@ -38,7 +38,7 @@ print("\n📊 Fetching from FRED...")
 fred_series = {
     'cpi': fetch_fred('INDCPIALLMINMEI'),  # India CPI
     'gdp': fetch_fred('MKTGDPINA646NWDB'),  # India GDP
-    'forex': fetch_fred('TRESEGINA646N'),  # Forex Reserves
+    'forex': fetch_fred('TRESEGINM052N'),  # India Forex Reserves (Monthly)
 }
 
 # RBI Repo Rates & Other Manual Data
@@ -69,47 +69,70 @@ rbi_data = {
     '2025': {'repo': 6.5, 'gsec': 6.9, 'inr': 84.1},
 }
 
-print("\n📊 Merging data...")
-data_by_date = {}
+# Process FRED data into a list for rolling calculation
+cpi_raw = sorted(fred_series['cpi'], key=lambda x: x['date'])
+gdp_raw = sorted(fred_series['gdp'], key=lambda x: x['date'])
+forex_raw = sorted(fred_series['forex'], key=lambda x: x['date'])
 
-# Process FRED CPI
-for obs in fred_series['cpi']:
+def get_yoy(series, target_date):
+    """Calculate YoY % change from FRED index series"""
+    try:
+        current = next((float(x['value']) for x in series if x['date'] == target_date and x['value'] != '.'), None)
+        if current is None: return 0
+        
+        # Find index 12 months ago
+        target_year = int(target_date[:4]) - 1
+        prev_date = f"{target_year}{target_date[4:]}"
+        previous = next((float(x['value']) for x in series if x['date'] == prev_date and x['value'] != '.'), None)
+        
+        if previous and previous != 0:
+            return ((current - previous) / previous) * 100
+        return 0
+    except:
+        return 0
+
+print("\n📊 Merging and calculating YoY rates...")
+combined = []
+for obs in cpi_raw:
     date = obs.get('date')
-    value = obs.get('value')
-    if date and value and value != '.':
-        year = date[:4]
-        data_by_date[date] = {
-            'date': date,
-            'repoRate': rbi_data.get(year, {}).get('repo', 6.0),
-            'cpiInflation': float(value),
-            'gdpGrowth': 0,
-            'wpiInflation': float(value),
-            'gSecYield': rbi_data.get(year, {}).get('gsec', 7.0),
-            'forexReserves': 0,
-            'inrUsd': rbi_data.get(year, {}).get('inr', 75.0),
-            'bankCredit': 0
-        }
+    if not date: continue
+    
+    year = date[:4]
+    month = date[5:7]
+    
+    # Calculate Inflation (YoY CPI Change)
+    inflation = get_yoy(cpi_raw, date)
+    
+    # Calculate GDP Growth (YoY GDP Change)
+    gdp_growth = get_yoy(gdp_raw, date)
+    if gdp_growth == 0 and len(combined) > 0:
+        gdp_growth = combined[-1]['gdpGrowth'] 
 
-# Add GDP
-for obs in fred_series['gdp']:
-    date = obs.get('date')
-    value = obs.get('value')
-    if date and value and value != '.' and date in data_by_date:
-        data_by_date[date]['gdpGrowth'] = float(value)
+    # Forex in Billions USD (propagate latest available)
+    forex_val = next((float(x['value']) for x in forex_raw if x['date'] == date and x['value'] != '.'), None)
+    if forex_val is None and len(combined) > 0:
+        forex_reserves = combined[-1]['forexReserves']
+    else:
+        # Convert Millions to Billions if it looks like Million units
+        raw_val = float(forex_val) if forex_val else 0
+        forex_reserves = round(raw_val / 1000, 1) if raw_val > 1000 else raw_val
+    
+    combined.append({
+        'date': date,
+        'repoRate': rbi_data.get(year, {}).get('repo', 6.5),
+        'cpiInflation': round(inflation, 2),
+        'gdpGrowth': round(gdp_growth, 2),
+        'wpiInflation': round(inflation, 2),
+        'gSecYield': rbi_data.get(year, {}).get('gsec', 7.1),
+        'forexReserves': forex_reserves,
+        'inrUsd': rbi_data.get(year, {}).get('inr', 83.0),
+        'bankCredit': 12.0 
+    })
 
-# Add Forex
-for obs in fred_series['forex']:
-    date = obs.get('date')
-    value = obs.get('value')
-    if date and value and value != '.' and date in data_by_date:
-        data_by_date[date]['forexReserves'] = float(value)
-
-# Calculate nominal GDP (Real GDP + Inflation) for each record
-for date, record in data_by_date.items():
+# Calculate auxiliary fields
+for record in combined:
     record['nominalGDP'] = record['gdpGrowth'] + record['cpiInflation']
-
-# Convert and sort
-combined = sorted(data_by_date.values(), key=lambda x: x['date'])
+    record['realRate'] = record['repoRate'] - record['cpiInflation']
 
 # Save
 output = 'data/processed/indiaMacroHistorical.json'
@@ -117,16 +140,14 @@ with open(output, 'w') as f:
     json.dump(combined, f, indent=2)
 
 print(f"\n✅ Created {output}: {len(combined)} records")
-print(f"📅 {combined[0]['date']} → {combined[-1]['date']}")
+if combined:
+    print(f"📅 {combined[0]['date']} → {combined[-1]['date']}")
+    latest = combined[-1]
+    print(f"\n🔍 Latest Corrected ({latest['date']}):")
+    print(f"  Repo: {latest['repoRate']}%")
+    print(f"  Inflation (YoY): {latest['cpiInflation']}%")
+    print(f"  Real Rate: {latest['realRate']:.2f}%")
+    print(f"  GDP Growth (YoY): {latest['gdpGrowth']}%")
+    print(f"  Forex: ${latest['forexReserves']}B")
 
-# Latest
-latest = combined[-1]
-print(f"\n🔍 Latest ({latest['date']}):")
-print(f"  Repo: {latest['repoRate']}%")
-print(f"  CPI: {latest['cpiInflation']}")
-print(f"  GDP: {latest['gdpGrowth']}")
-print(f"  Forex: ${latest['forexReserves']:.1f}B")
-print(f"  INR/USD: ₹{latest['inrUsd']}")
-print(f"  G-Sec: {latest['gSecYield']}%")
-
-print("\n✨ Complete Indian macro data fetched!")
+print("\n✨ Indian macro data foundation fixed!")

@@ -6,7 +6,7 @@ export default function SixPillarsDashboard({ indicators, scores, regimeScore })
         {
             id: 'realRates',
             name: 'Real Rates',
-            subtitle: 'US 10Y Yield - CPI',
+            subtitle: 'Effective Rate - CPI',
             value: indicators?.realRate !== undefined ? `${indicators.realRate.toFixed(2)}%` : 'N/A',
             score: scores?.realRate || 0,
             description: 'If < 1.0%, the regime is active.',
@@ -52,10 +52,10 @@ export default function SixPillarsDashboard({ indicators, scores, regimeScore })
             id: 'volRatio',
             name: 'Volatility Ratio',
             subtitle: 'Inflation Vol / Growth Vol',
-            value: indicators?.volRatio !== undefined ? indicators.volRatio.toFixed(2) : 'N/A',
+            value: indicators?.volatilityRatio !== undefined ? indicators.volatilityRatio.toFixed(2) : 'N/A',
             score: scores?.volatilityRatio || 0,
             description: 'Regime C signature if ratio > 1.0.',
-            warning: indicators?.volRatio > 1.0
+            warning: indicators?.volatilityRatio > 1.0
         }
     ];
 

@@ -2,12 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
 
-const DATA_DIR = 'c:/Users/thaku/Desktop/Work/MFP/Data_For_Model';
-const OUTPUT_FILE = 'c:/Users/thaku/Desktop/Work/MFP/src/data/usMacroHistorical.json';
+const DATA_DIR = 'c:/Users/thaku/Desktop/Work/MFP/data/raw/us-macro';
+const OUTPUT_FILE = 'c:/Users/thaku/Desktop/Work/MFP/data/processed/usMacroHistorical.json';
 
 const files = {
     debt_to_gdp: 'FED DEBT to GDP.csv',
-    fed_funds: 'FED FUNDS EFFECTIVE RATE.csv', // Also has CPI
+    fed_funds: 'FED FUNDS EFFECTIVE RATE.csv',
     pce: 'PCEPI.csv',
     gdp: 'Real GDP Raw Data.csv',
     sp500: 'S&P 500 Historical Data.csv',
@@ -30,7 +30,6 @@ function parseDate(dateStr) {
         }
     } else if (dateStr.includes('/')) {
         const parts = dateStr.split('/');
-        // S&P format is MM/DD/YYYY
         d = new Date(parts[2], parts[0] - 1, parts[1]);
     }
     return d;
@@ -74,14 +73,12 @@ function extractGoldData(filePath) {
     if (!sheet) return [];
 
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    // Prices sheet: Row 5 has headers (Q1'10 etc), Row 6 has US$/oz
     const headers = rows[4];
     const prices = rows[5];
 
     const data = [];
     headers.forEach((h, idx) => {
         if (h && typeof h === 'string' && h.includes("'")) {
-            // Format Q1'10
             const quarter = h.substring(1, 2);
             const year = parseInt('20' + h.substring(3));
             const month = (parseInt(quarter) - 1) * 3 + 1;
@@ -99,17 +96,16 @@ async function run() {
     console.log('Starting US Macro consolidation...');
     const combinedData = {};
 
-    // Process all sources
     const sources = [
-        { file: files.fed_funds, mapping: { realRate: 'FEDFUNDS', inflationExpectations: 'CPIAUCSL' } },
-        { file: files.debt_to_gdp, mapping: { debtStress: 'GFDEGDQ188S' } },
-        { file: files.pce, mapping: { growth: 'PCEPI' } },
-        { file: files.gdp, mapping: { growth: 'GDPC1' } },
+        { file: files.fed_funds, mapping: { repoRate: 'FEDFUNDS', cpiIndex: 'CPIAUCSL' } },
+        { file: files.debt_to_gdp, mapping: { debtToGDP: 'GFDEGDQ188S' } },
+        { file: files.pce, mapping: { pceIndex: 'PCEPI' } },
+        { file: files.gdp, mapping: { gdpIndex: 'GDPC1' } },
         { file: files.sp500, mapping: { sp500: 'Price' } },
         { file: files.inflation_vol, mapping: { volatilityRatio: 'CPI_VOL' } },
         { file: files.interest_expense, mapping: { interest_expense: 'FED_INT_EXP' } },
-        { file: files.real_policy_rate, mapping: { realRate: 'REAL_RATE' } },
-        { file: files.bond_yield, mapping: { bond_yield: 'Price' } }
+        { file: files.real_policy_rate, mapping: { realRateProvided: 'REAL_RATE' } },
+        { file: files.bond_yield, mapping: { gSecYield: 'Price' } }
     ];
 
     for (const source of sources) {
@@ -124,47 +120,44 @@ async function run() {
         }
     }
 
-    // Process Gold
-    try {
-        const goldData = extractGoldData(path.join(DATA_DIR, files.gold_excel));
-        goldData.forEach(row => {
-            if (!combinedData[row.date]) combinedData[row.date] = { date: row.date };
-            combinedData[row.date].gold = row.gold;
-        });
-    } catch (e) {
-        console.error('Error processing Gold:', e.message);
-    }
-
-    // Sort by date
     const sortedDates = Object.keys(combinedData).sort();
-    // Forward-fill missing values for monthly alignment
-    const indicators = Object.keys(sources.reduce((acc, s) => ({ ...acc, ...s.mapping }), {}));
-    sortedDates.forEach((date, idx) => {
-        if (idx === 0) return;
-        indicators.forEach(ind => {
-            if (combinedData[date][ind] === undefined || isNaN(combinedData[date][ind])) {
-                combinedData[date][ind] = combinedData[sortedDates[idx - 1]][ind];
+    const result = sortedDates.map(d => ({ ...combinedData[d] }));
+
+    // Forward-fill missing values
+    const allIndicators = Object.keys(sources.reduce((acc, s) => ({ ...acc, ...s.mapping }), {}));
+    for (let i = 1; i < result.length; i++) {
+        allIndicators.forEach(ind => {
+            if (result[i][ind] === undefined || isNaN(result[i][ind])) {
+                result[i][ind] = result[i - 1][ind];
             }
         });
-    });
+    }
 
-    // Calculate Changes for level-based indicators
-    const result = sortedDates.map(d => combinedData[d]);
-    for (let i = 1; i < result.length; i++) {
-        if (result[i].growth && result[i - 1].growth) {
-            result[i].growth_change = (result[i].growth / result[i - 1].growth) - 1;
+    // Calculate YoY Changes (12-month window)
+    for (let i = 12; i < result.length; i++) {
+        // Inflation from CPI index (Annualized YoY %)
+        if (result[i].cpiIndex && result[i - 12].cpiIndex) {
+            result[i].cpiInflation = ((result[i].cpiIndex / result[i - 12].cpiIndex) - 1) * 100;
+        } else {
+            result[i].cpiInflation = 0;
         }
-        if (result[i].inflationExpectations && result[i - 1].inflationExpectations) {
-            result[i].inflation_change = (result[i].inflationExpectations / result[i - 1].inflationExpectations) - 1;
+
+        // GDP Growth from GDP index (Annualized YoY %)
+        if (result[i].gdpIndex && result[i - 12].gdpIndex) {
+            result[i].gdpGrowth = ((result[i].gdpIndex / result[i - 12].gdpIndex) - 1) * 100;
+        } else {
+            result[i].gdpGrowth = 0;
         }
     }
-    // Remap back to original keys for detector
+
+    // Set defaults and calculate real rate
     result.forEach(d => {
-        if (d.growth_change !== undefined) d.growth = d.growth_change;
-        if (d.inflation_change !== undefined) d.inflationExpectations = d.inflation_change;
+        if (d.cpiInflation === undefined) d.cpiInflation = 0;
+        if (d.gdpGrowth === undefined) d.gdpGrowth = 0;
+        d.realRate = (d.repoRate || 0) - d.cpiInflation;
     });
 
-    // Calculate Realized Volatility from SP500 if missing
+    // Calculate SP500 realized vol
     for (let i = 12; i < result.length; i++) {
         const window = result.slice(i - 12 + 1, i + 1);
         const returns = [];
@@ -176,17 +169,24 @@ async function run() {
         if (returns.length > 0) {
             const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
             const variance = returns.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / returns.length;
-            const stdDev = Math.sqrt(variance) * Math.sqrt(12); // Annualized
-            if (!result[i].volatility) result[i].volatility = stdDev;
+            result[i].volatility = Math.sqrt(variance) * Math.sqrt(12) * 100; // Annualized %
         }
     }
 
-    // Ensure output directory exists
     const outDir = path.dirname(OUTPUT_FILE);
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(result, null, 2));
     console.log(`Successfully created ${OUTPUT_FILE} with ${result.length} months.`);
+
+    if (result.length > 0) {
+        const latest = result[result.length - 1];
+        console.log(`Latest Corrected (${latest.date}):`);
+        console.log(`  Fed Funds: ${latest.repoRate}%`);
+        console.log(`  Inflation (YoY): ${latest.cpiInflation.toFixed(2)}%`);
+        console.log(`  Real Rate: ${latest.realRate.toFixed(2)}%`);
+        console.log(`  GDP Growth (YoY): ${latest.gdpGrowth.toFixed(2)}%`);
+    }
 }
 
 run();

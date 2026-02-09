@@ -17,9 +17,9 @@ export const REGIMES = {
         allocationBands: {
             EQUITY: { min: 0.50, max: 0.65, target: 0.575 },
             HYBRID: { min: 0.10, max: 0.15, target: 0.125 },
-            DEBT_LONG: { min: 0.10, max: 0.25, target: 0.15 },
-            DEBT_MEDIUM: { min: 0.05, max: 0.15, target: 0.10 },
-            DEBT_SHORT: { min: 0.02, max: 0.08, target: 0.05 },
+            DEBT_LONG: { min: 0.00, max: 0.25, target: 0.15 },
+            DEBT_MEDIUM: { min: 0.05, max: 0.25, target: 0.10 },
+            DEBT_SHORT: { min: 0.00, max: 0.10, target: 0.05 },
             GOLD: { min: 0.00, max: 0.05, target: 0.00 }
         },
         behavior: [
@@ -51,12 +51,12 @@ export const REGIMES = {
         dominantConstraint: 'Growth Slowdown with Policy Trust',
         idea: 'Falling inflation with credibility, Rates cut because growth slows, Bonds work again',
         allocationBands: {
-            EQUITY: { min: 0.45, max: 0.55, target: 0.50 },
-            HYBRID: { min: 0.10, max: 0.15, target: 0.125 },
-            DEBT_LONG: { min: 0.15, max: 0.30, target: 0.20 },
-            DEBT_MEDIUM: { min: 0.10, max: 0.20, target: 0.125 },
+            EQUITY: { min: 0.45, max: 0.65, target: 0.50 },
+            HYBRID: { min: 0.05, max: 0.20, target: 0.125 },
+            DEBT_LONG: { min: 0.00, max: 0.30, target: 0.20 },
+            DEBT_MEDIUM: { min: 0.10, max: 0.30, target: 0.125 },
             DEBT_SHORT: { min: 0.02, max: 0.08, target: 0.05 },
-            GOLD: { min: 0.00, max: 0.05, target: 0.00 }
+            GOLD: { min: 0.02, max: 0.06, target: 0.04 }
         },
         behavior: [
             'Neutral gold positioning',
@@ -89,12 +89,12 @@ export const REGIMES = {
         dominantConstraint: 'Debt and Repression',
         idea: 'Real rates capped, Bond hedge impaired, Policy constrained by debt',
         allocationBands: {
-            EQUITY: { min: 0.35, max: 0.45, target: 0.40 },
-            HYBRID: { min: 0.10, max: 0.15, target: 0.125 },
-            DEBT_LONG: { min: 0.00, max: 0.05, target: 0.00 },
-            DEBT_MEDIUM: { min: 0.10, max: 0.20, target: 0.15 },
-            DEBT_SHORT: { min: 0.20, max: 0.35, target: 0.225 },
-            GOLD: { min: 0.05, max: 0.20, target: 0.10 }
+            EQUITY: { min: 0.40, max: 0.50, target: 0.43 },
+            HYBRID: { min: 0.10, max: 0.12, target: 0.11 },
+            DEBT_LONG: { min: 0.00, max: 0.00, target: 0.00 },
+            DEBT_MEDIUM: { min: 0.15, max: 0.25, target: 0.19 },
+            DEBT_SHORT: { min: 0.15, max: 0.20, target: 0.17 },
+            GOLD: { min: 0.05, max: 0.15, target: 0.10 }
         },
         behavior: [
             'Gold band is wide enough to matter, narrow enough to avoid ideology',
@@ -133,7 +133,7 @@ export const REGIMES = {
             DEBT_LONG: { min: 0.00, max: 0.02, target: 0.00 },
             DEBT_MEDIUM: { min: 0.05, max: 0.15, target: 0.10 },
             DEBT_SHORT: { min: 0.25, max: 0.45, target: 0.35 },
-            GOLD: { min: 0.10, max: 0.25, target: 0.15 }
+            GOLD: { min: 0.10, max: 0.20, target: 0.15 }
         },
         behavior: [
             'Regime D must decay fast or it will freeze the portfolios',
@@ -313,6 +313,16 @@ export function getAssetClass(sebiSubCategory, fundName = '') {
         return 'GOLD';
     }
 
+    // 0. User Specific Overrides (Manual Rules)
+    // HDFC Dynamic Debt -> Explicitly Long Term (per User request)
+    if (name.includes('hdfc dynamic debt')) {
+        return 'DEBT_LONG';
+    }
+    // ICICI Prudential All Seasons -> Explicitly Medium Term (per User request "medium + long", Medium is safer base)
+    if (name.includes('icici prudential all seasons')) {
+        return 'DEBT_MEDIUM';
+    }
+
     // 2. Hybrid Funds (All variations)
     if (sc.includes('hybrid') || sc.includes('balanced') || sc.includes('arbitrage') || sc.includes('equity savings') ||
         sc.includes('asset allocation') || sc.includes('multi asset') || sc.includes('advantage') ||
@@ -321,31 +331,35 @@ export function getAssetClass(sebiSubCategory, fundName = '') {
         return 'HYBRID';
     }
 
-    // 3. Debt - Short Term / Cash Equivalents (Strictly restricted to < 1 year duration)
+    // 3. Debt - Short Duration / Cash Equivalents (Duration < 1-3 years)
     if (sc.includes('liquid') || sc.includes('overnight') || sc.includes('ultra short') || sc.includes('low duration') ||
         sc.includes('money market') || sc.includes('treasury') || sc.includes('cash') || sc.includes('t-bill') ||
+        sc.includes('short duration') || sc.includes('short term') ||
         name.includes('liquid') || name.includes('overnight') || name.includes('money market') ||
         name.includes('ultra short') || name.includes('low duration') ||
-        name.includes('treasury') || name.includes('cash') || name.includes('t-bill')) {
+        name.includes('treasury') || name.includes('cash') || name.includes('t-bill') ||
+        name.includes('short duration') || name.includes('short term')) {
         return 'DEBT_SHORT';
     }
 
-    // 4. Debt - Long Term (Duration > 5-7 years)
-    if (sc.includes('long duration') || sc.includes('gilt') || sc.includes('medium to long') ||
-        name.includes('long duration') || name.includes('gilt') || name.includes('medium to long')) {
+    // 4. Debt - Long Term / Duration (Duration > 5-7 years)
+    // Removed 'dynamic bond' and 'medium to long' from here to classify them as DEBT_MEDIUM per user request
+    if (sc.includes('long duration') || sc.includes('gilt') ||
+        name.includes('long duration') || name.includes('gilt')) {
         return 'DEBT_LONG';
     }
 
-    // 5. Debt - Medium Term (Duration 1-5 years)
+    // 5. Debt - Medium Term (Duration 3-5 years)
     if (sc.includes('debt') || sc.includes('bond') || sc.includes('income') ||
         sc.includes('medium duration') || sc.includes('credit risk') ||
-        sc.includes('corporate bond') || sc.includes('banking') || sc.includes('psu') || sc.includes('dynamic bond') ||
+        sc.includes('corporate bond') || sc.includes('banking') || sc.includes('psu') ||
         sc.includes('government securities') || sc.includes('floater') || sc.includes('floating') ||
-        sc.includes('short duration') || sc.includes('short term') ||
+        sc.includes('dynamic bond') || sc.includes('medium to long') ||
         name.includes('bond') || name.includes('debt') || name.includes('income') ||
         name.includes('medium duration') || name.includes('corporate bond') ||
-        name.includes('banking') || name.includes('psu') || name.includes('dynamic bond') || name.includes('government securities') ||
-        name.includes('floating') || name.includes('floater') || name.includes('short duration') || name.includes('short term')) {
+        name.includes('banking') || name.includes('psu') || name.includes('government securities') ||
+        name.includes('floating') || name.includes('floater') ||
+        name.includes('dynamic bond') || name.includes('medium to long')) {
         return 'DEBT_MEDIUM';
     }
 

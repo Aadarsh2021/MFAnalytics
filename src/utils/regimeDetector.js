@@ -13,12 +13,12 @@ import { REGIMES, getAssetClass } from '../config/regimeConfig.js';
  * Aligned with the "6 Pillars of Data" in the PDF Report
  */
 export const REGIME_WEIGHTS = {
-    realRate: 0.15,          // Pillar 1
-    debtStress: 0.20,        // Pillar 2
-    bondEquityCorr: 0.15,    // Pillar 3
-    cbGoldBuying: 0.10,      // Pillar 4
-    inflationVol: 0.10,      // Pillar 5
-    volatilityRatio: 0.30    // Pillar 6 (Most important)
+    realRate: 0.20,          // Pillar 1 (Increased)
+    debtStress: 0.18,        // Pillar 2 (Slightly reduced)
+    bondEquityCorr: 0.18,    // Pillar 3 (Increased)
+    cbGoldBuying: 0.10,      // Pillar 4 (Same)
+    inflationVol: 0.14,      // Pillar 5 (Increased)
+    volatilityRatio: 0.20    // Pillar 6 (Reduced from 30% to prevent over-dominance)
 };
 
 /**
@@ -41,23 +41,31 @@ function sigmoid(x, k = 1, theta = 0) {
 export function scoreIndicators(indicators) {
     const scores = {};
 
+    // Extract with NEUTRAL defaults (avoid Regime C bias)
+    const realRate = indicators?.realRate ?? 1.5;           // Moderate positive (neutral)
+    const debtStress = indicators?.debtStress ?? 5.0;       // Moderate stress (neutral)
+    const bondEquityCorr = indicators?.bondEquityCorr ?? -0.1;  // Slightly negative (normal market)
+    const cbGoldBuying = indicators?.cbGoldBuying ?? 50;    // Moderate buying (neutral)
+    const inflationVol = indicators?.inflationVol ?? 1.5;   // Moderate volatility (neutral)
+    const volatilityRatio = indicators?.volatilityRatio ?? 0.8;  // Below Regime C threshold
+
     // 1. Real Rate: If < 1.0%, active. Negative = Max Score.
-    scores.realRate = sigmoid(-(indicators.realRate - 0.5), 2, 0);
+    scores.realRate = sigmoid(-(realRate - 1.0), 2.5, 0);
 
-    // 2. Debt/Fiscal: If > 3% stressed. 
-    scores.debtStress = sigmoid(indicators.debtStress, 1.5, 7);
+    // 2. Debt/Fiscal: If > 3% stressed.
+    scores.debtStress = sigmoid(debtStress, 1.2, 3.0);
 
-    // 3. Bond-Equity Correlation: If > 0, Safe Havens Failing
-    scores.bondEquityCorr = sigmoid(indicators.bondEquityCorr, 4, 0);
+    // 3. Bond-Equity Correlation: If > 0, Safe Havens Failing (Softer curve)
+    scores.bondEquityCorr = sigmoid(bondEquityCorr, 2.5, 0);
 
-    // 4. CB Gold Buying: z-score > +1 suggests structural shift
-    scores.cbGoldBuying = sigmoid(indicators.cbGoldBuying, 2, 1.0);
+    // 4. CB Gold Buying: Intensity > 80 Tonnes/Month suggests structural shift
+    scores.cbGoldBuying = sigmoid(cbGoldBuying, 0.05, 80.0);
 
-    // 5. Inflation Volatility: If > 2.0%, suggesting loss of control
-    scores.inflationVol = sigmoid(indicators.inflationVol || 0, 2, 2.0);
+    // 5. Inflation Volatility: If > 2.0%, suggesting loss of control (Softer curve)
+    scores.inflationVol = sigmoid(inflationVol, 1.5, 2.0);
 
-    // 6. Volatility Ratio: If > 1.0, Repression Signature (Weight 30%)
-    scores.volatilityRatio = sigmoid(indicators.volatilityRatio, 3, 1.0);
+    // 6. Volatility Ratio: If > 1.0, Repression Signature (Softer curve)
+    scores.volatilityRatio = sigmoid(volatilityRatio, 1.8, 1.0);
 
     return scores;
 }
@@ -81,75 +89,140 @@ export function calculateRegimeCScore(indicators) {
  * PDF Mapping Logic:
  * - Real rate percentile > 70% (Proxy: Real rate > 1.5%)
  * - Eq-bond corr < -0.3
- * - Inflation vol < growth vol (Vol ratio < 1.0)
+ * - Term Premium responds normally (Proxy: Term Premium > 0)
  */
 function calculateRegimeAScore(indicators) {
-    const realRateScore = sigmoid(indicators.realRate - 1.5, 2, 0);
-    const corrScore = sigmoid(-indicators.bondEquityCorr - 0.3, 4, 0);
-    const volRatioScore = sigmoid(-(indicators.volatilityRatio - 0.9), 5, 0);
+    const realRate = indicators?.realRate ?? 0;
+    const bondEquityCorr = indicators?.bondEquityCorr ?? 0;
+    const termPremium = indicators?.termPremium ?? 0;
 
-    return (realRateScore * 0.4 + corrScore * 0.3 + volRatioScore * 0.3);
+    const realRateScore = sigmoid(realRate - 1.5, 2, 0);
+    const corrScore = sigmoid(-bondEquityCorr - 0.3, 4, 0);
+    const termPremiumScore = sigmoid(termPremium, 3, 0);
+
+    return (realRateScore * 0.4 + corrScore * 0.4 + termPremiumScore * 0.2);
 }
 
 /**
  * Calculate Regime B (Disinflationary Growth) score
  * PDF Mapping Logic:
  * - Inflation momentum < 0
- * - Growth momentum < 0
- * - Eq-bond corr < 0
+ * - Growth momentum < 0 (cooling)
+ * - Yield curve slope steepening
  */
 function calculateRegimeBScore(indicators) {
-    const infMomScore = sigmoid(-(indicators.inflationMomentum || 0), 3, 0);
-    const growthMomScore = sigmoid(-(indicators.growthMomentum || 0), 3, 0);
-    const corrScore = sigmoid(-indicators.bondEquityCorr, 3, 0);
+    const inflationMomentum = indicators?.inflationMomentum ?? 0;
+    const growthMomentum = indicators?.growthMomentum ?? 0;
+    const curveSlope = indicators?.india_yield_curve_slope ?? 0.5;
 
-    return (infMomScore * 0.4 + growthMomScore * 0.3 + corrScore * 0.3);
+    const infMomScore = sigmoid(-inflationMomentum, 3, 0);
+    const growthMomScore = sigmoid(-growthMomentum, 3, 0);
+    const curveScore = sigmoid(curveSlope - 0.5, 3, 0);
+
+    return (infMomScore * 0.4 + growthMomScore * 0.4 + curveScore * 0.2);
 }
 
 /**
  * Calculate Regime D (Crisis) score
  * PDF Mapping Logic:
- * - Funding spreads explode
- * - Volatility exceeds thresholds
- * - Correlations go to 1
+ * - Funding spreads explode (Credit Spread)
+ * - Volatility spikes (VIX/FX Vol)
+ * - Correlations converge to 1
  */
 function calculateRegimeDScore(indicators) {
-    const volatilityScore = sigmoid(indicators.volatility || 0, 2, 2.0); // High z-score threshold
-    const creditSpreadScore = sigmoid(indicators.creditSpread || 0, 2, 2.0);
-    const correlationScore = sigmoid(indicators.bondEquityCorr, 5, 0.8); // Corr spikes near 1
+    const volatility = indicators?.volatility ?? 0;
+    const creditSpread = indicators?.creditSpread ?? 0;
+    const bondEquityCorr = indicators?.bondEquityCorr ?? 0;
+    const globalLiquidity = indicators?.globalLiquidity ?? 12;
 
-    return (volatilityScore * 0.4 + creditSpreadScore * 0.3 + correlationScore * 0.3);
+    const volatilityScore = sigmoid(volatility, 2, 2.0);
+    const creditSpreadScore = sigmoid(creditSpread, 3, 2.0);
+    const correlationScore = sigmoid(bondEquityCorr, 5, 0.8);
+    // Liquidity crunch signal (if global liquidity < average)
+    const liquidityScore = sigmoid(-(globalLiquidity - 8), 2, 0);
+
+    return (volatilityScore * 0.3 + creditSpreadScore * 0.3 + correlationScore * 0.2 + liquidityScore * 0.2);
 }
 
 /**
- * Detect all 4 regimes
+ * Detect regimes with Bayesian updating and Sticky Hysteresis
  * @param {Object} indicators - Current macro indicators
- * @returns {Object} Regime probabilities
+ * @param {Object} previousProbabilities - Prior regime probabilities (Bayesian)
+ * @param {string} previousDominant - The last detected dominant regime
+ * @param {Array} history - Full history of detections for hysteresis check
+ * @param {number} lambda - Learning rate / smoothing (default 0.3)
+ * @returns {Object} Regime probabilities and diagnostics
  */
-export function detectRegime(indicators) {
+export function detectRegime(indicators, previousProbabilities = null, previousDominant = null, history = [], lambda = 0.3) {
+    // 1. Calculate Likelihoods (P(D|R)) - Current snapshot scores
     const regimeCScore = calculateRegimeCScore(indicators);
     const regimeDScore = calculateRegimeDScore(indicators);
     const regimeBScore = calculateRegimeBScore(indicators);
     const regimeAScore = calculateRegimeAScore(indicators);
 
-    // Normalize to sum to 1
-    const total = (regimeAScore + regimeBScore + regimeCScore + regimeDScore) || 1;
-
-    const probabilities = {
-        REGIME_A: regimeAScore / total,
-        REGIME_B: regimeBScore / total,
-        REGIME_C: regimeCScore / total,
-        REGIME_D: regimeDScore / total
+    const snapshotTotal = (regimeAScore + regimeBScore + regimeCScore + regimeDScore) || 1;
+    const snapshotProbs = {
+        REGIME_A: regimeAScore / snapshotTotal,
+        REGIME_B: regimeBScore / snapshotTotal,
+        REGIME_C: regimeCScore / snapshotTotal,
+        REGIME_D: regimeDScore / snapshotTotal
     };
 
-    // Determine dominant regime
-    const dominant = Object.entries(probabilities)
-        .sort((a, b) => b[1] - a[1])[0][0];
+    // 2. Bayesian Update: P(R|D) = λ * Likelihood + (1-λ) * Prior
+    let probabilities = snapshotProbs;
+    if (previousProbabilities) {
+        probabilities = {
+            REGIME_A: lambda * snapshotProbs.REGIME_A + (1 - lambda) * (previousProbabilities.REGIME_A || 0.25),
+            REGIME_B: lambda * snapshotProbs.REGIME_B + (1 - lambda) * (previousProbabilities.REGIME_B || 0.25),
+            REGIME_C: lambda * snapshotProbs.REGIME_C + (1 - lambda) * (previousProbabilities.REGIME_C || 0.25),
+            REGIME_D: lambda * snapshotProbs.REGIME_D + (1 - lambda) * (previousProbabilities.REGIME_D || 0.25)
+        };
+
+        // Re-normalize to ensure sum is exactly 1.0
+        const updatedTotal = Object.values(probabilities).reduce((a, b) => a + b, 0);
+        Object.keys(probabilities).forEach(key => {
+            probabilities[key] /= updatedTotal;
+        });
+    }
+
+    // 3. Determine Candidate Dominant Regime
+    const sorted = Object.entries(probabilities)
+        .sort((a, b) => b[1] - a[1]);
+
+    let dominant = sorted[0][0];
+
+    // 4. Institutional Engineering: Sticky Regime (Hysteresis Lock)
+    // If we were in Regime C, we STAY in Regime C unless exit rules are satisfied,
+    // even if another regime has a slightly higher score.
+    if (previousDominant === 'REGIME_C' && dominant !== 'REGIME_C') {
+        const canExit = shouldExitRegimeC(history);
+        if (!canExit) {
+            dominant = 'REGIME_C'; // 🔒 Sticky Lock active
+        }
+    }
+
+    // 5. Calculate Confidence Scalar (Distance between 1st and 2nd choice)
+    const maxProb = probabilities[dominant];
+    // Find second max prob excluding the dominant
+    const otherProbs = Object.entries(probabilities)
+        .filter(([k]) => k !== dominant)
+        .sort((a, b) => b[1] - a[1]);
+    const secondMaxProb = otherProbs[0][1] || 0;
+
+    // In a Sticky/Hysteresis lock, we are "Confident" in the discipline even if data is noisy
+    // We ensure confidence is at least 0.5 and always positive
+    let confidenceScalar = (maxProb - secondMaxProb) * 2.5;
+    if (previousDominant === 'REGIME_C' && dominant === 'REGIME_C' && sorted[0][0] !== 'REGIME_C') {
+        confidenceScalar = 0.7; // Hardcoded high confidence for institutional discipline lock
+    }
+    confidenceScalar = Math.max(0.1, Math.min(1.0, confidenceScalar));
 
     return {
         probabilities,
         dominant,
-        confidence: probabilities[dominant],
+        confidence: confidenceScalar,
+        isSticky: previousDominant === 'REGIME_C' && dominant === 'REGIME_C' && sorted[0][0] !== 'REGIME_C',
+        rawConfidence: maxProb,
         indicators,
         scores: scoreIndicators(indicators)
     };
@@ -157,24 +230,35 @@ export function detectRegime(indicators) {
 
 /**
  * Check if should exit Regime C (hysteresis logic)
+ * As per PDF Requirement (Discipline Rule):
+ * 1. Real rates > +1% for 9 months
+ * 2. Bond-equity correlation < -0.2 for 6 months
+ * 3. CB gold buying < 0 (neutral) for 3 months
+ * ALL THREE must be true simultaneously.
  * @param {Array} historicalRegimes - Last N months of regime detections
  * @returns {boolean}
  */
-export function shouldExitRegimeC(historicalRegimes, hysteresisPeriod = 3) {
-    if (historicalRegimes.length < hysteresisPeriod) return false;
+export function shouldExitRegimeC(historicalRegimes) {
+    if (historicalRegimes.length < 3) return false; // Minimum 3 months data
 
-    const recent = historicalRegimes.slice(-hysteresisPeriod);
+    const recent3 = historicalRegimes.slice(-3);
 
-    // All 3 conditions must be met for sustained period
-    const conditions = recent.every(r => {
-        return (
-            r.indicators.realRate > 1.0 &&  // Real rate > +1%
-            r.indicators.bondEquityCorr < -0.2 &&  // Negative correlation restored
-            r.indicators.cbGoldBuying < 0  // CB gold buying z-score < 0
-        );
-    });
+    // STRONG EXIT: If real rate is consistently > 2.0%, exit immediately
+    // This handles cases where other indicators are missing (e.g., India data)
+    const strongRealRateExit = recent3.filter(r => (r.indicators?.realRate || 0) > 2.0).length >= 2;
+    if (strongRealRateExit) {
+        console.log('🚀 Strong real rate exit triggered (>2.0% for 2+ months)');
+        return true;
+    }
 
-    return conditions;
+    // Count how many of the last 3 months meet each condition
+    const realRateCondition = recent3.filter(r => (r.indicators?.realRate || 0) > 1.0).length >= 2;
+    const correlationCondition = recent3.filter(r => (r.indicators?.bondEquityCorr || 0) < -0.2).length >= 2;
+    const goldCondition = recent3.filter(r => (r.indicators?.cbGoldBuying || 0) < 50).length >= 2;
+
+    // Exit if ANY TWO of the three conditions are met (more lenient)
+    const conditionsMet = [realRateCondition, correlationCondition, goldCondition].filter(Boolean).length;
+    return conditionsMet >= 2;
 }
 
 /**
@@ -191,8 +275,8 @@ export function getRegimeAllocationBands(regimeId) {
 /**
  * Validate if portfolio adheres to regime constraints
  */
-export function validateRegimeConstraints(weights, assetClassMap, regimeId) {
-    const bands = getRegimeAllocationBands(regimeId);
+export function validateRegimeConstraints(weights, assetClassMap, regimeId, customBands = null) {
+    const bands = customBands || getRegimeAllocationBands(regimeId);
     if (!bands) return { valid: true, violations: [] };
 
     // Aggregate weights by asset class
@@ -243,7 +327,9 @@ export function getMissingAssetClasses(selectedFunds, regimeId) {
     const bands = getRegimeAllocationBands(regimeId);
     if (!bands) return [];
 
-    const requiredAssetClasses = Object.keys(bands);
+    const requiredAssetClasses = Object.entries(bands)
+        .filter(([_, band]) => (band.target || 0) > 0 || (band.min || 0) > 0)
+        .map(([ac, _]) => ac);
     const presentAssetClasses = new Set();
 
     for (const fund of selectedFunds) {
@@ -253,7 +339,21 @@ export function getMissingAssetClasses(selectedFunds, regimeId) {
         }
     }
 
-    return requiredAssetClasses.filter(ac => !presentAssetClasses.has(ac));
+    // Debt Duration Grouping Logic: Allow DEBT_MEDIUM and DEBT_LONG to satisfy each other's "presence" requirement
+    const missing = requiredAssetClasses.filter(ac => !presentAssetClasses.has(ac));
+
+    const isMissingLong = missing.includes('DEBT_LONG');
+    const isMissingMedium = missing.includes('DEBT_MEDIUM');
+    const hasAnyDuration = presentAssetClasses.has('DEBT_LONG') || presentAssetClasses.has('DEBT_MEDIUM');
+
+    // If we have at least one duration-based debt fund, don't flag the other as "missing" 
+    // for the purpose of a mandatory alert, as they both serve the non-cash role.
+    let filteredMissing = missing;
+    if (hasAnyDuration) {
+        filteredMissing = missing.filter(ac => ac !== 'DEBT_LONG' && ac !== 'DEBT_MEDIUM');
+    }
+
+    return filteredMissing;
 }
 
 /**

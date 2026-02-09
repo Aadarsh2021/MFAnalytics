@@ -31,10 +31,10 @@ export default function InsightsPanel({ insights }) {
     }, {})
 
     return (
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-                <Lightbulb className="text-yellow-600" size={24} />
-                <h3 className="text-xl font-bold text-gray-800">Insights & Recommendations</h3>
+        <div className="bg-white rounded-xl border border-slate-100 p-4">
+            <div className="flex items-center gap-2 mb-3">
+                <Lightbulb className="text-yellow-600" size={20} />
+                <h3 className="text-lg font-black text-gray-800 tracking-tight">INSIGHTS & RECOMMENDATIONS</h3>
             </div>
 
             <div className="space-y-4">
@@ -45,7 +45,7 @@ export default function InsightsPanel({ insights }) {
                             {categoryInsights.map((insight, idx) => (
                                 <div
                                     key={idx}
-                                    className={`${getInsightBg(insight.type)} border-2 rounded-lg p-4`}
+                                    className={`${getInsightBg(insight.type)} border rounded-lg p-3`}
                                 >
                                     <div className="flex items-start gap-3">
                                         <div className="mt-0.5">{getInsightIcon(insight.type)}</div>

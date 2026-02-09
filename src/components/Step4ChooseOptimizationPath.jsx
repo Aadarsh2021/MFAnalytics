@@ -1,10 +1,17 @@
 import { useState } from 'react'
 import { TrendingUp, Target, Zap, Shield, BarChart3, AlertTriangle } from 'lucide-react'
 
-export default function Step4ChooseOptimizationPath({ goToStep, setOptimizationPath }) {
+export default function Step4ChooseOptimizationPath({ goToStep, setOptimizationPath, selectedFunds }) {
     const [selectedPath, setSelectedPath] = useState(null)
 
+    // Check if any fund has market cap value
+    const hasMarketCap = selectedFunds && selectedFunds.some(f => f.marketCap && parseFloat(f.marketCap) > 0)
+
     const handleSelectPath = (path) => {
+        if (path === 'regime' && hasMarketCap) {
+            return // Prevent selection if disabled
+        }
+
         setSelectedPath(path)
         setOptimizationPath(path)
 
@@ -21,7 +28,7 @@ export default function Step4ChooseOptimizationPath({ goToStep, setOptimizationP
             <div className="bg-white rounded-xl shadow-lg p-8 border border-slate-100">
                 <div className="text-center mb-8">
                     <h2 className="text-3xl font-black text-gray-800 mb-2">
-                        Choose Your Optimization Approach
+                        Step 4: Optimization Choice
                     </h2>
                     <p className="text-gray-500 max-w-2xl mx-auto">
                         Select how you want to optimize your portfolio. Each approach has different strengths and constraints.
@@ -30,21 +37,27 @@ export default function Step4ChooseOptimizationPath({ goToStep, setOptimizationP
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Regime + Views Path */}
-                    <PathCard
-                        title="Regime + Views"
-                        subtitle="Macro-Driven Allocation"
-                        icon={<TrendingUp size={32} />}
-                        color="indigo"
-                        selected={selectedPath === 'regime'}
-                        onSelect={() => handleSelectPath('regime')}
-                        features={[
-                            { icon: <Shield />, text: 'Strict allocation constraints based on market regime' },
-                            { icon: <BarChart3 />, text: 'Historical backtesting through 2002-2025' },
-                            { icon: <Target />, text: '4 defined regimes with proven bands' },
-                            { icon: <AlertTriangle />, text: 'Asset class validation & alerts' }
-                        ]}
-                        description="Best for: Macro-aware investors who want regime-based risk management"
-                    />
+                    <div className={hasMarketCap ? "opacity-50 cursor-not-allowed grayscale" : ""}>
+                        <PathCard
+                            title="Regime + Views"
+                            subtitle="Macro-Driven Allocation"
+                            icon={<TrendingUp size={32} />}
+                            color="indigo"
+                            selected={selectedPath === 'regime'}
+                            disabled={hasMarketCap}
+                            onSelect={() => !hasMarketCap && handleSelectPath('regime')}
+                            features={[
+                                { icon: <Shield />, text: 'Strict allocation constraints based on market regime' },
+                                { icon: <BarChart3 />, text: 'Historical backtesting through 2001-2025' },
+                                { icon: <Target />, text: '4 defined regimes with proven bands' },
+                                { icon: <AlertTriangle />, text: 'Asset class validation & alerts' }
+                            ]}
+                            description={hasMarketCap
+                                ? "DISABLED: Market Cap values were entered in Step 1. Regime optimization requires equal or prior-less weights."
+                                : "Best for: Macro-aware investors who want regime-based risk management"
+                            }
+                        />
+                    </div>
 
                     {/* Black-Litterman + Views Path */}
                     <PathCard
@@ -83,7 +96,7 @@ export default function Step4ChooseOptimizationPath({ goToStep, setOptimizationP
     )
 }
 
-function PathCard({ title, subtitle, icon, color, selected, onSelect, features, description }) {
+function PathCard({ title, subtitle, icon, color, selected, onSelect, features, description, disabled }) {
     const colors = {
         indigo: {
             bg: 'bg-indigo-50',
@@ -92,7 +105,8 @@ function PathCard({ title, subtitle, icon, color, selected, onSelect, features, 
             iconBg: 'bg-indigo-100',
             iconText: 'text-indigo-600',
             button: 'bg-indigo-600 hover:bg-indigo-700',
-            selectedButton: 'bg-indigo-700'
+            selectedButton: 'bg-indigo-700',
+            disabledButton: 'bg-gray-400 cursor-not-allowed'
         },
         emerald: {
             bg: 'bg-emerald-50',
@@ -101,7 +115,8 @@ function PathCard({ title, subtitle, icon, color, selected, onSelect, features, 
             iconBg: 'bg-emerald-100',
             iconText: 'text-emerald-600',
             button: 'bg-emerald-600 hover:bg-emerald-700',
-            selectedButton: 'bg-emerald-700'
+            selectedButton: 'bg-emerald-700',
+            disabledButton: 'bg-gray-400 cursor-not-allowed'
         }
     }
 
@@ -110,9 +125,9 @@ function PathCard({ title, subtitle, icon, color, selected, onSelect, features, 
     return (
         <div
             className={`relative border-2 rounded-2xl p-6 transition-all duration-300 cursor-pointer hover:shadow-xl ${selected
-                    ? `${theme.selectedBorder} shadow-lg`
-                    : `${theme.border} hover:${theme.selectedBorder}`
-                }`}
+                ? `${theme.selectedBorder} shadow-lg`
+                : `${theme.border} hover:${theme.selectedBorder}`
+                } ${disabled ? 'pointer-events-none' : ''}`}
             onClick={onSelect}
         >
             {selected && (
@@ -148,14 +163,15 @@ function PathCard({ title, subtitle, icon, color, selected, onSelect, features, 
             </p>
 
             <button
+                disabled={disabled}
                 onClick={(e) => {
                     e.stopPropagation()
                     onSelect()
                 }}
-                className={`w-full py-3 rounded-xl font-bold text-white transition-all ${selected ? theme.selectedButton : theme.button
+                className={`w-full py-3 rounded-xl font-bold text-white transition-all ${disabled ? theme.disabledButton : (selected ? theme.selectedButton : theme.button)
                     }`}
             >
-                {selected ? 'Selected ✓' : 'Select This Path'}
+                {disabled ? 'Path Disabled' : (selected ? 'Selected ✓' : 'Select This Path')}
             </button>
         </div>
     )

@@ -33,6 +33,7 @@ export function calculateAssetClassWeights(weights, fundAssetMap) {
     const assetClassWeights = {
         EQUITY: 0,
         HYBRID: 0,
+        DEBT_LONG: 0,
         DEBT_MEDIUM: 0,
         DEBT_SHORT: 0,
         GOLD: 0

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import ErrorBoundary from './components/ErrorBoundary'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import OptimizerApp from './pages/OptimizerApp'
@@ -16,7 +17,9 @@ function App() {
                         path="/optimizer"
                         element={
                             <ProtectedRoute>
-                                <OptimizerApp />
+                                <ErrorBoundary>
+                                    <OptimizerApp />
+                                </ErrorBoundary>
                             </ProtectedRoute>
                         }
                     />

@@ -1,20 +1,26 @@
 import { CheckCircle, Circle, Clock, LayoutDashboard, ChevronLeft, ChevronRight } from 'lucide-react'
 import HistorySidebar from './HistorySidebar'
 
-const steps = [
-    { num: 1, title: 'Search Funds', desc: 'Find mutual funds', icon: '🔍' },
-    { num: 2, title: 'Fetch Data', desc: 'Get NAV history', icon: '📊' },
-    { num: 3, title: 'MVP Analysis', desc: '3 optimization methods', icon: '⚖️' },
-    { num: 4, title: 'Set Views', desc: 'Market expectations', icon: '💭' },
-    { num: 5, title: 'Black-Litterman', desc: 'Advanced optimization', icon: '🎯' },
-    { num: 6, title: 'Monte Carlo Simulation', desc: 'Probabilistic modeling', icon: '🎲' },
-    { num: 7, title: 'Final Report', desc: 'Download results', icon: '📄' }
-]
+export default function Sidebar({ currentStep, goToStep, onLoadHistory, isOpen, toggleSidebar, optimizationPath }) {
+    const steps = [
+        { num: 1, title: 'Funds Selection', desc: 'Find mutual funds', icon: '🔍' },
+        { num: 2, title: 'Data Fetching', desc: 'Get NAV history', icon: '📊' },
+        { num: 3, title: 'MVP Analysis', desc: 'Baseline optimization', icon: '⚖️' },
+        { num: 4, title: 'Optimization Choice', desc: 'Regime or Black-Litterman', icon: '💭' },
+        {
+            num: 5,
+            title: optimizationPath === 'regime' ? 'Regime Optimization' : (optimizationPath === 'bl' ? 'BL Optimization' : 'Portfolio Optimization'),
+            desc: optimizationPath === 'regime' ? 'Macro-aware allocation' : (optimizationPath === 'bl' ? 'Market-implied returns' : 'Advanced modeling'),
+            icon: '🎯'
+        },
+        { num: 6, title: 'Monte Carlo', desc: 'Risk simulation', icon: '🎲' },
+        { num: 7, title: 'Final Results', desc: 'Summaries & Reports', icon: '📄' }
+    ]
 
-export default function Sidebar({ currentStep, goToStep, onLoadHistory, isOpen, toggleSidebar }) {
     const getStepStatus = (stepNum) => {
-        if (stepNum < currentStep) return 'completed'
-        if (stepNum === currentStep) return 'active'
+        const currentNum = parseInt(currentStep)
+        if (currentNum > stepNum) return 'completed'
+        if (currentNum === stepNum) return 'active'
         return 'pending'
     }
 

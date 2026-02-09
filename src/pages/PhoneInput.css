@@ -1,0 +1,77 @@
+/* Custom styling for react-phone-number-input */
+.phone-input-custom {
+  width: 100%;
+}
+
+.phone-input-custom .PhoneInputInput {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  border: 2px solid #e2e8f0;
+  background-color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.phone-input-custom .PhoneInputInput:hover {
+  border-color: #cbd5e1;
+}
+
+.phone-input-custom .PhoneInputInput:focus {
+  border-color: #2563eb;
+  background-color: white;
+}
+
+.phone-input-custom .PhoneInputInput::placeholder {
+  color: #94a3b8;
+}
+
+.phone-input-custom .PhoneInputCountry {
+  margin-right: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  background-color: #f1f5f9;
+  transition: all 0.2s;
+}
+
+.phone-input-custom .PhoneInputCountry:hover {
+  background-color: #e2e8f0;
+}
+
+.phone-input-custom .PhoneInputCountrySelect {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f172a;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.phone-input-custom .PhoneInputCountryIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+}
+
+.phone-input-custom .PhoneInputCountrySelectArrow {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: 0.5rem;
+  opacity: 0.5;
+}
+
+/* Error state */
+.phone-input-error .PhoneInputInput {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+
+.phone-input-error .PhoneInputInput:focus {
+  border-color: #ef4444;
+}

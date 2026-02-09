@@ -1,5 +1,6 @@
 import { getRegime } from '../config/regimeConfig';
 import { getAssetClassName, getAssetClassColor } from '../utils/assetClassUtils';
+import { PieChart, BarChart3, AlertTriangle } from 'lucide-react';
 
 /**
  * Regime Allocation Chart Component
@@ -22,9 +23,10 @@ export default function RegimeAllocationChart({ regimeId, assetClassWeights }) {
     const assetClasses = Object.keys(regime.allocationBands);
 
     return (
-        <div className="bg-white rounded-lg p-6 border-2 border-indigo-200">
-            <h4 className="text-lg font-bold text-gray-800 mb-4">
-                📊 Allocation Bands vs Current Portfolio
+        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-xl">
+            <h4 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
+                <PieChart size={24} className="text-indigo-600" />
+                Allocation vs Bands
             </h4>
 
             <div className="space-y-4">
@@ -41,22 +43,23 @@ export default function RegimeAllocationChart({ regimeId, assetClassWeights }) {
                             <div className="flex items-center justify-between">
                                 <span className="text-sm font-semibold text-gray-700">{assetName}</span>
                                 <div className="flex items-center gap-2">
-                                    <span className={`text-sm font-bold ${isViolation ? 'text-red-600' : 'text-green-600'}`}>
+                                    <span className={`text-sm font-bold ${isViolation ? 'text-rose-600' : 'text-emerald-600'}`}>
                                         {(currentWeight * 100).toFixed(1)}%
                                     </span>
                                     {isViolation && (
-                                        <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded font-semibold">
-                                            ⚠️ Violation
-                                        </span>
+                                        <div className="flex items-center gap-1 bg-rose-50 text-rose-700 px-2 py-0.5 rounded-full text-[10px] font-black uppercase">
+                                            <AlertTriangle size={10} />
+                                            Violation
+                                        </div>
                                     )}
                                 </div>
                             </div>
 
                             {/* Visual Bar */}
-                            <div className="relative h-8 bg-gray-100 rounded-lg overflow-hidden">
+                            <div className="relative h-10 bg-slate-50 border border-slate-100 rounded-xl overflow-hidden shadow-inner">
                                 {/* Min-Max Band (Background) */}
                                 <div
-                                    className="absolute h-full opacity-30"
+                                    className="absolute h-full opacity-10"
                                     style={{
                                         left: `${band.min * 100}%`,
                                         width: `${(band.max - band.min) * 100}%`,
@@ -66,7 +69,7 @@ export default function RegimeAllocationChart({ regimeId, assetClassWeights }) {
 
                                 {/* Target Line */}
                                 <div
-                                    className="absolute h-full w-0.5 bg-gray-800 z-10"
+                                    className="absolute h-full w-0.5 bg-slate-900/10 z-10"
                                     style={{
                                         left: `${band.target * 100}%`
                                     }}
@@ -75,36 +78,33 @@ export default function RegimeAllocationChart({ regimeId, assetClassWeights }) {
                                 {/* Current Weight Bar */}
                                 {currentWeight > 0 && (
                                     <div
-                                        className={`absolute h-full ${isViolation ? 'opacity-70' : 'opacity-90'}`}
+                                        className={`absolute h-full flex items-center px-2 transition-all duration-700 ease-out ${isViolation ? 'bg-rose-500' : 'bg-indigo-600'}`}
                                         style={{
-                                            width: `${currentWeight * 100}%`,
-                                            backgroundColor: isViolation ? '#EF4444' : color
+                                            width: `${currentWeight * 100}%`
                                         }}
-                                    />
+                                    >
+                                        <div className="h-0.5 bg-white/20 w-full rounded-full"></div>
+                                    </div>
                                 )}
 
                                 {/* Labels */}
-                                <div className="absolute inset-0 flex items-center justify-between px-2 text-xs font-bold text-gray-700">
+                                <div className="absolute inset-0 flex items-center justify-between px-3 text-[9px] font-black text-slate-400 uppercase tracking-tighter">
                                     <span>{(band.min * 100).toFixed(0)}%</span>
-                                    <span className="bg-white bg-opacity-80 px-1 rounded">
-                                        Target: {(band.target * 100).toFixed(1)}%
+                                    <span className="text-slate-900 bg-white/10 backdrop-blur-sm px-1.5 py-0.5 rounded border border-slate-900/5">
+                                        Target: {(band.target * 100).toFixed(0)}%
                                     </span>
                                     <span>{(band.max * 100).toFixed(0)}%</span>
                                 </div>
                             </div>
 
                             {/* Legend */}
-                            <div className="flex items-center gap-4 text-xs text-gray-600">
-                                <div className="flex items-center gap-1">
-                                    <div className="w-3 h-3 rounded opacity-30" style={{ backgroundColor: color }} />
-                                    <span>Allowed Band</span>
+                            <div className="flex items-center gap-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-2 h-2 rounded-full opacity-20" style={{ backgroundColor: color }} />
+                                    <span>Allowed Range</span>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                    <div className="w-0.5 h-3 bg-gray-800" />
-                                    <span>Target</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <div className="w-3 h-3 rounded" style={{ backgroundColor: isViolation ? '#EF4444' : color }} />
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-2 h-2 rounded-full bg-indigo-600" />
                                     <span>Current</span>
                                 </div>
                             </div>

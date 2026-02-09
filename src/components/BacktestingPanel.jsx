@@ -16,12 +16,25 @@ export default function BacktestingPanel({
     // Strategies configuration
     const strategies = useMemo(() => {
         const strats = []
-        if (mvpResults?.sqp) strats.push({ id: 'sqp', name: 'SQP Method', color: '#2563eb', weights: mvpResults.sqp.weights })
-        if (mvpResults?.convex) strats.push({ id: 'convex', name: 'Convex Solver', color: '#16a34a', weights: mvpResults.convex.weights })
-        if (mvpResults?.critical) strats.push({ id: 'critical', name: 'Critical Line', color: '#9333ea', weights: mvpResults.critical.weights })
-        if (blResult) strats.push({ id: 'bl', name: 'Black-Litterman', color: '#db2777', weights: blResult.weights })
+        const currentCount = returns?.codes?.length || 0;
+
+        // Helper to check validity
+        const isValid = (weights) => weights && weights.length === currentCount;
+
+        if (mvpResults?.sqp && isValid(mvpResults.sqp.weights))
+            strats.push({ id: 'sqp', name: 'SQP Method', color: '#2563eb', weights: mvpResults.sqp.weights })
+
+        if (mvpResults?.convex && isValid(mvpResults.convex.weights))
+            strats.push({ id: 'convex', name: 'Convex Solver', color: '#16a34a', weights: mvpResults.convex.weights })
+
+        if (mvpResults?.critical && isValid(mvpResults.critical.weights))
+            strats.push({ id: 'critical', name: 'Critical Line', color: '#9333ea', weights: mvpResults.critical.weights })
+
+        if (blResult && isValid(blResult.weights))
+            strats.push({ id: 'bl', name: 'Black-Litterman', color: '#db2777', weights: blResult.weights })
+
         return strats
-    }, [mvpResults, blResult])
+    }, [mvpResults, blResult, returns])
 
     useEffect(() => {
         if (!returns || strategies.length === 0) return

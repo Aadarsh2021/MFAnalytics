@@ -21,7 +21,7 @@ import { REGIMES } from '../config/regimeConfig.js';
  * @param {string} endDate - Backtest end date
  * @returns {Object} Backtest results
  */
-export function backtestRegimePortfolio(selectedFunds, returns, macroData, startDate, endDate, initialInvestment = 100000) {
+export function backtestRegimePortfolio(selectedFunds, returns, macroData, startDate, endDate, rebalanceMode = 'annual', initialInvestment = 100000) {
     const results = {
         monthly: [],
         summary: {},
@@ -33,23 +33,34 @@ export function backtestRegimePortfolio(selectedFunds, returns, macroData, start
     const fundAssetMap = mapFundsToAssetClasses(selectedFunds);
 
     // Filter macro data to date range
+    // Helper to robustly parse start/end inputs which might be YYYY-MM-DD or DD-MM-YYYY
+    const parseInputDate = (d) => {
+        if (!d) return new Date();
+        if (d instanceof Date) return d;
+        // Check if DD-MM-YYYY
+        if (d.match(/^\d{2}-\d{2}-\d{4}$/)) {
+            const parts = d.split('-');
+            return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+        return new Date(d); // Assume YYYY-MM-DD or standard format
+    };
+
+    const sDate = parseInputDate(startDate);
+    const eDate = parseInputDate(endDate);
+
     const filteredMacro = macroData.filter(d => {
         const date = new Date(d.date);
-        return date >= new Date(startDate) && date <= new Date(endDate);
+        return date >= sDate && date <= eDate;
     });
 
     let cumulativeReturn = 1.0;
     let portfolioValue = initialInvestment;
-    // Initial weights calculation
-    let currentWeights = null;
-    let currentRegimeAllocation = null;
-    let previousRegime = null; // Fix: Initialize previousRegime
 
-    // Hysteresis State
-    let activeRegime = null;
-    let candidateRegime = null;
-    let candidateMonths = 0;
-    const HYSTERESIS_THRESHOLD = 3;
+    // Engine State for Consistency
+    let previousProbs = null;
+    let previousDominant = null;
+    let historicalDetections = [];
+    let currentWeights = null;
 
     for (let i = 0; i < filteredMacro.length; i++) {
         const macroPoint = filteredMacro[i];
@@ -58,46 +69,43 @@ export function backtestRegimePortfolio(selectedFunds, returns, macroData, start
         const nextDate = nextMacroPoint ? nextMacroPoint.date : null;
         const monthFilter = new Date(date).getMonth();
 
-        // Detect raw regime for this month
-        const regimeDetection = detectRegime(macroPoint);
-        const detectedRegime = regimeDetection.dominant;
+        // Detect regime with UNIFIED engine (Bayesian + Sticky Lock)
+        const regimeDetection = detectRegime(
+            macroPoint,
+            previousProbs,
+            previousDominant,
+            historicalDetections,
+            0.3
+        );
 
-        // ... Hysteresis Logic ...
-        if (!activeRegime) {
-            activeRegime = detectedRegime;
-        } else if (detectedRegime !== activeRegime) {
-            if (detectedRegime === candidateRegime) {
-                candidateMonths++;
-            } else {
-                candidateRegime = detectedRegime;
-                candidateMonths = 1;
-            }
-            if (candidateMonths >= HYSTERESIS_THRESHOLD) {
-                activeRegime = candidateRegime;
-                candidateRegime = null;
-                candidateMonths = 0;
-            }
-        } else {
-            candidateRegime = null;
-            candidateMonths = 0;
-        }
-
-        const currentRegime = activeRegime;
+        const currentRegime = regimeDetection.dominant;
         const bands = getRegimeAllocationBands(currentRegime);
+
+        // Update history for next iteration
+        historicalDetections.push(regimeDetection);
+        previousProbs = regimeDetection.probabilities;
+        previousDominant = currentRegime;
 
         let shouldRebalance = false;
         if (i === 0) shouldRebalance = true;
-        if (previousRegime && previousRegime !== currentRegime) {
+
+        // Use previousDominant from outer scope for transition check
+        const prevRegime = i > 0 ? historicalDetections[i - 1].dominant : null;
+        if (prevRegime && prevRegime !== currentRegime) {
             results.transitions.push({
                 date,
-                from: previousRegime,
+                from: prevRegime,
                 to: currentRegime,
                 confidence: regimeDetection.confidence,
                 note: 'Smoothed switch (3-month confirmation)'
             });
             shouldRebalance = true;
         }
-        if (monthFilter === 0) shouldRebalance = true;
+        if (rebalanceMode === 'monthly') {
+            shouldRebalance = true;
+        } else if (monthFilter === 0) {
+            shouldRebalance = true;
+        }
 
         if (!shouldRebalance && currentWeights && bands) {
             const assetWeights = calculateAssetClassWeights(currentWeights, fundAssetMap);
@@ -119,8 +127,17 @@ export function backtestRegimePortfolio(selectedFunds, returns, macroData, start
             currentWeights,
             returns,
             date,
-            nextDate || date // If last month, just use that month
+            nextDate || date,
+            fundAssetMap,
+            macroPoint,
+            filteredMacro[i - 1] || null
         );
+
+        // Collect daily returns for risk metrics
+        if (!results.dailyReturns) results.dailyReturns = [];
+        if (fundReturns.dailyReturns) {
+            results.dailyReturns.push(...fundReturns.dailyReturns);
+        }
 
         // Simulate Weight Drift for NEXT month
         // NewWeight = OldWeight * (1 + FundReturn) / (1 + PortfolioReturn)
@@ -161,7 +178,6 @@ export function backtestRegimePortfolio(selectedFunds, returns, macroData, start
         });
 
         // Prepare for next iteration
-        previousRegime = currentRegime;
         currentWeights = nextWeights;
     }
 
@@ -172,7 +188,7 @@ export function backtestRegimePortfolio(selectedFunds, returns, macroData, start
 
 
     // Calculate summary statistics
-    results.summary = calculateBacktestSummary(results.monthly);
+    results.summary = calculateBacktestSummary(results.monthly, results.dailyReturns || []);
 
     // Calculate regime-specific performance
     for (const [regime, data] of Object.entries(results.regimePerformance)) {
@@ -238,14 +254,19 @@ function rebalanceToRegimeBands(selectedFunds, fundAssetMap, bands) {
 
 /**
 * Calculate portfolio return for a period by compounding daily returns
+* FALLS BACK TO MACRO PROXIES if fund data is missing!
 * @param {Object} weights - Portfolio weights
 * @param {Object} returns - Aligned returns data
 * @param {string} startDate - Period start date (YYYY-MM-DD)
 * @param {string} endDate - Period end date (YYYY-MM-DD)
+* @param {Object} fundAssetMap - Mapping of fund code to asset class
+* @param {Object} macroPoint - Current month macro data
+* @param {Object} prevMacroPoint - Previous month macro data
 */
-function calculatePortfolioReturnForPeriod(weights, returns, startDate, endDate) {
+function calculatePortfolioReturnForPeriod(weights, returns, startDate, endDate, fundAssetMap, macroPoint, prevMacroPoint) {
     let portfolioReturnForPeriod = 0;
     const fundReturnsForPeriod = {};
+    const dailyPortfolioReturns = [];
 
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date(start.getFullYear(), start.getMonth() + 1, 1);
@@ -256,30 +277,64 @@ function calculatePortfolioReturnForPeriod(weights, returns, startDate, endDate)
     }
 
     // Iterate through all daily returns available in returns.dates
-    // Filter to those within the period [startDate, endDate)
     const periodDates = returns.dates.filter(dStr => {
         const d = parseMFDate(dStr);
         return d >= start && d < end;
     });
 
-    if (periodDates.length === 0) {
-        return { portfolioReturn: 0, fundReturns: Object.fromEntries(Object.keys(weights).map(c => [c, 0])) };
-    }
-
-    for (const dStr of periodDates) {
+    if (periodDates.length > 0) {
+        // We have real fund data! Use it.
+        for (const dStr of periodDates) {
+            let dailySum = 0;
+            for (const [fundCode, weight] of Object.entries(weights)) {
+                const dailyRet = returns.returns?.[fundCode]?.[dStr] || 0;
+                dailySum += weight * dailyRet;
+                fundReturnsForPeriod[fundCode] *= (1 + dailyRet);
+            }
+            dailyPortfolioReturns.push(dailySum);
+        }
+        // Convert compounded values back to periodic returns
+        for (const fundCode of Object.keys(weights)) {
+            fundReturnsForPeriod[fundCode] -= 1.0;
+            portfolioReturnForPeriod += (weights[fundCode] || 0) * fundReturnsForPeriod[fundCode];
+        }
+    } else {
+        // PROXY LOGIC: No fund data available for this range.
+        // Use macro benchmarks as proxies.
         for (const [fundCode, weight] of Object.entries(weights)) {
-            const dailyRet = returns.returns?.[fundCode]?.[dStr] || 0;
-            fundReturnsForPeriod[fundCode] *= (1 + dailyRet);
+            const assetClass = fundAssetMap[fundCode];
+            let proxyReturn = 0;
+
+            if (macroPoint && prevMacroPoint && assetClass) {
+                if (assetClass === 'EQUITY') {
+                    // Use S&P 500 % change
+                    if (macroPoint.sp500 && prevMacroPoint.sp500) {
+                        proxyReturn = (macroPoint.sp500 / prevMacroPoint.sp500) - 1;
+                    }
+                } else if (assetClass === 'GOLD') {
+                    // Use Gold Price % change
+                    if (macroPoint.goldPrice && prevMacroPoint.goldPrice) {
+                        proxyReturn = (macroPoint.goldPrice / prevMacroPoint.goldPrice) - 1;
+                    }
+                } else if (assetClass.includes('DEBT')) {
+                    // Constant proxy return for Debt if missing
+                    // Use Yield-based total return approximation: (Yield_prev - Yield_cur) * Duration + Yield_prev/12
+                    const duration = assetClass.includes('LONG') ? 7.0 : 2.0;
+                    const y1 = prevMacroPoint.gSecYield || 5.0;
+                    const y2 = macroPoint.gSecYield || 5.0;
+                    proxyReturn = ((y1 - y2) / 100) * duration + (y1 / 100 / 12);
+                }
+            } else {
+                // Default fallback
+                proxyReturn = assetClass === 'EQUITY' ? 0.008 : 0.004;
+            }
+
+            fundReturnsForPeriod[fundCode] = proxyReturn;
+            portfolioReturnForPeriod += (weights[fundCode] || 0) * proxyReturn;
         }
     }
 
-    // Convert compounded values back to periodic returns
-    for (const fundCode of Object.keys(weights)) {
-        fundReturnsForPeriod[fundCode] -= 1.0;
-        portfolioReturnForPeriod += weights[fundCode] * fundReturnsForPeriod[fundCode];
-    }
-
-    return { portfolioReturn: portfolioReturnForPeriod, fundReturns: fundReturnsForPeriod };
+    return { portfolioReturn: portfolioReturnForPeriod, fundReturns: fundReturnsForPeriod, dailyReturns: dailyPortfolioReturns };
 }
 
 /**
@@ -303,7 +358,7 @@ function formatToMFDate(isoDate) {
 /**
  * Calculate backtest summary statistics
  */
-function calculateBacktestSummary(monthlyResults) {
+function calculateBacktestSummary(monthlyResults, dailyReturns = []) {
     const returns = monthlyResults.map(m => m.monthReturn);
     const n = returns.length;
 
@@ -327,6 +382,14 @@ function calculateBacktestSummary(monthlyResults) {
     let maxDrawdown = 0;
     let peak = monthlyResults[0].portfolioValue;
 
+    // Check if initial investment was higher than first month end (rare but possible drawndown in month 1)
+    if (100000 > peak) {
+        peak = 100000;
+        maxDrawdown = (100000 - monthlyResults[0].portfolioValue) / 100000;
+    } else {
+        peak = 100000;
+    }
+
     for (const result of monthlyResults) {
         if (result.portfolioValue > peak) {
             peak = result.portfolioValue;
@@ -341,18 +404,56 @@ function calculateBacktestSummary(monthlyResults) {
     const positiveMonths = returns.filter(r => r > 0).length;
     const winRate = positiveMonths / n;
 
-    // Value at Risk (VaR) - Historical 95%
-    // Sort returns ascending (worst to best)
-    const sortedReturns = [...returns].sort((a, b) => a - b);
-    const index95 = Math.floor(0.05 * n);
-    const monthlyVaR95 = sortedReturns[index95];
+    // DAILY METRICS (VaR, CVaR, Median)
+    let dailyVaR95 = 0;
+    let dailyCVaR95 = 0;
+    let medianReturn = 0;
 
-    // Conditional Value at Risk (CVaR) - Expected Shortfall at 95%
-    // Average of returns strictly worse than VaR
-    const tailReturns = sortedReturns.slice(0, index95);
-    const monthlyCVaR95 = tailReturns.length > 0
-        ? tailReturns.reduce((sum, r) => sum + r, 0) / tailReturns.length
-        : monthlyVaR95;
+    if (dailyReturns && dailyReturns.length > 0) {
+        const sortedDaily = [...dailyReturns].sort((a, b) => a - b);
+        const idxDaily95 = Math.floor(0.05 * sortedDaily.length);
+        dailyVaR95 = sortedDaily[idxDaily95];
+
+        const tailDaily = sortedDaily.slice(0, idxDaily95);
+        dailyCVaR95 = tailDaily.length > 0
+            ? tailDaily.reduce((sum, r) => sum + r, 0) / tailDaily.length
+            : dailyVaR95;
+
+        // Median
+        const mid = Math.floor(sortedDaily.length / 2);
+        medianReturn = sortedDaily.length % 2 !== 0
+            ? sortedDaily[mid]
+            : (sortedDaily[mid - 1] + sortedDaily[mid]) / 2;
+    } else {
+        // Fallback to Monthly Proxies if no daily data (legacy mode)
+        // Sort returns ascending (worst to best)
+        const sortedReturns = [...returns].sort((a, b) => a - b);
+        const index95 = Math.floor(0.05 * n);
+        const monthlyVaR95 = sortedReturns[index95]; // Monthly VaR
+
+        const tailReturns = sortedReturns.slice(0, index95);
+        const monthlyCVaR95 = tailReturns.length > 0
+            ? tailReturns.reduce((sum, r) => sum + r, 0) / tailReturns.length
+            : monthlyVaR95;
+
+        // Convert Monthly to Daily approximation (Parametric scaling)
+        // Daily ~ Monthly / sqrt(21)
+        dailyVaR95 = monthlyVaR95 / Math.sqrt(21);
+        dailyCVaR95 = monthlyCVaR95 / Math.sqrt(21);
+
+        // Monthly Median fallback
+        const mid = Math.floor(sortedReturns.length / 2);
+        medianReturn = sortedReturns.length % 2 !== 0
+            ? sortedReturns[mid]
+            : (sortedReturns[mid - 1] + sortedReturns[mid]) / 2;
+    }
+
+    // Annualize Median (Compound Daily Median 252 times)
+    // If we only have monthly data (legacy fallback), we compound 12 times
+    const isDaily = dailyReturns && dailyReturns.length > 0;
+    const annualizedMedianReturn = isDaily
+        ? Math.pow(1 + medianReturn, 252) - 1
+        : Math.pow(1 + medianReturn, 12) - 1;
 
     // Final Value
     const endValue = monthlyResults[n - 1].portfolioValue;
@@ -364,8 +465,10 @@ function calculateBacktestSummary(monthlyResults) {
         sharpeRatio,
         maxDrawdown,
         winRate,
-        monthlyVaR95,
-        monthlyCVaR95,
+        dailyVaR95,     // Now explicitly Daily if dailyReturns provided
+        dailyCVaR95,    // Now explicitly Daily if dailyReturns provided
+        medianReturn,   // Raw periodic median
+        annualizedMedianReturn, // New Metric
         endValue
     };
 }
@@ -421,17 +524,19 @@ export function generateBacktestReport(backtestResults) {
         // Regime at Start
         initialRegime: backtestResults.initialRegime,
 
-        // Cumulative return chart data
-        cumulativeReturns: backtestResults.monthly.map(m => ({
+        // Full monthly data for charts and stats (Component expects 'monthly' key)
+        monthly: backtestResults.monthly.map(m => ({
             date: m.date,
-            value: m.cumulativeReturn * 100
+            regime: m.regime,
+            cumulativeReturn: m.cumulativeReturn, // Raw decimal (Component multiplies by 100)
+            portfolioValue: m.portfolioValue
         })),
 
         // Regime distribution
         regimeDistribution: Object.entries(backtestResults.regimePerformance).map(([regime, data]) => ({
             regime,
             months: data.months,
-            years: data.januaryCount, // Years scanner identified state at annual restructuring
+            years: data.januaryCount,
             percentage: (data.months / backtestResults.monthly.length) * 100,
             annualizedReturn: data.annualizedReturn * 100
         })),
@@ -447,8 +552,10 @@ export function generateBacktestReport(backtestResults) {
             annualizedVol: backtestResults.summary.annualizedVol * 100,
             maxDrawdown: backtestResults.summary.maxDrawdown * 100,
             winRate: backtestResults.summary.winRate * 100,
-            monthlyVaR95: backtestResults.summary.monthlyVaR95 * 100,
-            monthlyCVaR95: backtestResults.summary.monthlyCVaR95 * 100
+            dailyVaR95: backtestResults.summary.dailyVaR95 * 100,
+            dailyCVaR95: backtestResults.summary.dailyCVaR95 * 100,
+            annualizedMedianReturn: backtestResults.summary.annualizedMedianReturn * 100, // Format as percentage
+            endValue: backtestResults.summary.endValue // Ensure this is explicitly passed through
         }
     };
 }

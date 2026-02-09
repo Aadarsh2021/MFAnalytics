@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Download } from 'lucide-react'
 import { alignData, calculateReturns } from '../utils/dataProcessing.js'
+import { calcCovariance } from '../utils/optimization.js'
 import { analyzeDataQuality } from '../utils/dataQuality.js'
 import FundMetadataPanel from './FundMetadataPanel'
 
@@ -47,22 +48,31 @@ export default function Step2FetchData({
                 })
 
                 const fetchStart = Date.now()
-                const res = await fetch(`https://api.mfapi.in/mf/${fund.code}`)
-                const data = await res.json()
-                const fetchDuration = (Date.now() - fetchStart) / 1000
+                try {
+                    const res = await fetch(`https://api.mfapi.in/mf/${fund.code}`)
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
+                    const data = await res.json()
+                    const fetchDuration = (Date.now() - fetchStart) / 1000
 
-                if (data.data) {
-                    allData[fund.code] = {
-                        name: fund.name,
-                        data: data.data,
-                        meta: data.meta
+                    if (data && data.data && data.data.length > 0) {
+                        allData[fund.code] = {
+                            name: fund.name,
+                            data: data.data,
+                            meta: data.meta
+                        }
+                        addActivity(
+                            `Fetched ${fund.name}`,
+                            'success',
+                            `Retrieved ${data.data.length} NAV records`,
+                            fetchDuration
+                        )
+                    } else {
+                        throw new Error(`No NAV data found for ${fund.name}`)
                     }
-                    addActivity(
-                        `Fetched ${fund.name}`,
-                        'success',
-                        `Retrieved ${data.data.length} NAV records`,
-                        fetchDuration
-                    )
+                } catch (err) {
+                    console.error(`Error fetching ${fund.name}:`, err)
+                    addActivity(`Fetch failed for ${fund.name}`, 'warning', err.message)
+                    // Continue with other funds instead of breaking the whole loop
                 }
             }
 
@@ -71,6 +81,21 @@ export default function Step2FetchData({
             setAligned(alignedData)
             setAlignmentMetadata(alignedData.metadata) // Store metadata
             const returnsData = calculateReturns(alignedData)
+
+            // NEW: Calculate and attach dictionary-formatted covariance matrix for Step 5A
+            const { cov } = calcCovariance(returnsData)
+            const n = returnsData.codes.length
+            const dictCov = {}
+            for (let i = 0; i < n; i++) {
+                const codeI = returnsData.codes[i]
+                dictCov[codeI] = {}
+                for (let j = 0; j < n; j++) {
+                    const codeJ = returnsData.codes[j]
+                    dictCov[codeI][codeJ] = cov[i][j]
+                }
+            }
+            returnsData.covariance = dictCov
+
             setReturns(returnsData)
 
             // Analyze data quality
@@ -131,7 +156,7 @@ export default function Step2FetchData({
     return (
         <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">
-                📊 Step 2: Fetch NAV Data & Calculate Returns
+                📊 Step 2: Data Fetching
             </h2>
 
             <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 mb-6">

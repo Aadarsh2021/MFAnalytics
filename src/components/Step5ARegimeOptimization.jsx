@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { CheckCircle, TrendingUp, Shield, AlertTriangle, BarChart3, Download } from 'lucide-react'
+import { CheckCircle, TrendingUp, Shield, AlertTriangle, BarChart3, Download, Settings, Info } from 'lucide-react'
 import { getRegimeAllocationBands, validateRegimeConstraints } from '../utils/regimeDetector'
 import { mapFundsToAssetClasses, calculateAssetClassWeights } from '../utils/assetClassUtils'
 import { backtestRegimePortfolio, generateBacktestReport } from '../utils/backtestEngine'
 import { REGIMES } from '../config/regimeConfig'
+import { calculateBlackLitterman } from '../utils/optimization.js'
 import BacktestResults from './BacktestResults'
 
 export default function Step5ARegimeOptimization({
@@ -24,8 +25,13 @@ export default function Step5ARegimeOptimization({
     const [constraintViolations, setConstraintViolations] = useState([])
     const [showBacktest, setShowBacktest] = useState(false)
     const [backtestData, setBacktestData] = useState(null)
+    const [showAdvanced, setShowAdvanced] = useState(false)
+    const [params, setParams] = useState({
+        riskFreeRate: 0.04,
+        riskAversion: 2.5,
+        tau: 0.025
+    })
 
-    const [rebalanceMode, setRebalanceMode] = useState('annual') // 'monthly' | 'annual'
 
     useEffect(() => {
         // Auto-run optimization on mount
@@ -48,7 +54,8 @@ export default function Step5ARegimeOptimization({
             // Apply views to expected returns
             const adjustedReturns = applyViewsToReturns(returns, views)
 
-            // Optimize with regime constraints
+            // 1. Strict Regime Allocation (Direct from Config)
+            // Removed confidence-based blending to ensure strict adherence to detected regime rules
             const weights = optimizeWithRegimeBands(
                 adjustedReturns,
                 returns.covariance,
@@ -59,27 +66,38 @@ export default function Step5ARegimeOptimization({
             setOptimizedWeights(weights)
 
             // Validate constraints
-            const validation = validateRegimeConstraints(weights, fundAssetMap, currentRegime)
+            const validation = validateRegimeConstraints(weights, fundAssetMap, currentRegime, bands)
             setConstraintViolations(validation.violations)
 
-            // Store for next step
-            // Store for next step
-            const resultPayload = {
-                weights: returns.codes.map(code => weights[code] || 0),
-                expectedReturn: calculateExpectedReturn(weights, adjustedReturns),
-                volatility: calculateVolatility(weights, returns.covariance),
-                sharpeRatio: 0, // Calculate if needed
+            // 2. Standard Black-Litterman (For Comparison in Final Report)
+            try {
+                const blComparison = calculateBlackLitterman(returns, views, {
+                    tau: params.tau,
+                    riskAversion: params.riskAversion
+                })
+                setBlResult(blComparison)
+            } catch (blError) {
+                console.error('BL Comparison failed:', blError)
+                // Fallback: Don't block if comparison fails
+            }
+            const vol = calculateVolatility(weights, returns.covariance)
+            const ret = calculateExpectedReturn(weights, adjustedReturns)
+
+            const regimePayload = {
+                weights: weights,
+                expectedReturn: ret,
+                volatility: vol,
+                sharpeRatio: vol > 0 ? ret / vol : 0,
                 regime: currentRegime,
                 regimeContext: regimeContext,
                 optimizationPath: 'regime'
             }
 
-            setBlResult(resultPayload)
-            setRegimeResult(resultPayload)
+            setRegimeResult(regimePayload)
 
         } catch (error) {
-            console.error('Optimization error:', error)
-            alert('Optimization failed: ' + error.message)
+            console.error('Optimization error details:', error)
+            alert(`Optimization failed: ${error.message}\n\nPlease check console for technical details.`)
         } finally {
             setOptimizing(false)
         }
@@ -90,25 +108,61 @@ export default function Step5ARegimeOptimization({
 
         setShowBacktest(true)
 
-        // Determine dates from macro data
-        if (!macroData || macroData.length === 0) return;
-        const startDate = macroData[0].date;
-        const endDate = macroData[macroData.length - 1].date;
+        // Use setTimeout to prevent blocking the click handler
+        setTimeout(() => {
+            // Determine earliest common date from funds data
+            let commonStartDate = null;
+            if (returns && returns.dates && returns.returns) {
+                // Find the list of fund codes we are optimizing
+                const codes = Object.keys(optimizedWeights).filter(c => optimizedWeights[c] > 0);
 
-        // Run historical backtest
-        const results = backtestRegimePortfolio(
-            selectedFunds,
-            returns,
-            macroData,
-            startDate,
-            endDate,
-            rebalanceMode,
-            100000
-        )
+                // returns.dates is in DD-MM-YYYY format (from dataProcessing.js)
+                // Sort dates ascending to find earliest using proper Date comparison
+                const sortedFundDates = [...returns.dates].sort((a, b) => {
+                    const dA = a.split('-').reverse().join('-');
+                    const dB = b.split('-').reverse().join('-');
+                    return new Date(dA) - new Date(dB);
+                });
 
-        const report = generateBacktestReport(results)
-        setBacktestData(report)
-        setBacktestResults(results)
+                // Find the first date where ALL selected funds have return data
+                for (const d of sortedFundDates) {
+                    const allHaveData = codes.every(c => returns.returns[c] && returns.returns[c][d] !== undefined);
+                    if (allHaveData) {
+                        // Convert DD-MM-YYYY to YYYY-MM-DD for comparison with Macro
+                        const parts = d.split('-');
+                        const isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+
+                        const macroExists = macroData.some(m => m.date >= isoDate);
+                        if (macroExists) {
+                            commonStartDate = isoDate;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Fallback to purely macro range if no fund data (shouldn't happen in real app)
+            const macroStart = macroData && macroData.length > 0 ? macroData[0].date : '2002-01-01';
+            const startDate = commonStartDate || macroStart;
+            const endDate = macroData && macroData.length > 0 ? macroData[macroData.length - 1].date : '2025-01-01';
+
+            console.log("Running Backtest from:", startDate);
+
+            // Run historical backtest
+            const results = backtestRegimePortfolio(
+                selectedFunds,
+                returns,
+                macroData,
+                startDate,
+                endDate,
+                'annual',
+                100000
+            )
+
+            const report = generateBacktestReport(results)
+            setBacktestData(report)
+            setBacktestResults(report)
+        }, 50) // Small delay to allow UI to update first
     }
 
     const proceedToMonteCarlo = () => {
@@ -132,8 +186,60 @@ export default function Step5ARegimeOptimization({
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800">Step 5A: Regime-Constrained Optimization</h2>
-                        <p className="text-gray-500">Portfolio optimized for {REGIMES[currentRegime]?.name}</p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-gray-500">Portfolio optimized for {REGIMES[currentRegime]?.name}</p>
+                            <span className="text-[10px] font-black px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full uppercase">
+                                Confidence Blend: {(regimeContext?.detection?.confidence * 100).toFixed(0)}%
+                            </span>
+                        </div>
                     </div>
+                </div>
+
+                {/* Parameter Settings */}
+                <div className="mb-8 bg-slate-50 border-2 border-slate-100 rounded-3xl p-6">
+                    <div className="flex justify-between items-center cursor-pointer group" onClick={() => setShowAdvanced(!showAdvanced)}>
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-white rounded-xl shadow-sm group-hover:bg-indigo-50 transition">
+                                <Settings className="text-slate-400 group-hover:text-indigo-600" size={20} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-700">Model Parameters</h3>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Configure risk aversion & uncertainty</p>
+                            </div>
+                        </div>
+                        <button className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white px-4 py-2 rounded-full shadow-sm">
+                            {showAdvanced ? 'Simple View' : 'Advanced Configuration'}
+                        </button>
+                    </div>
+
+                    {showAdvanced && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 pt-8 border-t border-slate-200 animate-fade-in">
+                            <ParamBox
+                                label="Risk-Free Rate"
+                                value={params.riskFreeRate}
+                                step="0.001"
+                                suffix=" (RF)"
+                                info="Annual risk-free rate (e.g., 10Y G-Sec yield)."
+                                onChange={(v) => setParams({ ...params, riskFreeRate: v })}
+                            />
+                            <ParamBox
+                                label="Risk Aversion"
+                                value={params.riskAversion}
+                                step="0.1"
+                                suffix=" (δ)"
+                                info="Market risk aversion. Higher = more conservative."
+                                onChange={(v) => setParams({ ...params, riskAversion: v })}
+                            />
+                            <ParamBox
+                                label="Tau (τ)"
+                                value={params.tau}
+                                step="0.005"
+                                suffix=" (τ)"
+                                info="Confidence in market equilibrium vs. views."
+                                onChange={(v) => setParams({ ...params, tau: v })}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {optimizing ? (
@@ -204,12 +310,13 @@ export default function Step5ARegimeOptimization({
                             </div>
                         </div>
 
-                        {/* Asset Class Summary */}
-                        <AssetClassSummary
-                            weights={optimizedWeights}
-                            selectedFunds={selectedFunds}
-                            currentRegime={currentRegime}
-                        />
+                        <div className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100">
+                            <AssetClassSummary
+                                weights={optimizedWeights}
+                                selectedFunds={selectedFunds}
+                                currentRegime={currentRegime}
+                            />
+                        </div>
                     </div>
                 ) : null}
             </div>
@@ -226,20 +333,6 @@ export default function Step5ARegimeOptimization({
                             <p className="text-sm text-gray-500">See how this strategy performed through different regimes</p>
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                                <button
-                                    onClick={() => setRebalanceMode('monthly')}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${rebalanceMode === 'monthly' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                >
-                                    Monthly
-                                </button>
-                                <button
-                                    onClick={() => setRebalanceMode('annual')}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${rebalanceMode === 'annual' ? 'bg-white text-purple-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                >
-                                    Annual
-                                </button>
-                            </div>
                             <button
                                 onClick={runBacktest}
                                 className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold text-sm"
@@ -262,7 +355,7 @@ export default function Step5ARegimeOptimization({
                         onClick={() => goToStep('4A')}
                         className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-bold"
                     >
-                        ← Back to Views
+                        ← Back to Regime Views (4A)
                     </button>
                     <button
                         onClick={proceedToMonteCarlo}
@@ -280,7 +373,19 @@ export default function Step5ARegimeOptimization({
 // Helper Functions
 
 function applyViewsToReturns(returns, views) {
-    const adjusted = { ...returns.means }
+    // Robustly handle missing means by calculating them on the fly
+    const means = returns.means || {}
+    const codes = returns.codes || []
+
+    // Fallback mean calculation if missing
+    if (Object.keys(means).length === 0 && returns.returns) {
+        codes.forEach(code => {
+            const vals = Object.values(returns.returns[code] || {})
+            means[code] = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0
+        })
+    }
+
+    const adjusted = { ...means }
 
     for (const view of views) {
         if (view.type === 'absolute') {
@@ -339,11 +444,42 @@ function optimizeWithRegimeBands(returns, covariance, bands, fundAssetMap) {
         classWeights[ac] = Math.max(band.min, Math.min(band.max, weight))
     }
 
-    // 4. Normalize asset class weights to ensure they sum correctly within constraints
-    // (Scaling preserves relative tilts while satisfying budget)
-    const classSum = Object.values(classWeights).reduce((a, b) => a + b, 0)
-    for (const ac of activeClasses) {
-        classWeights[ac] /= classSum
+    // 4. Constrained Proportional Distribution (Institutional Normalization)
+    // Ensures sum is exactly 1.0 AND all min/max bands are strictly respected.
+    let currentSum = Object.values(classWeights).reduce((a, b) => a + b, 0)
+    let gap = 1.0 - currentSum
+
+    // If gap is not zero, distribute it proportionally based on available headroom
+    if (Math.abs(gap) > 0.0001) {
+        if (gap > 0) {
+            // Under-allocated: Add to classes that aren't at 'max'
+            const headroom = {}
+            let totalHeadroom = 0
+            for (const ac of activeClasses) {
+                const room = Math.max(0, bands[ac].max - classWeights[ac])
+                headroom[ac] = room
+                totalHeadroom += room
+            }
+            if (totalHeadroom > 0) {
+                for (const ac of activeClasses) {
+                    classWeights[ac] += gap * (headroom[ac] / totalHeadroom)
+                }
+            }
+        } else {
+            // Over-allocated: Subtract from classes that aren't at 'min'
+            const reductionRoom = {}
+            let totalReductionRoom = 0
+            for (const ac of activeClasses) {
+                const room = Math.max(0, classWeights[ac] - bands[ac].min)
+                reductionRoom[ac] = room
+                totalReductionRoom += room
+            }
+            if (totalReductionRoom > 0) {
+                for (const ac of activeClasses) {
+                    classWeights[ac] += gap * (reductionRoom[ac] / totalReductionRoom) // gap is negative
+                }
+            }
+        }
     }
 
     // 5. Distribute weights to individual funds within each asset class (Internal Tilt)
@@ -435,6 +571,29 @@ function AssetClassSummary({ weights, selectedFunds, currentRegime }) {
                     )
                 })}
             </div>
+        </div>
+    )
+}
+
+function ParamBox({ label, value, step, suffix, info, onChange }) {
+    return (
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+            <label className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                {label} {suffix}
+                <div className="group relative">
+                    <Info size={12} className="text-slate-300 cursor-help" />
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-900 text-white text-[10px] rounded-lg z-20 shadow-xl leading-relaxed">
+                        {info}
+                    </div>
+                </div>
+            </label>
+            <input
+                type="number"
+                step={step}
+                value={value}
+                onChange={(e) => onChange(parseFloat(e.target.value))}
+                className="w-full bg-slate-50 border-none p-2 rounded-lg text-lg font-black text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
         </div>
     )
 }

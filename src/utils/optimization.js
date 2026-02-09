@@ -32,8 +32,21 @@ export function calcCovariance(returns) {
         returns.dates.map(date => returns.returns[code][date] || 0)
     ) // n x T
 
-    // Calculate means
-    const means = tensor.map(row => row.reduce((a, b) => a + b, 0) / numDates)
+    // 1. Calculate Sample Means (robustly)
+    // The original `means` was an array of means for each asset, indexed by asset position.
+    // The new `means` is an object mapping code to mean.
+    // To maintain compatibility with `centered` calculation, we need to convert it back to an array.
+    const codeMeans = {}
+    returns.codes.forEach(code => {
+        const vals = Object.values(returns.returns[code] || {})
+        if (vals.length === 0) {
+            codeMeans[code] = 0
+            return
+        }
+        codeMeans[code] = vals.reduce((a, b) => a + b, 0) / vals.length
+    })
+    const means = returns.codes.map(code => codeMeans[code]);
+
 
     // Center the data
     const centered = tensor.map((row, i) => row.map(val => val - means[i]))
@@ -111,6 +124,11 @@ export function calcCovariance(returns) {
         }
     }
 
+    // 4. Numerical Stability: Add a very small ridge to the diagonal
+    for (let i = 0; i < n; i++) {
+        cov[i][i] += 1e-6 // Increased ridge for global robustness
+    }
+
     return { cov, means, sampleCov, shrinkage: delta }
 }
 
@@ -174,7 +192,9 @@ function optimizeCritical(cov, n) {
      */
 
     try {
-        const invCov = matrixInverse(cov)
+        // Stability: Add small ridge before inversion
+        const stableCov = cov.map((row, i) => row.map((val, j) => i === j ? val + 1e-10 : val))
+        const invCov = matrixInverse(stableCov)
         const ones = new Array(n).fill(1)
 
         // w = Σ^-1 1
@@ -223,7 +243,8 @@ function optimizeCritical(cov, n) {
                         }
                     }
 
-                    const invCovRed = matrixInverse(covReduced)
+                    const stableCovRed = covReduced.map((row, i) => row.map((val, j) => i === j ? val + 1e-8 : val))
+                    const invCovRed = matrixInverse(stableCovRed)
                     const onesRed = new Array(m).fill(1)
                     const wReduced = matrixMultiply(invCovRed, onesRed)
                     const sumRed = wReduced.reduce((a, b) => a + b, 0)
@@ -406,11 +427,31 @@ function optimizeConvex(cov, n, maxIter = 500, tol = 1e-8) {
 export function calculateAllMVP(returns) {
     const n = returns.codes.length
     const { cov, shrinkage } = calcCovariance(returns)
-    // Removed simple calcCovariance call, now using the one with full shrinkage logic
 
-    const sqp = optimizeSQP(cov, n)
-    const convex = optimizeConvex(cov, n)
-    const critical = optimizeCritical(cov, n)
+    // Equal weights as absolute fallback
+    const equalWeights = new Array(n).fill(1 / n)
+
+    const runner = (fn, name) => {
+        try {
+            const res = fn(cov, n)
+            if (res && res.weights && !res.weights.some(isNaN)) {
+                return res
+            }
+            throw new Error(`${name} produced invalid weights`)
+        } catch (e) {
+            console.error(`${name} failed:`, e.message)
+            return {
+                weights: equalWeights,
+                vol: Math.sqrt(calcVariance(equalWeights, cov) * 252),
+                converged: false,
+                error: e.message
+            }
+        }
+    }
+
+    const sqp = runner(optimizeSQP, 'SQP')
+    const convex = runner(optimizeConvex, 'Convex')
+    const critical = runner(optimizeCritical, 'Critical')
 
     return { sqp, convex, critical, shrinkage }
 }

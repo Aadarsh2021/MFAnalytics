@@ -1,4 +1,4 @@
-import { TrendingUp, BarChart3, Calendar, Award, TrendingDown, Activity, AlertCircle, FileText, Layout, Info } from 'lucide-react'
+import { TrendingUp, BarChart3, Calendar, Award, TrendingDown, Activity, AlertCircle, FileText, Layout, Info, Shield } from 'lucide-react'
 import { LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts'
 import { REGIMES } from '../config/regimeConfig'
 
@@ -9,9 +9,9 @@ export default function BacktestResults({ backtestData }) {
     if (!monthly || !Array.isArray(monthly)) return null
 
     // Determine actual date range
-    const startDate = monthly.length > 0 ? new Date(monthly[0].date).toLocaleDateString(undefined, { year: 'numeric', month: 'short' }) : '2002'
+    const startDate = monthly.length > 0 ? new Date(monthly[0].date).toLocaleDateString(undefined, { year: 'numeric', month: 'short' }) : '2001'
     const endDate = monthly.length > 0 ? new Date(monthly[monthly.length - 1].date).toLocaleDateString(undefined, { year: 'numeric', month: 'short' }) : 'Present'
-    const startYear = monthly.length > 0 ? new Date(monthly[0].date).getFullYear() : 2002
+    const startYear = monthly.length > 0 ? new Date(monthly[0].date).getFullYear() : 2001
     const endYear = monthly.length > 0 ? new Date(monthly[monthly.length - 1].date).getFullYear() : 2025
 
     // Prepare chart data
@@ -69,6 +69,11 @@ export default function BacktestResults({ backtestData }) {
                                 label="Annualized Return (CAGR)"
                                 value={`${(summary.annualizedReturn || 0).toFixed(2)}%`}
                             />
+                            <SummaryItem
+                                label="Annualized Volatility"
+                                value={`${(summary.annualizedVol || 0).toFixed(2)}%`}
+                                subText="Risk Metric"
+                            />
                         </div>
                         <div className="space-y-4">
                             <SummaryItem
@@ -83,11 +88,38 @@ export default function BacktestResults({ backtestData }) {
                             />
                         </div>
                     </div>
+
+                    {/* New Daily Risk Metrics Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 pt-8 border-t border-slate-100">
+                        <div className="space-y-4">
+                            <SummaryItem
+                                label="Annualized Median Return"
+                                value={`${(summary.annualizedMedianReturn || 0).toFixed(2)}%`}
+                                subText="Typical Annual Performance"
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            <SummaryItem
+                                label="Daily Value at Risk (95%)"
+                                value={`${(summary.dailyVaR95 || 0).toFixed(2)}%`}
+                                subText="Worst 5% Day Expectation"
+                                color="text-amber-600"
+                            />
+                        </div>
+                        <div className="space-y-4">
+                            <SummaryItem
+                                label="Daily CVaR (95%)"
+                                value={`${(summary.dailyCVaR95 || 0).toFixed(2)}%`}
+                                subText="Avg Loss in Worst 5%"
+                                color="text-red-600"
+                            />
+                        </div>
+                    </div>
                 </div>
             </section>
 
             {/* 2. Cumulative Return Chart (Visual) */}
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100">
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-slate-100" style={{ minHeight: '450px' }}>
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-lg font-bold flex items-center gap-2">
                         <Activity className="text-indigo-500" size={20} />
@@ -137,25 +169,27 @@ export default function BacktestResults({ backtestData }) {
                         <h3 className="text-xl font-bold">Market State Transitions</h3>
                     </div>
 
-                    <div className="overflow-hidden rounded-xl border border-slate-200">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50 text-slate-500 text-xs uppercase tracking-widest">
+                    <div className="overflow-hidden rounded-xl border border-slate-100 shadow-sm">
+                        <table className="w-full text-left border-collapse">
+                            <thead className="bg-slate-50/50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-100">
                                 <tr>
-                                    <th className="px-6 py-4 font-black">Regime</th>
-                                    <th className="px-6 py-4 font-black">Count (Years)</th>
-                                    <th className="px-6 py-4 font-black">Description</th>
+                                    <th className="px-6 py-4 w-1/4">Regime</th>
+                                    <th className="px-6 py-4 text-center w-1/4">Count (Years)</th>
+                                    <th className="px-6 py-4">Description</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-50">
                                 {regimeDistribution.sort((a, b) => a.regime.localeCompare(b.regime)).map((item) => (
-                                    <tr key={item.regime} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded text-[10px] font-black uppercase text-white ${getRegimeColor(item.regime)}`}>
+                                    <tr key={item.regime} className="hover:bg-slate-50/50 transition-colors group">
+                                        <td className="px-6 py-5 align-middle">
+                                            <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase text-white shadow-sm ${getRegimeColor(item.regime)}`}>
                                                 {REGIMES[item.regime]?.shortName || item.regime}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 font-bold text-slate-700">{item.years || 0}</td>
-                                        <td className="px-6 py-4 text-xs text-slate-500 leading-relaxed">
+                                        <td className="px-6 py-5 text-center align-middle font-black text-slate-700 text-lg">
+                                            {item.years || 0}
+                                        </td>
+                                        <td className="px-6 py-5 text-xs font-bold text-slate-500 leading-relaxed align-middle">
                                             {REGIMES[item.regime]?.name || 'N/A'}
                                         </td>
                                     </tr>
@@ -262,19 +296,25 @@ export default function BacktestResults({ backtestData }) {
                     <div>
                         <h4 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">3. Historical Transition Summary</h4>
                         <div className="relative border-l-2 border-indigo-100 ml-4 space-y-8 py-2">
-                            <TimelineItem
-                                title="2008-09: Financial Crisis"
-                                description="Transition to Regime D (Crisis) as credit spreads spiked and correlations surged to 1.0."
-                                active={summary.maxDrawdown > 15}
-                            />
-                            <TimelineItem
-                                title="2020: COVID Shock & Stimulus"
-                                description="Sharp transition to Regime D followed by Regime C (Fiscal Dominance) during liquidity expansion."
-                            />
-                            <TimelineItem
-                                title="2022: Inflationary Spike"
-                                description="Transition to Regime B (Inflationary) as real rates spiked and fiscal repression peaked."
-                            />
+                            {startYear <= 2008 && (
+                                <TimelineItem
+                                    title="2008-09: Financial Crisis"
+                                    description="Transition to Regime D (Crisis) as credit spreads spiked and correlations surged to 1.0."
+                                    active={summary.maxDrawdown > 15}
+                                />
+                            )}
+                            {startYear <= 2020 && (
+                                <TimelineItem
+                                    title="2020: COVID Shock & Stimulus"
+                                    description="Sharp transition to Regime D followed by Regime C (Fiscal Dominance) during liquidity expansion."
+                                />
+                            )}
+                            {startYear <= 2022 && (
+                                <TimelineItem
+                                    title="2022: Inflationary Spike"
+                                    description="Transition to Regime B (Inflationary) as real rates spiked and fiscal repression peaked."
+                                />
+                            )}
                             <TimelineItem
                                 title="2025: Normalization"
                                 description="Return to Regime A (Monetary Credibility) as volatility subsided and real rates stabilized."

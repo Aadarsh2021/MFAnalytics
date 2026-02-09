@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Calculator, CheckCircle, Settings, Info, TrendingUp, ShieldAlert, Zap, ArrowRight } from 'lucide-react'
 import { calculateBlackLitterman } from '../utils/optimization.js'
 
@@ -22,6 +22,16 @@ export default function Step5BlackLitterman({
         tau: 0.025
     })
     const [showAdvanced, setShowAdvanced] = useState(false)
+
+    // Debug on mount
+    useEffect(() => {
+        console.log("Step 5B Mounted")
+        console.log("Props:", { returns, allData, views, selectedFunds })
+    }, [])
+
+    if (!returns || !selectedFunds) {
+        return <div className="p-8 text-center text-red-500 font-bold">Error: Missing Data in Step 5B</div>
+    }
 
     const handleCalculate = () => {
         setIsCalculating(true)
@@ -94,7 +104,7 @@ export default function Step5BlackLitterman({
                     <div>
                         <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
                             <Zap className="text-purple-600" size={28} />
-                            Step 5: Black-Litterman Engine
+                            Step 5B: Black-Litterman Engine
                         </h2>
                         <p className="text-gray-500 mt-1">Merging market equilibrium with your subjective views for an optimized portfolio.</p>
                     </div>
@@ -211,13 +221,22 @@ export default function Step5BlackLitterman({
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => goToStep(6)}
-                        className="w-full px-8 py-5 bg-white border-2 border-slate-200 text-slate-800 rounded-2xl hover:bg-slate-50 hover:border-slate-300 font-black text-xl flex items-center justify-center gap-3 transition-all hover-lift"
-                    >
-                        Proceed to Monte Carlo Simulation
-                        <ArrowRight size={24} />
-                    </button>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => goToStep('4B')}
+                            className="w-1/3 px-8 py-5 bg-white border-2 border-slate-200 text-slate-600 rounded-2xl hover:bg-slate-50 hover:border-slate-300 font-bold text-xl flex items-center justify-center gap-3 transition-all hover-lift"
+                        >
+                            <TrendingUp size={24} className="rotate-180" />
+                            Back to BL Views (4B)
+                        </button>
+                        <button
+                            onClick={() => goToStep(6)}
+                            className="w-2/3 px-8 py-5 bg-white border-2 border-slate-200 text-slate-800 rounded-2xl hover:bg-slate-50 hover:border-slate-300 font-black text-xl flex items-center justify-center gap-3 transition-all hover-lift"
+                        >
+                            Proceed to Monte Carlo Simulation
+                            <ArrowRight size={24} />
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

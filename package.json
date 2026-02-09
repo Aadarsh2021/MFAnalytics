@@ -6,14 +6,24 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "update-macro": "node backend/scripts/fetch_fred_macro.mjs",
+    "update-macro-india": "node backend/scripts/fetchIndianMacroData.mjs",
+    "admin-server": "node backend/adminServer.mjs"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@supabase/supabase-js": "^2.90.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
     "firebase": "^12.7.0",
+    "firebase-admin": "^13.6.1",
+    "firebase-functions": "^7.0.5",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-phone-number-input": "^3.4.14",
     "react-router-dom": "^7.12.0",
     "recharts": "^3.6.0",
     "xlsx": "^0.18.5"

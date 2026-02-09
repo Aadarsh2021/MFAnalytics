@@ -1,20 +1,120 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, TrendingUp, Globe, BarChart3, Zap, Shield, Brain, CheckCircle2, Activity, Layers, PieChart } from 'lucide-react'
-import logo from '../assets/logo.png'
+import { ArrowRight, TrendingUp, Globe, BarChart3, Zap, Shield, Brain, CheckCircle2, Activity, Layers, PieChart, ArrowUp, X, Mail, Phone, User, MessageSquare } from 'lucide-react'
+import emailjs from '@emailjs/browser'
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
+import 'react-phone-number-input/style.css'
+import './PhoneInput.css'
+import logo from '../assets/logo-Photoroom.png'
 import shivamPhoto from '../assets/shivam.jpg'
 import vatsalPhoto from '../assets/vatsal.png'
 
 export default function LandingPage() {
     const [scrolled, setScrolled] = useState(false)
+    const [isVisible, setIsVisible] = useState(true)
+    const [lastScrollY, setLastScrollY] = useState(0)
+    const [showBackToTop, setShowBackToTop] = useState(false)
+    const [showContactModal, setShowContactModal] = useState(false)
+    const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' })
+    const [formErrors, setFormErrors] = useState({})
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [submitStatus, setSubmitStatus] = useState(null)
 
     useEffect(() => {
         const handleScroll = () => {
-            setScrolled(window.scrollY > 50)
+            const currentScrollY = window.scrollY
+            setScrolled(currentScrollY > 50)
+            setShowBackToTop(currentScrollY > 300)
+            setLastScrollY(currentScrollY)
         }
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
+    }, [lastScrollY])
+
+    // ESC key to close modal
+    useEffect(() => {
+        const handleEsc = (e) => {
+            if (e.key === 'Escape' && showContactModal) {
+                closeModal()
+            }
+        }
+        window.addEventListener('keydown', handleEsc)
+        return () => window.removeEventListener('keydown', handleEsc)
+    }, [showContactModal])
+
+    const validateForm = () => {
+        const errors = {}
+        if (!formData.name.trim()) errors.name = 'Name is required'
+        if (!formData.email.trim()) {
+            errors.email = 'Email is required'
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            errors.email = 'Invalid email format'
+        }
+        if (!formData.phone) {
+            errors.phone = 'Phone number is required'
+        } else if (!isValidPhoneNumber(formData.phone)) {
+            errors.phone = 'Invalid phone number'
+        }
+        if (!formData.message.trim()) errors.message = 'Message is required'
+        return errors
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        const errors = validateForm()
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors)
+            return
+        }
+
+        setIsSubmitting(true)
+        setSubmitStatus(null)
+
+        try {
+            // EmailJS configuration
+            await emailjs.send(
+                'service_a40aty8',  // Service ID
+                'template_rqo77uk', // Template ID
+                {
+                    from_name: formData.name,
+                    from_email: formData.email,
+                    phone: formData.phone,
+                    message: formData.message,
+                },
+                'WdCLO7p9E4ha6pfYE'  // Public Key
+            )
+            setSubmitStatus('success')
+            setFormData({ name: '', email: '', phone: '', message: '' })
+            setTimeout(() => setShowContactModal(false), 2000)
+        } catch (error) {
+            console.error('Email send error:', error)
+            setSubmitStatus('error')
+        } finally {
+            setIsSubmitting(false)
+        }
+    }
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target
+        setFormData(prev => ({ ...prev, [name]: value }))
+        if (formErrors[name]) {
+            setFormErrors(prev => ({ ...prev, [name]: '' }))
+        }
+    }
+
+    const handlePhoneChange = (value) => {
+        setFormData(prev => ({ ...prev, phone: value || '' }))
+        if (formErrors.phone) {
+            setFormErrors(prev => ({ ...prev, phone: '' }))
+        }
+    }
+
+    const closeModal = () => {
+        setShowContactModal(false)
+        setFormData({ name: '', email: '', phone: '', message: '' })
+        setFormErrors({})
+        setSubmitStatus(null)
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900 overflow-x-hidden">
@@ -37,12 +137,18 @@ export default function LandingPage() {
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'bg-white/80 backdrop-blur-xl shadow-lg py-4 border-b border-slate-200/50' : 'bg-transparent py-8'}`}>
                 <div className="max-w-[1600px] mx-auto px-12 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-2 group">
-                        <img src={logo} alt="Revest Enterprises" className="h-14 md:h-20 w-auto object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-300" />
+                        <img src={logo} alt="Revest Enterprises" className="h-16 md:h-20 w-auto object-contain brightness-110 drop-shadow-2xl group-hover:scale-105 transition-all duration-500" />
                     </Link>
 
                     <div className="hidden md:flex items-center gap-10">
                         <a href="#about" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors tracking-tight uppercase">How it works</a>
                         <a href="#features" className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors tracking-tight uppercase">Platform</a>
+                        <button
+                            onClick={() => setShowContactModal(true)}
+                            className="text-sm font-bold text-slate-600 hover:text-blue-600 transition-colors tracking-tight uppercase"
+                        >
+                            Contact Us
+                        </button>
                         <Link
                             to="/login"
                             className="px-8 py-3 bg-slate-900 text-white rounded-full text-sm font-bold hover:bg-blue-600 transition-all shadow-xl hover:shadow-blue-500/20 hover:-translate-y-1"
@@ -55,14 +161,14 @@ export default function LandingPage() {
 
             <main className="relative z-10">
                 {/* Hero Section */}
-                <section className="min-h-screen flex items-center pt-24 pb-20 px-12">
+                <section className="min-h-screen flex items-center pt-32 pb-20 px-12">
                     <div className="max-w-[1600px] mx-auto w-full grid lg:grid-cols-12 gap-20 items-center">
 
                         {/* Hero Visual (Left) */}
                         <div className="lg:col-span-5 relative flex items-center justify-center animate-[fadeIn_1s_ease-out]">
                             <div className="absolute w-[120%] h-[120%] bg-blue-100/50 rounded-full blur-[120px]"></div>
                             <div className="relative z-10 flex flex-col items-center">
-                                <img src={logo} alt="Revest Enterprises" className="h-72 md:h-[450px] w-auto object-contain mix-blend-multiply drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-[float_6s_ease-in-out_infinite]" />
+                                <img src={logo} alt="Revest Enterprises" className="h-72 md:h-[450px] w-auto object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-[float_6s_ease-in-out_infinite]" />
 
                                 {/* Orbiting Components */}
                                 <div className="absolute top-0 -right-4 bg-white/80 backdrop-blur-md p-5 rounded-3xl shadow-2xl border border-white animate-[float_5s_ease-in-out_1s_infinite]">
@@ -319,7 +425,7 @@ export default function LandingPage() {
                 </section>
 
                 {/* CTA Segment */}
-                <section className="py-24 px-12">
+                <section className="py-32 px-12">
                     <div className="max-w-7xl mx-auto">
                         <div className="bg-gradient-to-br from-blue-700 to-indigo-800 rounded-[4rem] p-16 md:p-24 text-center text-white relative overflow-hidden shadow-2xl">
                             <div className="relative z-10 space-y-10">
@@ -345,11 +451,11 @@ export default function LandingPage() {
             </main>
 
             {/* Footer */}
-            <footer className="bg-white border-t border-slate-100 pt-32 pb-12 px-12 relative z-10">
+            <footer className="bg-white border-t border-slate-100 pt-16 pb-16 px-12 relative z-10">
                 <div className="max-w-[1600px] mx-auto">
-                    <div className="grid md:grid-cols-12 gap-20 mb-32">
+                    <div className="grid md:grid-cols-12 gap-20 mb-16">
                         <div className="md:col-span-5 space-y-10">
-                            <img src={logo} alt="Revest Enterprises" className="h-20 w-auto object-contain mix-blend-multiply" />
+                            <img src={logo} alt="Revest Enterprises" className="h-32 md:h-44 w-auto object-contain brightness-110 drop-shadow-lg hover:opacity-90 transition-all duration-300" />
                             <p className="text-xl text-slate-500 max-w-sm leading-relaxed font-medium">
                                 Institutional-grade portfolio intelligence for the modern decade. Scanned. Validated. Quantitative.
                             </p>
@@ -390,6 +496,216 @@ export default function LandingPage() {
                     </div>
                 </div>
             </footer>
+
+            {/* Back to Top Button - Advanced UI */}
+            <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className={`fixed bottom-10 right-10 z-[60] w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl shadow-[0_20px_50px_rgba(37,99,235,0.3)] flex items-center justify-center transition-all duration-700 hover:shadow-[0_25px_60px_rgba(37,99,235,0.5)] hover:scale-110 active:scale-90 group backdrop-blur-md ring-1 ring-white/20 animate-float ${showBackToTop ? 'translate-y-0 opacity-100 rotate-0' : 'translate-y-24 opacity-0 rotate-12 pointer-events-none'}`}
+                title="Back to Top"
+            >
+                {/* Background Glow Pulse */}
+                <div className="absolute inset-0 bg-blue-400 rounded-2xl blur-xl opacity-0 group-hover:opacity-40 transition-opacity duration-500 animate-pulse"></div>
+
+                {/* Icon with advanced animation */}
+                <div className="relative flex flex-col items-center justify-center overflow-hidden h-8">
+                    <ArrowUp className="w-7 h-7 transform transition-transform duration-500 group-hover:-translate-y-12" />
+                    <ArrowUp className="w-7 h-7 absolute transform translate-y-12 transition-transform duration-500 group-hover:translate-y-0 text-blue-200" />
+                </div>
+            </button>
+
+            {/* Contact Us Modal */}
+            {showContactModal && (
+                <div
+                    className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+                    onClick={closeModal}
+                >
+                    {/* Backdrop with Animation */}
+                    <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-lg animate-fadeIn"></div>
+
+                    {/* Modal with Scale Animation */}
+                    <div
+                        className="relative bg-white rounded-[2rem] shadow-[0_25px_100px_rgba(0,0,0,0.3)] max-w-3xl w-full max-h-[85vh] overflow-hidden animate-scaleIn"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header with Gradient and Pattern */}
+                        <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white p-6 overflow-hidden">
+                            {/* Decorative Circles */}
+                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2"></div>
+
+                            {/* Close Button */}
+                            <button
+                                onClick={closeModal}
+                                type="button"
+                                className="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all hover:rotate-90 duration-300 group z-50"
+                            >
+                                <X className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            </button>
+
+                            {/* Header Content */}
+                            <div className="relative z-10">
+                                <div className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-bold mb-2 uppercase tracking-wider">
+                                    Let's Connect
+                                </div>
+                                <h2 className="text-3xl font-black mb-2 tracking-tight">Get in Touch</h2>
+                                <p className="text-blue-100 text-sm font-medium max-w-xl">
+                                    Have questions about our platform? We're here to help you optimize your portfolio strategy.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Form with Better Spacing */}
+                        <div className="overflow-y-auto max-h-[calc(85vh-140px)]">
+                            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                                {/* Name & Email Row */}
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {/* Name Field */}
+                                    <div className="group">
+                                        <label className="block text-xs font-black text-slate-700 mb-2 uppercase tracking-wider flex items-center gap-2">
+                                            <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center group-focus-within:bg-blue-600 group-focus-within:text-white transition-colors">
+                                                <User className="w-3.5 h-3.5" />
+                                            </div>
+                                            Name *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            className={`w-full px-4 py-3 rounded-xl border-2 ${formErrors.name ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50'} focus:border-blue-600 focus:bg-white focus:outline-none transition-all text-slate-900 font-semibold placeholder:text-slate-400 hover:border-slate-300`}
+                                            placeholder="John Doe"
+                                        />
+                                        {formErrors.name && (
+                                            <p className="text-red-600 text-sm mt-2 font-bold flex items-center gap-1">
+                                                <span className="w-1 h-1 rounded-full bg-red-600"></span>
+                                                {formErrors.name}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Email Field */}
+                                    <div className="group">
+                                        <label className="block text-xs font-black text-slate-700 mb-2 uppercase tracking-wider flex items-center gap-2">
+                                            <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center group-focus-within:bg-blue-600 group-focus-within:text-white transition-colors">
+                                                <Mail className="w-3.5 h-3.5" />
+                                            </div>
+                                            Email *
+                                        </label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className={`w-full px-4 py-3 rounded-xl border-2 ${formErrors.email ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50'} focus:border-blue-600 focus:bg-white focus:outline-none transition-all text-slate-900 font-semibold placeholder:text-slate-400 hover:border-slate-300`}
+                                            placeholder="john@example.com"
+                                        />
+                                        {formErrors.email && (
+                                            <p className="text-red-600 text-sm mt-2 font-bold flex items-center gap-1">
+                                                <span className="w-1 h-1 rounded-full bg-red-600"></span>
+                                                {formErrors.email}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Phone Field */}
+                                <div className="group">
+                                    <label className="block text-xs font-black text-slate-700 mb-2 uppercase tracking-wider flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center group-focus-within:bg-blue-600 group-focus-within:text-white transition-colors">
+                                            <Phone className="w-3.5 h-3.5" />
+                                        </div>
+                                        Phone Number *
+                                    </label>
+                                    <PhoneInput
+                                        international
+                                        defaultCountry="IN"
+                                        value={formData.phone}
+                                        onChange={handlePhoneChange}
+                                        className={`phone-input-custom ${formErrors.phone ? 'phone-input-error' : ''}`}
+                                        placeholder="98765 43210"
+                                    />
+                                    {formErrors.phone && (
+                                        <p className="text-red-600 text-sm mt-2 font-bold flex items-center gap-1">
+                                            <span className="w-1 h-1 rounded-full bg-red-600"></span>
+                                            {formErrors.phone}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Message Field */}
+                                <div className="group">
+                                    <label className="block text-xs font-black text-slate-700 mb-2 uppercase tracking-wider flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center group-focus-within:bg-blue-600 group-focus-within:text-white transition-colors">
+                                            <MessageSquare className="w-3.5 h-3.5" />
+                                        </div>
+                                        Message *
+                                    </label>
+                                    <textarea
+                                        name="message"
+                                        value={formData.message}
+                                        onChange={handleInputChange}
+                                        rows="4"
+                                        className={`w-full px-4 py-3 rounded-xl border-2 ${formErrors.message ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-slate-50'} focus:border-blue-600 focus:bg-white focus:outline-none transition-all text-slate-900 font-semibold placeholder:text-slate-400 resize-none hover:border-slate-300`}
+                                        placeholder="Tell us about your portfolio optimization needs..."
+                                    ></textarea>
+                                    {formErrors.message && (
+                                        <p className="text-red-600 text-sm mt-2 font-bold flex items-center gap-1">
+                                            <span className="w-1 h-1 rounded-full bg-red-600"></span>
+                                            {formErrors.message}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Status Messages */}
+                                {submitStatus === 'success' && (
+                                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-500 text-green-700 px-6 py-5 rounded-2xl font-bold flex items-center gap-4 shadow-lg shadow-green-500/20">
+                                        <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                                            <CheckCircle2 className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-lg">Success!</p>
+                                            <p className="text-sm font-medium text-green-600">Message sent successfully. We'll get back to you soon.</p>
+                                        </div>
+                                    </div>
+                                )}
+                                {submitStatus === 'error' && (
+                                    <div className="bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-500 text-red-700 px-6 py-5 rounded-2xl font-bold flex items-center gap-4 shadow-lg shadow-red-500/20">
+                                        <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                                            <X className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-lg">Error</p>
+                                            <p className="text-sm font-medium text-red-600">Failed to send message. Please try again or email us directly.</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Submit Button */}
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-black text-lg hover:shadow-[0_20px_60px_rgba(79,70,229,0.4)] hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 relative overflow-hidden group"
+                                >
+                                    <span className="relative z-10 flex items-center justify-center gap-3">
+                                        {isSubmitting ? (
+                                            <>
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                Sending...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Send Message
+                                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                            </>
+                                        )}
+                                    </span>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

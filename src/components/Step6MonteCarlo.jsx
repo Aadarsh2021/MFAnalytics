@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts'
-import { TrendingUp, Play, Calculator, ArrowRight, Activity, AlertCircle, BarChart2, Zap, Target, Gauge, Info } from 'lucide-react'
+import { TrendingUp, Play, Calculator, ArrowRight, Activity, AlertCircle, BarChart2, Zap, Target, Gauge, Info, RotateCcw } from 'lucide-react'
 import { calcCovariance } from '../utils/optimization.js'
 
 export default function Step6MonteCarlo({
@@ -51,9 +51,22 @@ export default function Step6MonteCarlo({
                 const weights = portfolio.weights
                 const n = weights.length
 
+                // Resolve expReturn properly (Handling scale difference between BL and Regime)
                 let expReturn = 0
-                for (let i = 0; i < n; i++) expReturn += weights[i] * means[i]
-                const mu = expReturn * 252
+                if (selectedPortfolio === 'bl' && blResult) {
+                    // BL expected return is stored as Annualized
+                    expReturn = blResult.expectedReturn / 252
+                } else if (selectedPortfolio === 'regime' && regimeResult) {
+                    // Regime expected return is already Daily
+                    expReturn = regimeResult.expectedReturn
+                } else {
+                    // Fallback to historical means for MVP/SQP
+                    for (let i = 0; i < n; i++) {
+                        expReturn += weights[i] * means[i]
+                    }
+                }
+
+                const mu = (isNaN(expReturn) ? 0 : expReturn) * 252
 
                 let variance = 0
                 for (let i = 0; i < n; i++) {
@@ -61,7 +74,7 @@ export default function Step6MonteCarlo({
                         variance += weights[i] * weights[j] * cov[i][j]
                     }
                 }
-                const sigma = Math.sqrt(variance * 252)
+                const sigma = Math.sqrt(Math.max(0, variance) * 252)
 
                 const dt = 1 / 12
                 const totalSteps = years * 12
@@ -72,14 +85,22 @@ export default function Step6MonteCarlo({
                     const path = [initialAmount]
                     let currentVal = initialAmount
                     for (let t = 1; t <= totalSteps; t++) {
+                        // If sigma is very small, return purely determined by drift
                         const drift = (mu - 0.5 * sigma * sigma) * dt
-                        const diffusion = sigma * Math.sqrt(dt) * boxMuller()
-                        currentVal = currentVal * Math.exp(drift + diffusion)
+                        const diffusion = (sigma > 1e-10) ? sigma * Math.sqrt(dt) * boxMuller() : 0
+
+                        const change = Math.exp(drift + diffusion)
+                        // Safety: Prevent Infinity or NaN
+                        if (isNaN(change) || !isFinite(change)) {
+                            currentVal = currentVal * (1 + (mu * dt))
+                        } else {
+                            currentVal = currentVal * change
+                        }
                         path.push(currentVal)
                     }
                     allPaths.push(path)
-                    const cagr = Math.pow(currentVal / initialAmount, 1 / years) - 1
-                    finalReturns.push(cagr)
+                    const cagr = Math.pow(Math.max(0.1, currentVal) / initialAmount, 1 / years) - 1
+                    finalReturns.push(isNaN(cagr) ? 0 : cagr)
                 }
 
                 const timePoints = Array.from({ length: totalSteps + 1 }, (_, i) => i)
@@ -98,12 +119,19 @@ export default function Step6MonteCarlo({
                 const bins = 40
                 const minR = finalReturns[0]
                 const maxR = finalReturns[finalReturns.length - 1]
-                const binSize = (maxR - minR) / bins
+
+                // Safety: Handle zero-variance histogram
+                const effectiveRange = Math.max(0.0001, maxR - minR)
+                const binSize = effectiveRange / bins
+
                 const histogram = []
                 for (let i = 0; i < bins; i++) {
                     const binStart = minR + i * binSize
                     const binEnd = binStart + binSize
-                    const count = finalReturns.filter(r => r >= binStart && r < binEnd).length
+                    // Use inclusive bound for last bin
+                    const count = finalReturns.filter(r =>
+                        r >= binStart && (i === bins - 1 ? r <= binEnd : r < binEnd)
+                    ).length
                     histogram.push({ range: `${(binStart * 100).toFixed(1)}%`, freq: count })
                 }
 
@@ -114,12 +142,13 @@ export default function Step6MonteCarlo({
                 const p75Return = finalReturns[Math.floor(finalReturns.length * 0.75)]
                 const p95Return = finalReturns[Math.floor(finalReturns.length * 0.95)]
 
-                // Calculate ending wealth for each percentile
-                const p5Wealth = initialAmount * (1 + p5Return * years)
-                const p25Wealth = initialAmount * (1 + p25Return * years)
-                const p50Wealth = initialAmount * (1 + p50Return * years)
-                const p75Wealth = initialAmount * (1 + p75Return * years)
-                const p95Wealth = initialAmount * (1 + p95Return * years)
+                // Calculate ending wealth using final simulation values (more accurate than back-calculating)
+                const endingWealths = allPaths.map(p => p[p.length - 1]).sort((a, b) => a - b)
+                const p5Wealth = endingWealths[Math.floor(endingWealths.length * 0.05)]
+                const p25Wealth = endingWealths[Math.floor(endingWealths.length * 0.25)]
+                const p50Wealth = endingWealths[Math.floor(endingWealths.length * 0.50)]
+                const p75Wealth = endingWealths[Math.floor(endingWealths.length * 0.75)]
+                const p95Wealth = endingWealths[Math.floor(endingWealths.length * 0.95)]
 
                 setResults({
                     data: chartData,
@@ -162,13 +191,16 @@ export default function Step6MonteCarlo({
         return `₹${val.toLocaleString()}`
     }
 
-    const blStats = useMemo(() => {
-        if (!blResult?.weights || !returns) return null
+    const portfolioStats = useMemo(() => {
+        const portfolio = portfolioOptions.find(p => p.id === selectedPortfolio)
+        if (!portfolio?.weights || !returns) return null
+
+        const weights = portfolio.weights
         const series = []
         returns.dates.forEach(date => {
             let sum = 0
             returns.codes.forEach((code, i) => {
-                sum += blResult.weights[i] * (returns.returns[code][date] || 0)
+                sum += weights[i] * (returns.returns[code][date] || 0)
             })
             series.push(sum)
         })
@@ -187,7 +219,7 @@ export default function Step6MonteCarlo({
         const worst5 = sorted.slice(0, idx5 + 1)
         const cvar95 = worst5.reduce((a, b) => a + b, 0) / worst5.length
         return { annReturn, annVol, medianAnn, var95, cvar95 }
-    }, [blResult, returns])
+    }, [selectedPortfolio, portfolioOptions, returns])
 
     return (
         <div className="space-y-6">
@@ -200,7 +232,7 @@ export default function Step6MonteCarlo({
                             <Zap className="text-white" size={28} />
                         </div>
                         <div>
-                            <h2 className="text-3xl font-black text-slate-800 tracking-tight">Probabilistic Simulation</h2>
+                            <h2 className="text-3xl font-black text-slate-800 tracking-tight">Step 6: Probabilistic Simulation</h2>
                             <p className="text-slate-400 font-bold uppercase tracking-widest text-xs mt-1">Monte Carlo • 1000+ Scenarios</p>
                         </div>
                     </div>
@@ -292,28 +324,37 @@ export default function Step6MonteCarlo({
                     )}
 
                     {/* Right: Risk/Return Summary Metrics */}
-                    {blStats && (
-                        <BLSummaryCard stats={blStats} name={portfolioOptions.find(p => p.id === selectedPortfolio)?.name || 'Strategy'} />
+                    {portfolioStats && (
+                        <PortfolioSummaryCard stats={portfolioStats} name={portfolioOptions.find(p => p.id === selectedPortfolio)?.name || 'Strategy'} />
                     )}
                 </div>
             )}
 
             {/* Full Width Key Insights */}
-            {blStats && (
+            {results && portfolioStats && (
                 <div className="bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 animate-fade-in">
-                    <KeyInsights stats={blStats} />
+                    <KeyInsights stats={portfolioStats} />
                 </div>
             )}
 
 
             {results && (
-                <button
-                    onClick={() => goToStep(7)}
-                    className="w-full px-8 py-5 bg-white border-2 border-slate-200 text-slate-800 rounded-[2rem] hover:bg-slate-50 hover:border-slate-300 font-black text-xl flex items-center justify-center gap-3 transition-all hover-lift"
-                >
-                    Proceed to Final Report
-                    <ArrowRight size={24} />
-                </button>
+                <div className="flex gap-4">
+                    <button
+                        onClick={() => goToStep(regimeResult ? '5A' : '5B')}
+                        className="w-1/3 px-8 py-5 bg-white border-2 border-slate-200 text-slate-600 rounded-[2rem] hover:bg-slate-50 hover:border-slate-300 font-bold text-xl flex items-center justify-center gap-3 transition-all hover-lift"
+                    >
+                        <RotateCcw size={24} />
+                        Back
+                    </button>
+                    <button
+                        onClick={() => goToStep(7)}
+                        className="w-2/3 px-8 py-5 bg-white border-2 border-slate-200 text-slate-800 rounded-[2rem] hover:bg-slate-50 hover:border-slate-300 font-black text-xl flex items-center justify-center gap-3 transition-all hover-lift"
+                    >
+                        Proceed to Final Report
+                        <ArrowRight size={24} />
+                    </button>
+                </div>
             )
             }
         </div >
@@ -369,7 +410,7 @@ function SimulationTooltip({ active, payload, label }) {
     return null
 }
 
-function BLSummaryCard({ stats, name }) {
+function PortfolioSummaryCard({ stats, name }) {
     if (!stats) return null
 
     return (
@@ -384,17 +425,17 @@ function BLSummaryCard({ stats, name }) {
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-0">
-                <MetricCardBL title="Expected Return (Annual)" value={stats.annReturn} sub="Over 1 year" color="blue" />
-                <MetricCardBL title="Volatility (Annual)" value={stats.annVol} sub="Annualized standard deviation" color="purple" />
-                <MetricCardBL title="Median Return" value={stats.medianAnn} sub="Over 1 year" color="emerald" />
-                <MetricCardBL title="VaR 95% (Daily)" value={stats.var95} sub="Worst-case single-day loss" color="orange" />
-                <MetricCardBL title="CVaR 95% (Daily)" value={stats.cvar95} sub="Avg loss in worst 5% of days" color="red" />
+                <MetricCardPortfolio title="Expected Return (Annual)" value={stats.annReturn} sub="Over 1 year" color="blue" />
+                <MetricCardPortfolio title="Volatility (Annual)" value={stats.annVol} sub="Annualized standard deviation" color="purple" />
+                <MetricCardPortfolio title="Median Return" value={stats.medianAnn} sub="Over 1 year" color="emerald" />
+                <MetricCardPortfolio title="VaR 95% (Daily)" value={stats.var95} sub="Worst-case single-day loss" color="orange" />
+                <MetricCardPortfolio title="CVaR 95% (Daily)" value={stats.cvar95} sub="Avg loss in worst 5% of days" color="red" />
             </div>
         </div>
     )
 }
 
-function MetricCardBL({ title, value, sub, color }) {
+function MetricCardPortfolio({ title, value, sub, color }) {
     const themes = {
         blue: 'text-blue-600 bg-blue-50',
         purple: 'text-purple-600 bg-purple-50',
@@ -505,39 +546,41 @@ function ReturnPercentilesChart({ percentiles, wealthPercentiles, formatCurrency
             <h3 className="text-2xl font-black text-slate-900 mb-8">Return Percentiles (Over 1 Year)</h3>
 
             <div className="space-y-6">
-                {data.map((item, idx) => {
+                {data.map((item, id) => {
                     const widthPercent = (Math.abs(item.percentile) / maxAbs) * 100
                     const returnPct = (item.percentile * 100).toFixed(2) + '%'
 
                     return (
-                        <div key={idx} className="flex items-center gap-4">
+                        <div key={id} className="flex items-center gap-6">
+                            {/* Label Column */}
                             <div className="w-16 text-right">
-                                <span className="text-sm font-bold text-slate-600">{item.label}</span>
+                                <span className="text-sm font-bold text-slate-500">{item.label}</span>
                             </div>
 
-                            <div className="flex-1 flex items-center gap-4">
-                                <div className="flex-1 h-12 bg-slate-100 rounded-xl relative overflow-hidden">
-                                    {item.isNegative ? (
-                                        <div
-                                            className={`absolute right-1/2 h-full ${item.color} rounded-l-xl flex items-center justify-start pl-3`}
-                                            style={{ width: `${widthPercent / 2}%` }}
-                                        >
-                                            <span className="text-white font-black text-sm">{returnPct}</span>
-                                        </div>
-                                    ) : (
-                                        <div
-                                            className={`absolute left-1/2 h-full ${item.color} rounded-r-xl flex items-center justify-end pr-3`}
-                                            style={{ width: `${widthPercent / 2}%` }}
-                                        >
-                                            <span className="text-white font-black text-sm">{returnPct}</span>
-                                        </div>
-                                    )}
-                                    {/* Center line */}
-                                    <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-300"></div>
-                                </div>
+                            {/* Chart Column */}
+                            <div className="flex-1 h-8 bg-slate-100/50 rounded-full relative overflow-hidden">
+                                {item.isNegative ? (
+                                    <div
+                                        className={`absolute right-1/2 h-full ${item.color} rounded-l-full`}
+                                        style={{ width: `${widthPercent / 2}%` }}
+                                    ></div>
+                                ) : (
+                                    <div
+                                        className={`absolute left-1/2 h-full ${item.color} rounded-r-full`}
+                                        style={{ width: `${widthPercent / 2}%` }}
+                                    ></div>
+                                )}
+                                {/* Center line */}
+                                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200"></div>
+                            </div>
 
-                                <div className="w-32 text-right">
-                                    <span className="text-sm font-black text-slate-700">{formatCurrency(item.wealth)}</span>
+                            {/* Values Column (Percentage + Wealth) */}
+                            <div className="flex items-center gap-6 w-56 justify-end">
+                                <div className={`text-sm font-black w-20 text-right ${item.isNegative ? 'text-red-500' : 'text-blue-600'}`}>
+                                    {returnPct}
+                                </div>
+                                <div className="w-28 text-right">
+                                    <span className="text-sm font-black text-slate-800">{formatCurrency(item.wealth)}</span>
                                 </div>
                             </div>
                         </div>

@@ -50,6 +50,8 @@ export default function Step3MVPAnalysis({
     // Calculate historical returns for MVP weights
     const calculateHistoricalReturns = (weights) => {
         if (!returns || !weights) return null
+        // Safety check for stale results (e.g. user changed funds but didn't re-run MVP)
+        if (weights.length !== returns.codes.length) return null
 
         const portfolioReturns = returns.dates.map(date => {
             let portfolioReturn = 0
@@ -167,14 +169,13 @@ export default function Step3MVPAnalysis({
                             {(vol * 100).toFixed(2)}%
                         </p>
                     </div>
-                    {historicalReturns && (
-                        <div className="bg-white p-3 rounded-lg shadow-sm">
-                            <p className="text-xs text-gray-600">Historical Return (Annual)</p>
-                            <p className={`text-2xl font-bold text-${color}-600`}>
-                                {(historicalReturns.annualized * 100).toFixed(2)}%
-                            </p>
-                        </div>
-                    )}
+                    {/* Show return only if valid */}
+                    <div className="bg-white p-3 rounded-lg shadow-sm">
+                        <p className="text-xs text-gray-600">Historical Return (Annual)</p>
+                        <p className={`text-2xl font-bold text-${color}-600`}>
+                            {historicalReturns ? `${(historicalReturns.annualized * 100).toFixed(2)}%` : '-'}
+                        </p>
+                    </div>
                 </div>
             </div>
         )
@@ -203,7 +204,7 @@ export default function Step3MVPAnalysis({
         <div className="space-y-6">
             <div className="bg-white rounded-xl shadow-lg p-8 animate-fade-in">
                 <h2 className="text-2xl font-bold mb-4 text-gray-800">
-                    ⚖️ Step 3: MVP Analysis (3 Methods)
+                    ⚖️ Step 3: MVP Analysis
                 </h2>
 
                 <div className="flex gap-3 mb-6">
@@ -447,7 +448,7 @@ export default function Step3MVPAnalysis({
                     className="w-full px-6 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 font-bold text-lg flex items-center justify-center gap-3 hover-lift shadow-xl shadow-indigo-100 transition-all"
                 >
                     <CheckCircle size={24} />
-                    Proceed to Step 4: Express Market Views
+                    Proceed to Step 4: Optimization Choice
                     <ArrowRight size={24} className="ml-2" />
                 </button>
             )}

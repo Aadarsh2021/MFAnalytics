@@ -101,6 +101,7 @@ function createViewUncertainty(views, P, cov, tau) {
     const PSigmaPT = matrixMultiply(PSigma, transpose(P))
 
     // Set diagonal elements
+    const EPSILON = 1e-8
     for (let i = 0; i < k; i++) {
         const confidence = views[i].confidence || 0.5
         // Heuristic: Higher confidence = lower variance (Omega)
@@ -108,7 +109,7 @@ function createViewUncertainty(views, P, cov, tau) {
         // If confidence is 1.0 (100%), Omega -> 0 (view is forced)
         // If confidence is 0.0, Omega -> large (view is ignored)
         const scaleFactor = (1 - confidence) / Math.max(confidence, 0.01)
-        omega[i][i] = PSigmaPT[i][i] * scaleFactor
+        omega[i][i] = PSigmaPT[i][i] * scaleFactor + 1e-6 // Stronger ridge for views
     }
 
     return omega
@@ -175,6 +176,14 @@ export function calculateBlackLittermanPosterior(
     // E[R] = [(τΣ)^-1 + P^T Ω^-1 P]^-1 [(τΣ)^-1 Π + P^T Ω^-1 Q]
 
     const tauCov = matrixScale(cov, tau)
+
+    // Stability: Add epsilon to tauCov diagonal before inversion
+    const n_size = tauCov.length
+    for (let i = 0; i < n_size; i++) {
+        tauCov[i][i] += 1e-6
+    }
+    validateMatrix(tauCov)
+
     const tauCovInv = matrixInverse(tauCov)
     const omegaInv = matrixInverse(Omega)
 
@@ -190,6 +199,12 @@ export function calculateBlackLittermanPosterior(
     const term2 = matrixAdd(tauCovInvPi, PTOmegaInvQ)
 
     // Posterior: term1^-1 * term2
+    // Stability: Add epsilon to term1 diagonal before inversion
+    for (let i = 0; i < n; i++) {
+        term1[i][i] += 1e-6
+    }
+    validateMatrix(term1)
+
     const term1Inv = matrixInverse(term1)
     const posterior = matrixMultiply(term1Inv, term2)
 
@@ -227,7 +242,11 @@ function calculateOptimalWeights(cov, expectedReturns) {
      */
 
     const n = cov.length
-    const covInv = matrixInverse(cov)
+
+    // Stability: Ensure cov is invertible
+    const stableCov = cov.map((row, i) => row.map((val, j) => i === j ? val + 1e-6 : val))
+    validateMatrix(stableCov)
+    const covInv = matrixInverse(stableCov)
 
     // w = Σ^-1 μ
     let w = matrixMultiply(covInv, expectedReturns)
@@ -334,13 +353,17 @@ export function calculatePortfolioMetrics(weights, cov, expectedReturns) {
 
     // Variance: σ²_p = w^T Σ w
     const wTCov = matrixMultiply(weights, cov)
-    const variance = matrixMultiply(wTCov, weights)
+    let variance = matrixMultiply(wTCov, weights)
+
+    // Stability: Variance cannot be negative
+    variance = Math.max(1e-12, variance)
 
     // Volatility (annualized)
     const volatility = Math.sqrt(variance * 252)
 
     // Sharpe ratio (assuming risk-free rate = 0)
-    const sharpeRatio = (expectedReturn * 252) / volatility
+    // Prevent division by zero
+    const sharpeRatio = (volatility > 1e-10) ? (expectedReturn * 252) / volatility : 0
 
     return {
         expectedReturn: expectedReturn * 252, // Annualized
