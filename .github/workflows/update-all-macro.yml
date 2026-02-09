@@ -33,6 +33,15 @@ jobs:
           git diff --staged --quiet || git commit -m "🤖 Sync macro data [skip ci]"
           git push
       
+      - name: Build Application
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FRED_API_KEY: ${{ secrets.VITE_FRED_API_KEY }}
+          VITE_DATA_GOV_IN_API_KEY: ${{ secrets.VITE_DATA_GOV_IN_API_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
       - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

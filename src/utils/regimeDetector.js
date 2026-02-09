@@ -243,22 +243,20 @@ export function shouldExitRegimeC(historicalRegimes) {
 
     const recent3 = historicalRegimes.slice(-3);
 
-    // STRONG EXIT: If real rate is consistently > 2.0%, exit immediately
-    // This handles cases where other indicators are missing (e.g., India data)
-    const strongRealRateExit = recent3.filter(r => (r.indicators?.realRate || 0) > 2.0).length >= 2;
-    if (strongRealRateExit) {
-        console.log('🚀 Strong real rate exit triggered (>2.0% for 2+ months)');
-        return true;
-    }
+    // RELAXED EXIT: make it much easier to leave Regime C
+    // If ANY single strong signal is present, we allow exit.
 
-    // Count how many of the last 3 months meet each condition
-    const realRateCondition = recent3.filter(r => (r.indicators?.realRate || 0) > 1.0).length >= 2;
-    const correlationCondition = recent3.filter(r => (r.indicators?.bondEquityCorr || 0) < -0.2).length >= 2;
-    const goldCondition = recent3.filter(r => (r.indicators?.cbGoldBuying || 0) < 50).length >= 2;
+    // 1. Real Rates are positive (even slightly)
+    const realRateCondition = recent3.filter(r => (r.indicators?.realRate || 0) > 0.5).length >= 2;
 
-    // Exit if ANY TWO of the three conditions are met (more lenient)
-    const conditionsMet = [realRateCondition, correlationCondition, goldCondition].filter(Boolean).length;
-    return conditionsMet >= 2;
+    // 2. Correlation breakdown (not perfectly inverted anymore)
+    const correlationCondition = recent3.filter(r => (r.indicators?.bondEquityCorr || 0) < -0.1).length >= 1;
+
+    // 3. Gold buying stops
+    const goldCondition = recent3.filter(r => (r.indicators?.cbGoldBuying || 0) < 30).length >= 2;
+
+    // Exit if ANY ONE of the conditions is met (very lenient now)
+    return realRateCondition || correlationCondition || goldCondition;
 }
 
 /**
