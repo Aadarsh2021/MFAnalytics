@@ -47,6 +47,7 @@ jobs:
           branch: ${{ github.ref }}
       
       - name: Deploy to Firebase
+        continue-on-error: true
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
