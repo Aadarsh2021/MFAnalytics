@@ -379,8 +379,8 @@ export function processMacroData(data) {
         // Term Premium (10Y - 2Y Spread / Yield Curve Slope proxy)
         const termPremium = row.termPremium || (row.india_yield_curve_slope || (row.gSecYield ? row.gSecYield - 6.5 : 0));
 
-        // Global Liquidity Proxy (M2 Growth / GDP proxy)
-        const globalLiquidity = row.globalLiquidity || (row.global_liquidity || (row.bankCredit ? row.bankCredit + 2 : 12));
+        // Global Liquidity Proxy (M2/M3 Growth / GDP proxy)
+        const globalLiquidity = row.globalLiquidity || (row.global_liquidity || (row.m3Money ? row.m3Money / 1000 : (row.bankCredit ? row.bankCredit + 2 : 12)));
 
         // Equity Earnings Breadth
         const equityEarningsBreadth = row.equityEarningsBreadth || (row.equity_earnings_breadth || 65);
@@ -388,10 +388,11 @@ export function processMacroData(data) {
         // Debt Stress - Use provided if available
         // Calculation: (Interest Expense / Nominal GDP) * 100
         // Nominal GDP is usually ~1.5x of Real GDP (gdpIndex), but we fetch it directly now.
-        const nominalGDP = row.gdpNominal || (row.gdpIndex ? row.gdpIndex * 1.5 : null);
+        const nominalGDP = row.nominalGDP || row.gdpNominal || (row.gdpIndex ? row.gdpIndex * 1.5 : null);
         const debtStress = row.debtStress !== undefined ? row.debtStress :
             (row.interest_expense && nominalGDP ? (row.interest_expense / nominalGDP) * 100 :
-                (0.8 * (row.gSecYield || 7.0)));
+                (row.debtToGDP && row.gSecYield ? (row.debtToGDP * row.gSecYield) / 100 :
+                    (0.8 * (row.gSecYield || 7.0))));
 
         return {
             ...row,
@@ -411,18 +412,19 @@ export function processMacroData(data) {
     });
 
     // Second pass: Calculate Momentum, Volatility Ratio, and individual volatilities
-    const inflationSeries = withBasicFields.map(row => ({ date: row.date, value: row.inflation || 0 }));
-    const growthSeries = withBasicFields.map(row => ({ date: row.date, value: row.growth || 0 }));
+    const inflationSeries = withBasicFields.map(row => ({ date: row.date, value: row.cpiInflation || row.inflation || 0 }));
+    const growthSeries = withBasicFields.map(row => ({ date: row.date, value: row.industrialProd || row.gdpGrowth || row.growth || 0 }));
 
     const inflationMomentum = calculateMomentum(inflationSeries, 3);
     const growthMomentum = calculateMomentum(growthSeries, 3);
     const volRatios = calculateVolatilityRatio(inflationSeries, growthSeries, 12);
 
     // Calculate Bond-Equity Correlation (12m rolling)
-    const sp500Series = withBasicFields.map((row, i) => {
+    const equitySeries = withBasicFields.map((row, i) => {
         const prev = i > 0 ? withBasicFields[i - 1] : null
-        const val = row.sp500
-        const prevVal = prev?.sp500
+        // Priority: nifty (India Proxy) > sp500 (US)
+        const val = row.nifty || row.sp500
+        const prevVal = prev?.nifty || prev?.sp500
         // % change
         const ret = (val && prevVal) ? (val - prevVal) / prevVal : 0
         return { date: row.date, value: ret }
@@ -437,7 +439,7 @@ export function processMacroData(data) {
         return { date: row.date, value: ret }
     })
 
-    const bondEquityCorrs = calculateRollingCorrelation(sp500Series, bondSeries, 12)
+    const bondEquityCorrs = calculateRollingCorrelation(equitySeries, bondSeries, 12)
     const bondEquityMap = new Map(bondEquityCorrs.map(c => [c.date, c.correlation]))
 
     // Explicitly get inflation volatility for Pillar 5

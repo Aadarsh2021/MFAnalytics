@@ -14,7 +14,11 @@ const SERIES = {
     INR_USD: 'DEXINUS',
     GSEC: 'INDIRLTLT01STM',
     BANK_CREDIT: 'CRDQINAPABIS', // Total Credit
-    REPO_PROXY: 'INTDSRINM193N'
+    REPO_PROXY: 'INTDSRINM193N',
+    STOCK_INDEX: 'STXINDINM', // India Stock Index (Nifty Proxy)
+    DEBT_TO_GDP: 'GGGDTAINA188N', // General Government Gross Debt (% of GDP)
+    MONEY_SUPPLY: 'MABMM301INM189N', // M3 for India
+    IND_PROD: 'INDPROINMMEI' // Industrial Production
 }
 
 /**
@@ -61,7 +65,7 @@ async function loadManualOverrides() {
  * Now uses 3-tier priority: Manual Override > FRED > Static
  */
 export async function getLiveIndianData(staticData) {
-    console.log('🔄 Fetching live Indian data with priority system...')
+    console.log('🔄 Fetching live Indian data with priority system and merge logic...')
 
     // Load manual overrides first
     const manualOverrides = await loadManualOverrides()
@@ -72,10 +76,12 @@ export async function getLiveIndianData(staticData) {
         const results = await Promise.all(keys.map(k => fetchFredSeries(SERIES[k])))
 
         const liveMap = {}
+        const historyMap = {}
+
         keys.forEach((k, i) => {
             if (results[i] && results[i].length > 0) {
                 liveMap[k] = results[i][0] // Latest
-                liveMap[`${k}_HISTORY`] = results[i] // For YoY
+                historyMap[k] = results[i] // Full fetched history
             }
         })
 
@@ -84,79 +90,94 @@ export async function getLiveIndianData(staticData) {
             return staticData
         }
 
-        const lastStatic = staticData[staticData.length - 1]
-        const lastStaticDate = new Date(lastStatic.date)
-        const liveDate = new Date(liveMap.CPI.date)
+        // --- Robust Merging Logic (Prevents Overwriting) ---
+        let newData = [...staticData]
 
-        if (liveDate > lastStaticDate) {
-            console.log(`✅ New data found! ${liveMap.CPI.date} vs ${lastStatic.date}`)
-
-            const updatedLast = { ...lastStatic, date: liveMap.CPI.date }
-
-            if (liveMap.INR_USD) updatedLast.inrUsd = liveMap.INR_USD.value
-            if (liveMap.GSEC) updatedLast.gSecYield = liveMap.GSEC.value
-            if (liveMap.FOREX) updatedLast.forexReserves = Number((liveMap.FOREX.value / 1000).toFixed(2))
-            if (liveMap.BANK_CREDIT) updatedLast.bankCredit = liveMap.BANK_CREDIT.value
-
-            // YoY Calculations
-            if (liveMap.CPI_HISTORY && liveMap.CPI_HISTORY.length >= 12) {
-                const cur = liveMap.CPI_HISTORY[0].value
-                const old = liveMap.CPI_HISTORY[12].value
-                updatedLast.cpiInflation = Number((((cur / old) - 1) * 100).toFixed(2))
-            }
-
-            if (liveMap.WPI_HISTORY && liveMap.WPI_HISTORY.length >= 12) {
-                const cur = liveMap.WPI_HISTORY[0].value
-                const old = liveMap.WPI_HISTORY[12].value
-                updatedLast.wpiInflation = Number((((cur / old) - 1) * 100).toFixed(2))
-            }
-
-            if (liveMap.REAL_GDP_HISTORY && liveMap.REAL_GDP_HISTORY.length >= 4) { // Quarterly data
-                const cur = liveMap.REAL_GDP_HISTORY[0].value
-                const old = liveMap.REAL_GDP_HISTORY[1].value // 1 quarter ago? Or 4 quarters ago for YoY?
-                // For true YoY on quarterly data:
-                const oldYoY = liveMap.REAL_GDP_HISTORY.find(o => {
-                    const d1 = new Date(liveMap.REAL_GDP_HISTORY[0].date)
-                    const d2 = new Date(o.date)
-                    return (d1.getFullYear() - d2.getFullYear() === 1) && (d1.getMonth() === d2.getMonth())
-                })
-                if (oldYoY) {
-                    updatedLast.gdpGrowth = Number((((cur / oldYoY.value) - 1) * 100).toFixed(2))
-                }
-            }
-
-            updatedLast.realRate = Number((updatedLast.repoRate - updatedLast.cpiInflation).toFixed(2))
-
-            // Apply manual overrides (highest priority)
-            if (Object.keys(manualOverrides).length > 0) {
-                console.log('🎯 Applying manual overrides to live data...')
-
-                if (manualOverrides.wpi) {
-                    updatedLast.wpiIndex = manualOverrides.wpi.index
-                    updatedLast.wpiInflation = manualOverrides.wpi.inflation
-                    console.log(`   ✅ WPI: ${manualOverrides.wpi.inflation}% (${manualOverrides.wpi.source})`)
-                }
-
-                if (manualOverrides.cpi) {
-                    updatedLast.cpiIndex = manualOverrides.cpi.index
-                    updatedLast.cpiInflation = manualOverrides.cpi.inflation
-                    updatedLast.realRate = Number((updatedLast.repoRate - manualOverrides.cpi.inflation).toFixed(2))
-                    console.log(`   ✅ CPI: ${manualOverrides.cpi.inflation}% (${manualOverrides.cpi.source})`)
-                }
-
-                if (manualOverrides.repoRate) {
-                    updatedLast.repoRate = manualOverrides.repoRate.value
-                    updatedLast.realRate = Number((manualOverrides.repoRate.value - updatedLast.cpiInflation).toFixed(2))
-                    console.log(`   ✅ Repo: ${manualOverrides.repoRate.value}% (${manualOverrides.repoRate.source})`)
-                }
-            }
-
-            const newData = [...staticData]
-            newData[newData.length - 1] = updatedLast
-            return newData
+        // Map FRED keys to our internal keys
+        const fredToInternal = {
+            'INR_USD': 'inrUsd',
+            'GSEC': 'gSecYield',
+            'FOREX': 'forexReserves',
+            'BANK_CREDIT': 'bankCredit',
+            'REPO_PROXY': 'repoRate',
+            'STOCK_INDEX': 'nifty', // Primary equity proxy for India
+            'GDP': 'nominalGDP',
+            'DEBT_TO_GDP': 'debtToGDP',
+            'MONEY_SUPPLY': 'm3Money',
+            'IND_PROD': 'industrialProd'
         }
+
+        // Helper to find or create a month row
+        const getRow = (dateStr) => {
+            const yyyyMm = dateStr.substring(0, 7)
+            let row = newData.find(r => r.date === yyyyMm)
+            if (!row) {
+                // Clone last known row as base to avoid Pillar loss
+                row = { ...newData[newData.length - 1], date: yyyyMm, valDate: dateStr }
+                newData.push(row)
+                console.log(`➕ Added new month: ${yyyyMm}`)
+            }
+            return row
+        }
+
+        // Process all fetched observations for each series
+        Object.entries(historyMap).forEach(([fredKey, observations]) => {
+            const internalKey = fredToInternal[fredKey]
+            if (!internalKey) return
+
+            observations.forEach(obs => {
+                const row = getRow(obs.date)
+                let val = obs.value
+
+                // Specialized handling
+                if (fredKey === 'FOREX') val = Number((val / 1000).toFixed(2))
+
+                if (!isNaN(val)) {
+                    row[internalKey] = val
+                    // Update valDate if it's the latest for this row
+                    if (!row.valDate || new Date(obs.date) > new Date(row.valDate)) {
+                        row.valDate = obs.date
+                    }
+                }
+            })
+        })
+
+        // Handle CPI and Inflation separately (since it drives dates)
+        if (historyMap.CPI) {
+            historyMap.CPI.forEach(obs => {
+                const row = getRow(obs.date)
+                row.cpiIndex = obs.value
+            })
+        }
+
+        // Re-calculate YoY and Derived metrics for the updated months
+        // (Usually handled by processMacroData, but we apply overrides here)
+
+        // Sort by date to ensure continuity
+        newData.sort((a, b) => a.date.localeCompare(b.date))
+
+        // Apply manual overrides to the tip
+        if (Object.keys(manualOverrides).length > 0) {
+            const lastRow = newData[newData.length - 1]
+            console.log('🎯 Applying manual overrides to the latest data point...')
+
+            if (manualOverrides.wpi) {
+                lastRow.wpiIndex = manualOverrides.wpi.index
+                lastRow.wpiInflation = manualOverrides.wpi.inflation
+            }
+            if (manualOverrides.cpi) {
+                lastRow.cpiIndex = manualOverrides.cpi.index
+                lastRow.cpiInflation = manualOverrides.cpi.inflation
+            }
+            if (manualOverrides.repoRate) {
+                lastRow.repoRate = manualOverrides.repoRate.value
+            }
+        }
+
+        return newData
+
     } catch (e) {
-        console.error('Live fetch error:', e)
+        console.error('Live fetch/merge error:', e)
     }
     return staticData
 }
