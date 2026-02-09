@@ -12,5 +12,4 @@ firebase-debug.log
 # Data directories
 data/raw/
 # data/processed/  # Commented out to allow GitHub Actions to commit updated macro data
-
 data/archive/
