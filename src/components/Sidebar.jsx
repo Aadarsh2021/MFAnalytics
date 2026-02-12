@@ -1,7 +1,7 @@
-import { CheckCircle, Circle, Clock, LayoutDashboard, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CheckCircle, Circle, Clock, LayoutDashboard, ChevronLeft, ChevronRight, History } from 'lucide-react'
 import HistorySidebar from './HistorySidebar'
 
-export default function Sidebar({ currentStep, goToStep, onLoadHistory, isOpen, toggleSidebar, optimizationPath }) {
+export default function Sidebar({ currentStep, goToStep, onLoadHistory, isOpen, toggleSidebar, optimizationPath, onOpenHistory, history, historyLoading }) {
     const steps = [
         { num: 1, title: 'Funds Selection', desc: 'Find mutual funds', icon: '🔍' },
         { num: 2, title: 'Data Fetching', desc: 'Get NAV history', icon: '📊' },
@@ -127,8 +127,14 @@ export default function Sidebar({ currentStep, goToStep, onLoadHistory, isOpen, 
                 )}
             </div>
 
-            {isOpen && <HistorySidebar onLoadHistory={onLoadHistory} />}
+            {isOpen && (
+                <HistorySidebar
+                    onLoadHistory={onLoadHistory}
+                    onOpenHistory={onOpenHistory}
+                    history={history}
+                    loading={historyLoading}
+                />
+            )}
         </div>
     )
 }
-

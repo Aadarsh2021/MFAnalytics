@@ -1,60 +1,37 @@
-import { useState, useEffect } from 'react'
-import { History, Trash2, ExternalLink, Calendar, Search } from 'lucide-react'
-
+import { useState } from 'react'
+import { History, Trash2, ExternalLink, Calendar, Search, Database } from 'lucide-react'
 import { supabase } from '../utils/supabase'
 
-export default function HistorySidebar({ onLoadHistory }) {
-    const [history, setHistory] = useState([])
-    const [loading, setLoading] = useState(false)
+export default function HistorySidebar({ onLoadHistory, onOpenHistory, history = [], loading = false }) {
     const [searchTerm, setSearchTerm] = useState('')
 
-    useEffect(() => {
-        const loadHistory = async () => {
-            setLoading(true)
-            try {
-                const { data, error } = await supabase
-                    .from('analyses')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-
-                if (error) throw error
-                setHistory(data || [])
-            } catch (e) {
-                console.error("Error loading history:", e)
-                // Fallback or empty
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        loadHistory()
-        // Listen for internal updates
-        window.addEventListener('mfp-history-update', loadHistory)
-        return () => window.removeEventListener('mfp-history-update', loadHistory)
-    }, [])
-
-    const deleteEntry = (id, e) => {
+    const deleteEntry = async (id, e) => {
         e.stopPropagation()
-        const newHistory = history.filter(item => item.id !== id)
-        localStorage.setItem('mfp_history', JSON.stringify(newHistory))
-        setHistory(newHistory)
+        if (!window.confirm('Delete this analysis?')) return
+        try {
+            const { error } = await supabase.from('analyses').delete().eq('id', id)
+            if (error) throw error
+            window.dispatchEvent(new Event('mfp-history-update'))
+        } catch (e) {
+            console.error("Error deleting entry:", e)
+        }
     }
 
     const filteredHistory = history.filter(item =>
         Array.isArray(item.funds) && item.funds.some(f => f && f.toLowerCase().includes(searchTerm.toLowerCase()))
     )
 
-    if (history.length === 0) return (
+    if (history.length === 0 && !loading) return (
         <div className="mt-8 bg-white rounded-3xl p-6 shadow-xl border border-slate-100">
             <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2 mb-4">
                 <History size={16} className="text-indigo-600" /> Past Analyses
             </h3>
-            <p className="text-xs text-slate-400 font-medium italic">No saved reports yet. Complete an analysis and save it at Step 7.</p>
+            <p className="text-xs text-slate-400 font-medium italic">No saved reports yet.</p>
         </div>
     )
 
     return (
-        <div className="mt-8 bg-white rounded-3xl p-6 shadow-xl border border-slate-100">
+        <div className="mt-8 bg-white rounded-3xl p-6 shadow-xl border border-slate-100 flex flex-col">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
                     <History size={16} className="text-indigo-600" /> Past Analyses
@@ -73,8 +50,10 @@ export default function HistorySidebar({ onLoadHistory }) {
                 />
             </div>
 
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                {filteredHistory.map((item) => (
+            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 mb-6">
+                {loading ? (
+                    <div className="text-center py-4 animate-pulse text-[10px] font-bold text-slate-400 uppercase">Loading...</div>
+                ) : filteredHistory.map((item) => (
                     <div
                         key={item.id}
                         onClick={() => onLoadHistory(item)}
@@ -105,6 +84,15 @@ export default function HistorySidebar({ onLoadHistory }) {
                     </div>
                 ))}
             </div>
+
+            {/* Repositioned Trigger Button */}
+            <button
+                onClick={onOpenHistory}
+                className="w-full p-4 bg-slate-900 text-white rounded-[1.5rem] font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 group"
+            >
+                <Database size={14} className="text-indigo-400 group-hover:scale-110 transition-transform" />
+                Open Analysis Vault
+            </button>
         </div>
     )
 }

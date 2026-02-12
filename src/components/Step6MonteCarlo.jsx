@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend, BarChart, Bar } from 'recharts'
-import { TrendingUp, Play, Calculator, ArrowRight, Activity, AlertCircle, BarChart2, Zap, Target, Gauge, Info, RotateCcw } from 'lucide-react'
+import { TrendingUp, Play, Calculator, ArrowRight, Activity, AlertCircle, BarChart2, Zap, Target, Gauge, Info, RotateCcw, Shield } from 'lucide-react'
 import { calcCovariance } from '../utils/optimization.js'
 
 export default function Step6MonteCarlo({

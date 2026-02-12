@@ -14,7 +14,10 @@
     "inflationVol": 0.7893242390520746,
     "realRate": 2.258795038393406,
     "debtStress": 1.6238975157323163,
-    "volatilityRatio": 0.3946621195260373
+    "volatilityRatio": 0.3946621195260373,
+    "sp500": 1381.86,
+    "goldPrice": 273.94,
+    "cbGoldBuying": 5.49
   },
   {
     "date": "2001-02",
@@ -31,7 +34,10 @@
     "inflationVol": 0.7833495333534781,
     "realRate": 1.9605882352941082,
     "debtStress": 1.6238975157323163,
-    "volatilityRatio": 0.39167476667673906
+    "volatilityRatio": 0.39167476667673906,
+    "sp500": 1353.7,
+    "goldPrice": 275.91,
+    "cbGoldBuying": 5.45
   },
   {
     "date": "2001-03",
@@ -48,7 +54,10 @@
     "inflationVol": 0.7415524647471315,
     "realRate": 2.3275438596491353,
     "debtStress": 1.6238975157323163,
-    "volatilityRatio": 0.3707762323735658
+    "volatilityRatio": 0.3707762323735658,
+    "sp500": 1294.41,
+    "goldPrice": 274.89,
+    "cbGoldBuying": 5.6
   },
   {
     "date": "2001-04",
@@ -65,7 +74,10 @@
     "inflationVol": 0.6712216554676702,
     "realRate": 1.5817437097717946,
     "debtStress": 1.5638227669399305,
-    "volatilityRatio": 0.3356108277338351
+    "volatilityRatio": 0.3356108277338351,
+    "sp500": 1208.24,
+    "goldPrice": 282,
+    "cbGoldBuying": 5.57
   },
   {
     "date": "2001-05",
@@ -82,7 +94,10 @@
     "inflationVol": 0.7054039438444284,
     "realRate": 0.6469158878504606,
     "debtStress": 1.5638227669399305,
-    "volatilityRatio": 0.3527019719222142
+    "volatilityRatio": 0.3527019719222142,
+    "sp500": 1134.66,
+    "goldPrice": 285.18,
+    "cbGoldBuying": 5.7
   },
   {
     "date": "2001-06",
@@ -99,7 +114,10 @@
     "inflationVol": 0.6308116724851816,
     "realRate": 0.7760394889663114,
     "debtStress": 1.5638227669399305,
-    "volatilityRatio": 0.3154058362425908
+    "volatilityRatio": 0.3154058362425908,
+    "sp500": 1090.88,
+    "goldPrice": 283.67,
+    "cbGoldBuying": 5.7
   },
   {
     "date": "2001-07",
@@ -116,7 +134,10 @@
     "inflationVol": 0.7621401982639046,
     "realRate": 1.0485176606832503,
     "debtStress": 1.5328274279616698,
-    "volatilityRatio": 0.3810700991319523
+    "volatilityRatio": 0.3810700991319523,
+    "sp500": 1070.97,
+    "goldPrice": 290.01,
+    "cbGoldBuying": 5.81
   },
   {
     "date": "2001-08",
@@ -133,7 +154,10 @@
     "inflationVol": 0.7621401982639046,
     "realRate": 0.9285176606832501,
     "debtStress": 1.5328274279616698,
-    "volatilityRatio": 0.3810700991319523
+    "volatilityRatio": 0.3810700991319523,
+    "sp500": 1043.52,
+    "goldPrice": 294.64,
+    "cbGoldBuying": 5.83
   },
   {
     "date": "2001-09",
@@ -150,7 +174,10 @@
     "inflationVol": 0.7175626085770738,
     "realRate": 0.4778341013824954,
     "debtStress": 1.5328274279616698,
-    "volatilityRatio": 0.3587813042885369
+    "volatilityRatio": 0.3587813042885369,
+    "sp500": 989.78,
+    "goldPrice": 292.69,
+    "cbGoldBuying": 5.91
   },
   {
     "date": "2001-10",
@@ -167,7 +194,10 @@
     "inflationVol": 0.8723838721373268,
     "realRate": 0.36234042553192314,
     "debtStress": 1.4865090444450402,
-    "volatilityRatio": 0.4361919360686634
+    "volatilityRatio": 0.4361919360686634,
+    "sp500": 951.42,
+    "goldPrice": 298.02,
+    "cbGoldBuying": 5.97
   },
   {
     "date": "2001-11",
@@ -184,7 +214,10 @@
     "inflationVol": 0.9028275057489257,
     "realRate": 0.19562571756600278,
     "debtStress": 1.4865090444450402,
-    "volatilityRatio": 0.45141375287446284
+    "volatilityRatio": 0.45141375287446284,
+    "sp500": 912.61,
+    "goldPrice": 303.95,
+    "cbGoldBuying": 6.01
   },
   {
     "date": "2001-12",
@@ -201,7 +234,10 @@
     "inflationVol": 0.9227401538401998,
     "realRate": 0.21633447880868917,
     "debtStress": 1.4865090444450402,
-    "volatilityRatio": 0.4613700769200999
+    "volatilityRatio": 0.4613700769200999,
+    "sp500": 896.02,
+    "goldPrice": 301.84,
+    "cbGoldBuying": 6.1
   },
   {
     "date": "2002-01",
@@ -218,7 +254,10 @@
     "inflationVol": 0.7918997539507042,
     "realRate": 0.5341002277904257,
     "debtStress": 1.4143906927803718,
-    "volatilityRatio": 0.3959498769753521
+    "volatilityRatio": 0.3959498769753521,
+    "sp500": 903.01,
+    "goldPrice": 306.19,
+    "cbGoldBuying": 6.12
   },
   {
     "date": "2002-02",
@@ -235,7 +274,10 @@
     "inflationVol": 0.7836188854745112,
     "realRate": 0.6036363636363535,
     "debtStress": 1.4143906927803718,
-    "volatilityRatio": 0.3918094427372556
+    "volatilityRatio": 0.3918094427372556,
+    "sp500": 912.18,
+    "goldPrice": 313.03,
+    "cbGoldBuying": 6.23
   },
   {
     "date": "2002-03",
@@ -252,7 +294,10 @@
     "inflationVol": 0.8036644332167199,
     "realRate": 0.36713798977853385,
     "debtStress": 1.4143906927803718,
-    "volatilityRatio": 0.40183221660835994
+    "volatilityRatio": 0.40183221660835994,
+    "sp500": 903.6,
+    "goldPrice": 310.91,
+    "cbGoldBuying": 6.21
   },
   {
     "date": "2002-04",
@@ -269,7 +314,10 @@
     "inflationVol": 0.8704937614843089,
     "realRate": 0.1060090702947809,
     "debtStress": 1.392071428545085,
-    "volatilityRatio": 0.43524688074215445
+    "volatilityRatio": 0.43524688074215445,
+    "sp500": 870.6,
+    "goldPrice": 313.98,
+    "cbGoldBuying": 6.36
   },
   {
     "date": "2002-05",
@@ -286,7 +334,10 @@
     "inflationVol": 0.7690495058232909,
     "realRate": 0.5091652566272016,
     "debtStress": 1.392071428545085,
-    "volatilityRatio": 0.38452475291164545
+    "volatilityRatio": 0.38452475291164545,
+    "sp500": 832.31,
+    "goldPrice": 321.67,
+    "cbGoldBuying": 6.32
   },
   {
     "date": "2002-06",
@@ -303,7 +354,10 @@
     "inflationVol": 0.7582021834612986,
     "realRate": 0.6807822172200257,
     "debtStress": 1.392071428545085,
-    "volatilityRatio": 0.3791010917306493
+    "volatilityRatio": 0.3791010917306493,
+    "sp500": 809.64,
+    "goldPrice": 320.5,
+    "cbGoldBuying": 6.49
   },
   {
     "date": "2002-07",
@@ -320,7 +374,10 @@
     "inflationVol": 0.7127550776823288,
     "realRate": 0.264385569334848,
     "debtStress": 1.3783176659263128,
-    "volatilityRatio": 0.3563775388411644
+    "volatilityRatio": 0.3563775388411644,
+    "sp500": 810.06,
+    "goldPrice": 321.96,
+    "cbGoldBuying": 6.43
   },
   {
     "date": "2002-08",
@@ -337,7 +394,10 @@
     "inflationVol": 0.7152164009967785,
     "realRate": -0.007463359639223066,
     "debtStress": 1.3783176659263128,
-    "volatilityRatio": 0.35760820049838926
+    "volatilityRatio": 0.35760820049838926,
+    "sp500": 818.49,
+    "goldPrice": 330.34,
+    "cbGoldBuying": 6.61
   },
   {
     "date": "2002-09",
@@ -354,7 +414,10 @@
     "inflationVol": 0.6626901081779553,
     "realRate": 0.23399775407072898,
     "debtStress": 1.3783176659263128,
-    "volatilityRatio": 0.33134505408897763
+    "volatilityRatio": 0.33134505408897763,
+    "sp500": 814.06,
+    "goldPrice": 330.22,
+    "cbGoldBuying": 6.54
   },
   {
     "date": "2002-10",
@@ -371,7 +434,10 @@
     "inflationVol": 0.49605512059560086,
     "realRate": -0.2770270270270174,
     "debtStress": 1.366600676774722,
-    "volatilityRatio": 0.24802756029780043
+    "volatilityRatio": 0.24802756029780043,
+    "sp500": 788.33,
+    "goldPrice": 330.18,
+    "cbGoldBuying": 6.73
   },
   {
     "date": "2002-11",
@@ -388,7 +454,10 @@
     "inflationVol": 0.43240555419289517,
     "realRate": -0.9135211267605603,
     "debtStress": 1.366600676774722,
-    "volatilityRatio": 0.21620277709644758
+    "volatilityRatio": 0.21620277709644758,
+    "sp500": 790.11,
+    "goldPrice": 338.75,
+    "cbGoldBuying": 6.66
   },
   {
     "date": "2002-12",
@@ -405,7 +474,10 @@
     "inflationVol": 0.34486738461137173,
     "realRate": -1.2402705749718212,
     "debtStress": 1.366600676774722,
-    "volatilityRatio": 0.17243369230568587
+    "volatilityRatio": 0.17243369230568587,
+    "sp500": 799.46,
+    "goldPrice": 339.89,
+    "cbGoldBuying": 6.84
   },
   {
     "date": "2003-01",
@@ -422,7 +494,10 @@
     "inflationVol": 0.4140833784702978,
     "realRate": -1.5174563871693991,
     "debtStress": 1.3265416466603592,
-    "volatilityRatio": 0.2070416892351489
+    "volatilityRatio": 0.2070416892351489,
+    "sp500": 832.65,
+    "goldPrice": 338.68,
+    "cbGoldBuying": 6.78
   },
   {
     "date": "2003-02",
@@ -439,7 +514,10 @@
     "inflationVol": 0.5166114964246407,
     "realRate": -1.8860674157303359,
     "debtStress": 1.3265416466603592,
-    "volatilityRatio": 0.25830574821232033
+    "volatilityRatio": 0.25830574821232033,
+    "sp500": 881.35,
+    "goldPrice": 347.71,
+    "cbGoldBuying": 6.97
   },
   {
     "date": "2003-03",
@@ -456,7 +534,10 @@
     "inflationVol": 0.5243747175584385,
     "realRate": -1.775210084033625,
     "debtStress": 1.3265416466603592,
-    "volatilityRatio": 0.2621873587792192
+    "volatilityRatio": 0.2621873587792192,
+    "sp500": 920.85,
+    "goldPrice": 350.36,
+    "cbGoldBuying": 6.92
   },
   {
     "date": "2003-04",
@@ -473,7 +554,10 @@
     "inflationVol": 0.7754514437110384,
     "realRate": -0.915125488008911,
     "debtStress": 1.3127623729047386,
-    "volatilityRatio": 0.3877257218555192
+    "volatilityRatio": 0.3877257218555192,
+    "sp500": 939.02,
+    "goldPrice": 348.82,
+    "cbGoldBuying": 7.09
   },
   {
     "date": "2003-05",
@@ -490,7 +574,10 @@
     "inflationVol": 0.84738278088398,
     "realRate": -0.6341504178273005,
     "debtStress": 1.3127623729047386,
-    "volatilityRatio": 0.42369139044199
+    "volatilityRatio": 0.42369139044199,
+    "sp500": 937.26,
+    "goldPrice": 357.14,
+    "cbGoldBuying": 7.08
   },
   {
     "date": "2003-06",
@@ -507,7 +594,10 @@
     "inflationVol": 0.8420855710640154,
     "realRate": -0.7287750556792971,
     "debtStress": 1.3127623729047386,
-    "volatilityRatio": 0.4210427855320077
+    "volatilityRatio": 0.4210427855320077,
+    "sp500": 940.11,
+    "goldPrice": 361.81,
+    "cbGoldBuying": 7.22
   },
   {
     "date": "2003-07",
@@ -524,7 +614,10 @@
     "inflationVol": 0.8568596633962011,
     "realRate": -1.0455555555555438,
     "debtStress": 1.297232379077455,
-    "volatilityRatio": 0.42842983169810056
+    "volatilityRatio": 0.42842983169810056,
+    "sp500": 966.55,
+    "goldPrice": 359.36,
+    "cbGoldBuying": 7.23
   },
   {
     "date": "2003-08",
@@ -541,7 +634,10 @@
     "inflationVol": 0.8922863795947781,
     "realRate": -1.1860664819944609,
     "debtStress": 1.297232379077455,
-    "volatilityRatio": 0.44614318979738904
+    "volatilityRatio": 0.44614318979738904,
+    "sp500": 1016.66,
+    "goldPrice": 366.74,
+    "cbGoldBuying": 7.34
   },
   {
     "date": "2003-09",
@@ -558,7 +654,10 @@
     "inflationVol": 0.9030975866516275,
     "realRate": -1.368318584070782,
     "debtStress": 1.297232379077455,
-    "volatilityRatio": 0.45154879332581377
+    "volatilityRatio": 0.45154879332581377,
+    "sp500": 1066.53,
+    "goldPrice": 373.11,
+    "cbGoldBuying": 7.4
   },
   {
     "date": "2003-10",
@@ -575,7 +674,10 @@
     "inflationVol": 0.9519211236044606,
     "realRate": -1.0319426048565281,
     "debtStress": 1.2931155013994813,
-    "volatilityRatio": 0.4759605618022303
+    "volatilityRatio": 0.4759605618022303,
+    "sp500": 1091.29,
+    "goldPrice": 370.31,
+    "cbGoldBuying": 7.46
   },
   {
     "date": "2003-11",
@@ -592,7 +694,10 @@
     "inflationVol": 0.958854465598675,
     "realRate": -0.9283746556473913,
     "debtStress": 1.2931155013994813,
-    "volatilityRatio": 0.4794272327993375
+    "volatilityRatio": 0.4794272327993375,
+    "sp500": 1090.31,
+    "goldPrice": 376.26,
+    "cbGoldBuying": 7.56
   },
   {
     "date": "2003-12",
@@ -609,7 +714,10 @@
     "inflationVol": 0.9652541370342301,
     "realRate": -1.0552035203520247,
     "debtStress": 1.2931155013994813,
-    "volatilityRatio": 0.48262706851711507
+    "volatilityRatio": 0.48262706851711507,
+    "sp500": 1084.67,
+    "goldPrice": 384.07,
+    "cbGoldBuying": 7.58
   },
   {
     "date": "2004-01",
@@ -626,7 +734,10 @@
     "inflationVol": 0.9625956826737484,
     "realRate": -1.0262869660460092,
     "debtStress": 1.3023291196352733,
-    "volatilityRatio": 0.4812978413368742
+    "volatilityRatio": 0.4812978413368742,
+    "sp500": 1089.76,
+    "goldPrice": 381.32,
+    "cbGoldBuying": 7.71
   },
   {
     "date": "2004-02",
@@ -643,7 +754,10 @@
     "inflationVol": 0.8725910359231823,
     "realRate": -0.6784531590413809,
     "debtStress": 1.3023291196352733,
-    "volatilityRatio": 0.43629551796159116
+    "volatilityRatio": 0.43629551796159116,
+    "sp500": 1124.52,
+    "goldPrice": 386.03,
+    "cbGoldBuying": 7.71
   },
   {
     "date": "2004-03",
@@ -660,7 +774,10 @@
     "inflationVol": 0.8755602414903956,
     "realRate": -0.7400761283306032,
     "debtStress": 1.3023291196352733,
-    "volatilityRatio": 0.4377801207451978
+    "volatilityRatio": 0.4377801207451978,
+    "sp500": 1165.16,
+    "goldPrice": 394.74,
+    "cbGoldBuying": 7.87
   },
   {
     "date": "2004-04",
@@ -677,7 +794,10 @@
     "inflationVol": 0.6632017234709272,
     "realRate": -1.2925764192139875,
     "debtStress": 1.3000322121970345,
-    "volatilityRatio": 0.3316008617354636
+    "volatilityRatio": 0.3316008617354636,
+    "sp500": 1184.14,
+    "goldPrice": 392.62,
+    "cbGoldBuying": 7.83
   },
   {
     "date": "2004-05",
@@ -694,7 +814,10 @@
     "inflationVol": 0.5777588962122854,
     "realRate": -1.8977583378895444,
     "debtStress": 1.3000322121970345,
-    "volatilityRatio": 0.2888794481061427
+    "volatilityRatio": 0.2888794481061427,
+    "sp500": 1171.8,
+    "goldPrice": 395.36,
+    "cbGoldBuying": 8.02
   },
   {
     "date": "2004-06",
@@ -711,7 +834,10 @@
     "inflationVol": 0.5734027558810888,
     "realRate": -2.137667941015839,
     "debtStress": 1.3000322121970345,
-    "volatilityRatio": 0.2867013779405444
+    "volatilityRatio": 0.2867013779405444,
+    "sp500": 1148.73,
+    "goldPrice": 405.3,
+    "cbGoldBuying": 7.95
   },
   {
     "date": "2004-07",
@@ -728,7 +854,10 @@
     "inflationVol": 0.5877058083254952,
     "realRate": -1.679575394665228,
     "debtStress": 1.3243368726669127,
-    "volatilityRatio": 0.2938529041627476
+    "volatilityRatio": 0.2938529041627476,
+    "sp500": 1144.82,
+    "goldPrice": 404.11,
+    "cbGoldBuying": 8.18
   },
   {
     "date": "2004-08",
@@ -745,7 +874,10 @@
     "inflationVol": 0.5745817088804599,
     "realRate": -1.1174254742547276,
     "debtStress": 1.3243368726669127,
-    "volatilityRatio": 0.28729085444022995
+    "volatilityRatio": 0.28729085444022995,
+    "sp500": 1173.68,
+    "goldPrice": 405.08,
+    "cbGoldBuying": 8.09
   },
   {
     "date": "2004-09",
@@ -762,7 +894,10 @@
     "inflationVol": 0.5728685360543483,
     "realRate": -0.9291680172879515,
     "debtStress": 1.3243368726669127,
-    "volatilityRatio": 0.28643426802717414
+    "volatilityRatio": 0.28643426802717414,
+    "sp500": 1218.11,
+    "goldPrice": 415.54,
+    "cbGoldBuying": 8.32
   },
   {
     "date": "2004-10",
@@ -779,7 +914,10 @@
     "inflationVol": 0.5400785242267883,
     "realRate": -1.4309140075716547,
     "debtStress": 1.3544697766387934,
-    "volatilityRatio": 0.27003926211339413
+    "volatilityRatio": 0.27003926211339413,
+    "sp500": 1246.16,
+    "goldPrice": 415.84,
+    "cbGoldBuying": 8.23
   },
   {
     "date": "2004-11",
@@ -796,7 +934,10 @@
     "inflationVol": 0.5257861488175606,
     "realRate": -1.691621621621607,
     "debtStress": 1.3544697766387934,
-    "volatilityRatio": 0.2628930744087803
+    "volatilityRatio": 0.2628930744087803,
+    "sp500": 1241.23,
+    "goldPrice": 415.03,
+    "cbGoldBuying": 8.46
   },
   {
     "date": "2004-12",
@@ -813,7 +954,10 @@
     "inflationVol": 0.6043717562361923,
     "realRate": -1.1823180592991873,
     "debtStress": 1.3544697766387934,
-    "volatilityRatio": 0.30218587811809616
+    "volatilityRatio": 0.30218587811809616,
+    "sp500": 1216.01,
+    "goldPrice": 425.35,
+    "cbGoldBuying": 8.37
   },
   {
     "date": "2005-01",
@@ -830,7 +974,10 @@
     "inflationVol": 0.6584885781843245,
     "realRate": -0.5648738593666036,
     "debtStress": 1.3859794912633498,
-    "volatilityRatio": 0.32924428909216225
+    "volatilityRatio": 0.32924428909216225,
+    "sp500": 1203,
+    "goldPrice": 427.3,
+    "cbGoldBuying": 8.6
   },
   {
     "date": "2005-02",
@@ -847,7 +994,10 @@
     "inflationVol": 0.6827297061476999,
     "realRate": -0.5530262453133394,
     "debtStress": 1.3859794912633498,
-    "volatilityRatio": 0.34136485307384995
+    "volatilityRatio": 0.34136485307384995,
+    "sp500": 1224.89,
+    "goldPrice": 435.06,
+    "cbGoldBuying": 8.72
   },
   {
     "date": "2005-03",
@@ -864,7 +1014,10 @@
     "inflationVol": 0.6902645153871663,
     "realRate": -0.5768412613575737,
     "debtStress": 1.3859794912633498,
-    "volatilityRatio": 0.34513225769358313
+    "volatilityRatio": 0.34513225769358313,
+    "sp500": 1269.08,
+    "goldPrice": 453.89,
+    "cbGoldBuying": 9.1
   },
   {
     "date": "2005-04",
@@ -881,7 +1034,10 @@
     "inflationVol": 0.6820631105002128,
     "realRate": -0.5717929562433257,
     "debtStress": 1.438534212593419,
-    "volatilityRatio": 0.3410315552501064
+    "volatilityRatio": 0.3410315552501064,
+    "sp500": 1305.33,
+    "goldPrice": 467.56,
+    "cbGoldBuying": 9.24
   },
   {
     "date": "2005-05",
@@ -898,7 +1054,10 @@
     "inflationVol": 0.7326367482584576,
     "realRate": 0.13071200850158515,
     "debtStress": 1.438534212593419,
-    "volatilityRatio": 0.3663183741292288
+    "volatilityRatio": 0.3663183741292288,
+    "sp500": 1307.92,
+    "goldPrice": 473.23,
+    "cbGoldBuying": 9.61
   },
   {
     "date": "2005-06",
@@ -915,7 +1074,10 @@
     "inflationVol": 0.7379019113873225,
     "realRate": 0.49897300158814506,
     "debtStress": 1.438534212593419,
-    "volatilityRatio": 0.36895095569366126
+    "volatilityRatio": 0.36895095569366126,
+    "sp500": 1283.62,
+    "goldPrice": 492.65,
+    "cbGoldBuying": 9.79
   },
   {
     "date": "2005-07",
@@ -932,7 +1094,10 @@
     "inflationVol": 0.831961049333587,
     "realRate": 0.19283976731887886,
     "debtStress": 1.450801710354751,
-    "volatilityRatio": 0.4159805246667935
+    "volatilityRatio": 0.4159805246667935,
+    "sp500": 1263.17,
+    "goldPrice": 508.23,
+    "cbGoldBuying": 10.11
   },
   {
     "date": "2005-08",
@@ -949,7 +1114,10 @@
     "inflationVol": 0.8740712640051403,
     "realRate": -0.1469344608879517,
     "debtStress": 1.450801710354751,
-    "volatilityRatio": 0.4370356320025702
+    "volatilityRatio": 0.4370356320025702,
+    "sp500": 1275.26,
+    "goldPrice": 513.1,
+    "cbGoldBuying": 10.34
   },
   {
     "date": "2005-09",
@@ -966,7 +1134,10 @@
     "inflationVol": 1.3886584493500191,
     "realRate": -1.1218335089568052,
     "debtStress": 1.450801710354751,
-    "volatilityRatio": 0.6943292246750096
+    "volatilityRatio": 0.6943292246750096,
+    "sp500": 1318.17,
+    "goldPrice": 531.09,
+    "cbGoldBuying": 10.62
   },
   {
     "date": "2005-10",
@@ -983,7 +1154,10 @@
     "inflationVol": 1.3983696027782262,
     "realRate": -0.5701048218029361,
     "debtStress": 1.4677980480230177,
-    "volatilityRatio": 0.6991848013891131
+    "volatilityRatio": 0.6991848013891131,
+    "sp500": 1361.6,
+    "goldPrice": 549.17,
+    "cbGoldBuying": 10.9
   },
   {
     "date": "2005-11",
@@ -1000,7 +1174,10 @@
     "inflationVol": 1.6305324658941658,
     "realRate": 0.6614501825769468,
     "debtStress": 1.4677980480230177,
-    "volatilityRatio": 0.8152662329470829
+    "volatilityRatio": 0.8152662329470829,
+    "sp500": 1374.99,
+    "goldPrice": 553.44,
+    "cbGoldBuying": 11.12
   },
   {
     "date": "2005-12",
@@ -1017,7 +1194,10 @@
     "inflationVol": 1.6305324658941658,
     "realRate": 0.8214501825769469,
     "debtStress": 1.4677980480230177,
-    "volatilityRatio": 0.8152662329470829
+    "volatilityRatio": 0.8152662329470829,
+    "sp500": 1354.14,
+    "goldPrice": 568.88,
+    "cbGoldBuying": 11.46
   },
   {
     "date": "2006-01",
@@ -1034,7 +1214,10 @@
     "inflationVol": 1.6191923513375288,
     "realRate": 0.27121085594988337,
     "debtStress": 1.4602446459805911,
-    "volatilityRatio": 0.8095961756687644
+    "volatilityRatio": 0.8095961756687644,
+    "sp500": 1326.59,
+    "goldPrice": 589.73,
+    "cbGoldBuying": 11.63
   },
   {
     "date": "2006-02",
@@ -1051,7 +1234,10 @@
     "inflationVol": 1.6390487211378626,
     "realRate": 0.8517463617463701,
     "debtStress": 1.4602446459805911,
-    "volatilityRatio": 0.8195243605689313
+    "volatilityRatio": 0.8195243605689313,
+    "sp500": 1329.11,
+    "goldPrice": 584.88,
+    "cbGoldBuying": 11.84
   },
   {
     "date": "2006-03",
@@ -1068,7 +1254,10 @@
     "inflationVol": 1.643762372629323,
     "realRate": 1.172081822889698,
     "debtStress": 1.4602446459805911,
-    "volatilityRatio": 0.8218811863146614
+    "volatilityRatio": 0.8218811863146614,
+    "sp500": 1366.72,
+    "goldPrice": 589.33,
+    "cbGoldBuying": 11.76
   },
   {
     "date": "2006-04",
@@ -1085,7 +1274,10 @@
     "inflationVol": 1.6583688387580935,
     "realRate": 1.1761641713990691,
     "debtStress": 1.4939075233774886,
-    "volatilityRatio": 0.8291844193790467
+    "volatilityRatio": 0.8291844193790467,
+    "sp500": 1415.44,
+    "goldPrice": 602.52,
+    "cbGoldBuying": 12.03
   },
   {
     "date": "2006-05",
@@ -1102,7 +1294,10 @@
     "inflationVol": 1.614367412021817,
     "realRate": 0.9627272727272711,
     "debtStress": 1.4939075233774886,
-    "volatilityRatio": 0.8071837060109085
+    "volatilityRatio": 0.8071837060109085,
+    "sp500": 1438.31,
+    "goldPrice": 598.74,
+    "cbGoldBuying": 11.91
   },
   {
     "date": "2006-06",
@@ -1119,7 +1314,10 @@
     "inflationVol": 1.589621304401386,
     "realRate": 0.8082756840474827,
     "debtStress": 1.4939075233774886,
-    "volatilityRatio": 0.794810652200693
+    "volatilityRatio": 0.794810652200693,
+    "sp500": 1423.47,
+    "goldPrice": 600.77,
+    "cbGoldBuying": 12.21
   },
   {
     "date": "2006-07",
@@ -1136,7 +1334,10 @@
     "inflationVol": 1.577188936984103,
     "realRate": 1.1353309389430466,
     "debtStress": 1.5277388872534228,
-    "volatilityRatio": 0.7885944684920515
+    "volatilityRatio": 0.7885944684920515,
+    "sp500": 1392.76,
+    "goldPrice": 614.97,
+    "cbGoldBuying": 12.07
   },
   {
     "date": "2006-08",
@@ -1153,7 +1354,10 @@
     "inflationVol": 1.553185127020209,
     "realRate": 1.323431922488517,
     "debtStress": 1.5277388872534228,
-    "volatilityRatio": 0.7765925635101045
+    "volatilityRatio": 0.7765925635101045,
+    "sp500": 1384.07,
+    "goldPrice": 613.25,
+    "cbGoldBuying": 12.39
   },
   {
     "date": "2006-09",
@@ -1170,7 +1374,10 @@
     "inflationVol": 1.2663017961735699,
     "realRate": 3.237927565392363,
     "debtStress": 1.5277388872534228,
-    "volatilityRatio": 0.6331508980867849
+    "volatilityRatio": 0.6331508980867849,
+    "sp500": 1414.73,
+    "goldPrice": 612.5,
+    "cbGoldBuying": 12.24
   },
   {
     "date": "2006-10",
@@ -1187,7 +1394,10 @@
     "inflationVol": 1.4063246005515178,
     "realRate": 3.843671521848303,
     "debtStress": 1.557493581943001,
-    "volatilityRatio": 0.7031623002757589
+    "volatilityRatio": 0.7031623002757589,
+    "sp500": 1465.88,
+    "goldPrice": 627.09,
+    "cbGoldBuying": 12.57
   },
   {
     "date": "2006-11",
@@ -1204,7 +1414,10 @@
     "inflationVol": 1.2395356747158432,
     "realRate": 3.281297324583533,
     "debtStress": 1.557493581943001,
-    "volatilityRatio": 0.6197678373579216
+    "volatilityRatio": 0.6197678373579216,
+    "sp500": 1500.12,
+    "goldPrice": 627.86,
+    "cbGoldBuying": 12.41
   },
   {
     "date": "2006-12",
@@ -1221,7 +1434,10 @@
     "inflationVol": 1.2802761759354901,
     "realRate": 2.716022211004554,
     "debtStress": 1.557493581943001,
-    "volatilityRatio": 0.6401380879677451
+    "volatilityRatio": 0.6401380879677451,
+    "sp500": 1494.15,
+    "goldPrice": 624.5,
+    "cbGoldBuying": 12.73
   },
   {
     "date": "2007-01",
@@ -1238,7 +1454,10 @@
     "inflationVol": 1.2047409022252742,
     "realRate": 3.174234821876577,
     "debtStress": 1.5892783937094905,
-    "volatilityRatio": 0.6023704511126371
+    "volatilityRatio": 0.6023704511126371,
+    "sp500": 1461.14,
+    "goldPrice": 639.12,
+    "cbGoldBuying": 12.59
   },
   {
     "date": "2007-02",
@@ -1255,7 +1474,10 @@
     "inflationVol": 1.2147966705428903,
     "realRate": 2.839739217652972,
     "debtStress": 1.5892783937094905,
-    "volatilityRatio": 0.6073983352714452
+    "volatilityRatio": 0.6073983352714452,
+    "sp500": 1442.98,
+    "goldPrice": 662.14,
+    "cbGoldBuying": 13.29
   },
   {
     "date": "2007-03",
@@ -1272,7 +1494,10 @@
     "inflationVol": 1.253919811845362,
     "realRate": 2.4618027040560726,
     "debtStress": 1.5892783937094905,
-    "volatilityRatio": 0.626959905922681
+    "volatilityRatio": 0.626959905922681,
+    "sp500": 1463.79,
+    "goldPrice": 674.55,
+    "cbGoldBuying": 13.53
   },
   {
     "date": "2007-04",
@@ -1289,7 +1514,10 @@
     "inflationVol": 1.2224602512635163,
     "realRate": 2.6570752366716475,
     "debtStress": 1.6271020018331892,
-    "volatilityRatio": 0.6112301256317582
+    "volatilityRatio": 0.6112301256317582,
+    "sp500": 1515.15,
+    "goldPrice": 708.63,
+    "cbGoldBuying": 14.2
   },
   {
     "date": "2007-05",
@@ -1306,7 +1534,10 @@
     "inflationVol": 1.2363850436131512,
     "realRate": 2.540114257327387,
     "debtStress": 1.6271020018331892,
-    "volatilityRatio": 0.6181925218065756
+    "volatilityRatio": 0.6181925218065756,
+    "sp500": 1557.95,
+    "goldPrice": 734.1,
+    "cbGoldBuying": 14.52
   },
   {
     "date": "2007-06",
@@ -1323,7 +1554,10 @@
     "inflationVol": 1.236133248783382,
     "realRate": 2.557234886025773,
     "debtStress": 1.6271020018331892,
-    "volatilityRatio": 0.618066624391691
+    "volatilityRatio": 0.618066624391691,
+    "sp500": 1562.12,
+    "goldPrice": 746.44,
+    "cbGoldBuying": 15.13
   },
   {
     "date": "2007-07",
@@ -1340,7 +1574,10 @@
     "inflationVol": 1.1849944638362733,
     "realRate": 2.942109413504192,
     "debtStress": 1.6425705957756924,
-    "volatilityRatio": 0.5924972319181366
+    "volatilityRatio": 0.5924972319181366,
+    "sp500": 1531.94,
+    "goldPrice": 778.33,
+    "cbGoldBuying": 15.51
   },
   {
     "date": "2007-08",
@@ -1357,7 +1594,10 @@
     "inflationVol": 1.1609167441919501,
     "realRate": 3.1225515210991235,
     "debtStress": 1.6425705957756924,
-    "volatilityRatio": 0.5804583720959751
+    "volatilityRatio": 0.5804583720959751,
+    "sp500": 1504.55,
+    "goldPrice": 808.36,
+    "cbGoldBuying": 16.04
   },
   {
     "date": "2007-09",
@@ -1374,7 +1614,10 @@
     "inflationVol": 0.9440152291451133,
     "realRate": 2.106173570019732,
     "debtStress": 1.6425705957756924,
-    "volatilityRatio": 0.47200761457255663
+    "volatilityRatio": 0.47200761457255663,
+    "sp500": 1514.31,
+    "goldPrice": 819.02,
+    "cbGoldBuying": 16.53
   },
   {
     "date": "2007-10",
@@ -1391,7 +1634,10 @@
     "inflationVol": 0.5877599933097574,
     "realRate": 1.1493016344725238,
     "debtStress": 1.6309797112745186,
-    "volatilityRatio": 0.2938799966548787
+    "volatilityRatio": 0.2938799966548787,
+    "sp500": 1561.65,
+    "goldPrice": 848.34,
+    "cbGoldBuying": 16.95
   },
   {
     "date": "2007-11",
@@ -1408,7 +1654,10 @@
     "inflationVol": 0.7010395821192966,
     "realRate": 0.11673267326733416,
     "debtStress": 1.6309797112745186,
-    "volatilityRatio": 0.3505197910596483
+    "volatilityRatio": 0.3505197910596483,
+    "sp500": 1548.01,
+    "goldPrice": 882.29,
+    "cbGoldBuying": 17.54
   },
   {
     "date": "2007-12",
@@ -1425,7 +1674,10 @@
     "inflationVol": 0.6726043067955257,
     "realRate": 0.13118660758246836,
     "debtStress": 1.6309797112745186,
-    "volatilityRatio": 0.33630215339776287
+    "volatilityRatio": 0.33630215339776287,
+    "sp500": 1501.14,
+    "goldPrice": 891.6,
+    "cbGoldBuying": 17.86
   },
   {
     "date": "2008-01",
@@ -1442,7 +1694,10 @@
     "inflationVol": 0.6464564266700804,
     "realRate": -0.354695655165981,
     "debtStress": 1.596995500149231,
-    "volatilityRatio": 0.3232282133350402
+    "volatilityRatio": 0.3232282133350402,
+    "sp500": 1414.26,
+    "goldPrice": 918.64,
+    "cbGoldBuying": 18.53
   },
   {
     "date": "2008-02",
@@ -1459,7 +1714,10 @@
     "inflationVol": 0.6538813633732334,
     "realRate": -1.1629592706119678,
     "debtStress": 1.596995500149231,
-    "volatilityRatio": 0.3269406816866167
+    "volatilityRatio": 0.3269406816866167,
+    "sp500": 1323.74,
+    "goldPrice": 955.65,
+    "cbGoldBuying": 18.81
   },
   {
     "date": "2008-03",
@@ -1476,7 +1734,10 @@
     "inflationVol": 0.6243542394363321,
     "realRate": -1.3649035501344344,
     "debtStress": 1.596995500149231,
-    "volatilityRatio": 0.31217711971816603
+    "volatilityRatio": 0.31217711971816603,
+    "sp500": 1265.75,
+    "goldPrice": 964.33,
+    "cbGoldBuying": 19.52
   },
   {
     "date": "2008-04",
@@ -1493,7 +1754,10 @@
     "inflationVol": 0.6311394510468076,
     "realRate": -1.6237609759888127,
     "debtStress": 1.5280423777568752,
-    "volatilityRatio": 0.3155697255234038
+    "volatilityRatio": 0.3155697255234038,
+    "sp500": 1238.55,
+    "goldPrice": 932.91,
+    "cbGoldBuying": 18.62
   },
   {
     "date": "2008-05",
@@ -1510,7 +1774,10 @@
     "inflationVol": 0.6830743090614014,
     "realRate": -2.108413823123993,
     "debtStress": 1.5280423777568752,
-    "volatilityRatio": 0.3415371545307007
+    "volatilityRatio": 0.3415371545307007,
+    "sp500": 1221.37,
+    "goldPrice": 917.89,
+    "cbGoldBuying": 18.34
   },
   {
     "date": "2008-06",
@@ -1527,7 +1794,10 @@
     "inflationVol": 0.9743261780461964,
     "realRate": -2.9359661059478643,
     "debtStress": 1.5280423777568752,
-    "volatilityRatio": 0.4871630890230982
+    "volatilityRatio": 0.4871630890230982,
+    "sp500": 1179.59,
+    "goldPrice": 876.59,
+    "cbGoldBuying": 17.4
   },
   {
     "date": "2008-07",
@@ -1544,7 +1814,10 @@
     "inflationVol": 0.9869077242320723,
     "realRate": -3.4875120783418376,
     "debtStress": 1.5115909624223383,
-    "volatilityRatio": 0.49345386211603615
+    "volatilityRatio": 0.49345386211603615,
+    "sp500": 1108.44,
+    "goldPrice": 842.23,
+    "cbGoldBuying": 17.15
   },
   {
     "date": "2008-08",
@@ -1561,7 +1834,10 @@
     "inflationVol": 1.081458252321519,
     "realRate": -3.3080171620912386,
     "debtStress": 1.5115909624223383,
-    "volatilityRatio": 0.5407291261607595
+    "volatilityRatio": 0.5407291261607595,
+    "sp500": 1024.51,
+    "goldPrice": 825.71,
+    "cbGoldBuying": 16.21
   },
   {
     "date": "2008-09",
@@ -1578,7 +1854,10 @@
     "inflationVol": 1.1359223210493499,
     "realRate": -3.143319875136075,
     "debtStress": 1.5115909624223383,
-    "volatilityRatio": 0.5679611605246749
+    "volatilityRatio": 0.5679611605246749,
+    "sp500": 957.63,
+    "goldPrice": 788.5,
+    "cbGoldBuying": 15.92
   },
   {
     "date": "2008-10",
@@ -1595,7 +1874,10 @@
     "inflationVol": 1.7027189511409844,
     "realRate": -2.761057889956513,
     "debtStress": 1.5351569727060694,
-    "volatilityRatio": 0.8513594755704922
+    "volatilityRatio": 0.8513594755704922,
+    "sp500": 919.74,
+    "goldPrice": 751.41,
+    "cbGoldBuying": 15.02
   },
   {
     "date": "2008-11",
@@ -1612,7 +1894,10 @@
     "inflationVol": 2.600502053897027,
     "realRate": -0.7099174706166848,
     "debtStress": 1.5351569727060694,
-    "volatilityRatio": 1.3002510269485135
+    "volatilityRatio": 1.3002510269485135,
+    "sp500": 892.59,
+    "goldPrice": 733.2,
+    "cbGoldBuying": 14.7
   },
   {
     "date": "2008-12",
@@ -1629,7 +1914,10 @@
     "inflationVol": 2.7432991249548797,
     "realRate": 0.18222800255385904,
     "debtStress": 1.5351569727060694,
-    "volatilityRatio": 1.3716495624774399
+    "volatilityRatio": 1.3716495624774399,
+    "sp500": 855.31,
+    "goldPrice": 759.13,
+    "cbGoldBuying": 15
   },
   {
     "date": "2009-01",
@@ -1646,7 +1934,10 @@
     "inflationVol": 2.7322757522648686,
     "realRate": 0.2635860190221272,
     "debtStress": 1.4801946367042083,
-    "volatilityRatio": 1.3661378761324343
+    "volatilityRatio": 1.3661378761324343,
+    "sp500": 792.63,
+    "goldPrice": 778.3,
+    "cbGoldBuying": 15.85
   },
   {
     "date": "2009-02",
@@ -1663,7 +1954,10 @@
     "inflationVol": 2.74712782797301,
     "realRate": 0.21153685932848923,
     "debtStress": 1.4801946367042083,
-    "volatilityRatio": 1.373563913986505
+    "volatilityRatio": 1.373563913986505,
+    "sp500": 717.91,
+    "goldPrice": 820.06,
+    "cbGoldBuying": 16.19
   },
   {
     "date": "2009-03",
@@ -1680,7 +1974,10 @@
     "inflationVol": 2.7207211424361755,
     "realRate": 0.6264787676623838,
     "debtStress": 1.4801946367042083,
-    "volatilityRatio": 1.3603605712180877
+    "volatilityRatio": 1.3603605712180877,
+    "sp500": 656.51,
+    "goldPrice": 846.69,
+    "cbGoldBuying": 16.96
   },
   {
     "date": "2009-04",
@@ -1697,7 +1994,10 @@
     "inflationVol": 2.7099035018156648,
     "realRate": 0.7263244243767063,
     "debtStress": 1.4429522879044967,
-    "volatilityRatio": 1.3549517509078324
+    "volatilityRatio": 1.3549517509078324,
+    "sp500": 688.27,
+    "goldPrice": 863.09,
+    "cbGoldBuying": 17.34
   },
   {
     "date": "2009-05",
@@ -1714,7 +2014,10 @@
     "inflationVol": 2.6312068905259016,
     "realRate": 1.1957614958551719,
     "debtStress": 1.4429522879044967,
-    "volatilityRatio": 1.3156034452629508
+    "volatilityRatio": 1.3156034452629508,
+    "sp500": 734.65,
+    "goldPrice": 902.95,
+    "cbGoldBuying": 18.08
   },
   {
     "date": "2009-06",
@@ -1731,7 +2034,10 @@
     "inflationVol": 2.5364313856421243,
     "realRate": 1.4391746182109153,
     "debtStress": 1.4429522879044967,
-    "volatilityRatio": 1.2682156928210622
+    "volatilityRatio": 1.2682156928210622,
+    "sp500": 780.31,
+    "goldPrice": 936.74,
+    "cbGoldBuying": 18.54
   },
   {
     "date": "2009-07",
@@ -1748,7 +2054,10 @@
     "inflationVol": 2.3800375940496066,
     "realRate": 2.1187610037622773,
     "debtStress": 1.4304829536295907,
-    "volatilityRatio": 1.1900187970248033
+    "volatilityRatio": 1.1900187970248033,
+    "sp500": 806.51,
+    "goldPrice": 949.58,
+    "cbGoldBuying": 19.2
   },
   {
     "date": "2009-08",
@@ -1765,7 +2074,10 @@
     "inflationVol": 2.4316629519354374,
     "realRate": 1.6438355663267632,
     "debtStress": 1.4304829536295907,
-    "volatilityRatio": 1.2158314759677187
+    "volatilityRatio": 1.2158314759677187,
+    "sp500": 814.69,
+    "goldPrice": 988.03,
+    "cbGoldBuying": 19.75
   },
   {
     "date": "2009-09",
@@ -1782,7 +2094,10 @@
     "inflationVol": 2.4440372847480645,
     "realRate": 1.527942862886472,
     "debtStress": 1.4304829536295907,
-    "volatilityRatio": 1.2220186423740322
+    "volatilityRatio": 1.2220186423740322,
+    "sp500": 821.64,
+    "goldPrice": 1026.56,
+    "cbGoldBuying": 20.32
   },
   {
     "date": "2009-10",
@@ -1799,7 +2114,10 @@
     "inflationVol": 2.3301114516051378,
     "realRate": 0.3439682942003385,
     "debtStress": 1.4293008306371167,
-    "volatilityRatio": 1.1650557258025689
+    "volatilityRatio": 1.1650557258025689,
+    "sp500": 846.62,
+    "goldPrice": 1037.91,
+    "cbGoldBuying": 20.97
   },
   {
     "date": "2009-11",
@@ -1816,7 +2134,10 @@
     "inflationVol": 1.343566983867823,
     "realRate": -1.7945871744709274,
     "debtStress": 1.4293008306371167,
-    "volatilityRatio": 0.6717834919339115
+    "volatilityRatio": 0.6717834919339115,
+    "sp500": 894.83,
+    "goldPrice": 1072.61,
+    "cbGoldBuying": 21.43
   },
   {
     "date": "2009-12",
@@ -1825,8 +2146,8 @@
     "pceIndex": 89.939,
     "cpiIndex": 217.347,
     "gSecYield": 3.85,
-    "cbGoldBuying": 19.90341022,
-    "goldPrice": 1109.12,
+    "cbGoldBuying": 22.19,
+    "goldPrice": 1114.89,
     "gdpIndex": 16502.754,
     "debtToGDP": 84.02935,
     "interest_expense": 353.811,
@@ -1835,7 +2156,8 @@
     "inflationVol": 0.8339827962521923,
     "realRate": -2.6941231232083673,
     "debtStress": 1.4293008306371167,
-    "volatilityRatio": 0.41699139812609615
+    "volatilityRatio": 0.41699139812609615,
+    "sp500": 946.81
   },
   {
     "date": "2010-01",
@@ -1847,14 +2169,15 @@
     "cpiIndex": 217.488,
     "interest_expense": 360.258,
     "gSecYield": 3.63,
-    "cbGoldBuying": 19.90341022,
-    "goldPrice": 1109.12,
+    "cbGoldBuying": 22.48,
+    "goldPrice": 1123.04,
     "cpiInflation": 2.6211113889767157,
     "gdpGrowth": 1.7452658449103264,
     "inflationVol": 0.8498308458390733,
     "realRate": -2.511111388976716,
     "debtStress": 1.4483278064924248,
-    "volatilityRatio": 0.42491542291953666
+    "volatilityRatio": 0.42491542291953666,
+    "sp500": 980.85
   },
   {
     "date": "2010-02",
@@ -1863,17 +2186,18 @@
     "pceIndex": 90.134,
     "cpiIndex": 217.281,
     "gSecYield": 3.61,
-    "cbGoldBuying": 19.90341022,
+    "cbGoldBuying": 23.27,
     "gdpIndex": 16582.71,
     "debtToGDP": 86.51175,
     "interest_expense": 360.258,
-    "goldPrice": 1109.12,
+    "goldPrice": 1150.65,
     "cpiInflation": 2.151336357866529,
     "gdpGrowth": 1.7452658449103264,
     "inflationVol": 0.8858870147189094,
     "realRate": -2.021336357866529,
     "debtStress": 1.4483278064924248,
-    "volatilityRatio": 0.4429435073594547
+    "volatilityRatio": 0.4429435073594547,
+    "sp500": 988.92
   },
   {
     "date": "2010-03",
@@ -1882,8 +2206,8 @@
     "pceIndex": 90.261,
     "cpiIndex": 217.353,
     "gSecYield": 3.84,
-    "cbGoldBuying": 4.738085616666667,
-    "goldPrice": 1196.74,
+    "cbGoldBuying": 23.41,
+    "goldPrice": 1191.23,
     "gdpIndex": 16582.71,
     "debtToGDP": 86.51175,
     "interest_expense": 360.258,
@@ -1892,7 +2216,8 @@
     "inflationVol": 0.850068242018423,
     "realRate": -2.1261714393279885,
     "debtStress": 1.4483278064924248,
-    "volatilityRatio": 0.4250341210092115
+    "volatilityRatio": 0.4250341210092115,
+    "sp500": 986.52
   },
   {
     "date": "2010-04",
@@ -1904,14 +2229,15 @@
     "cpiIndex": 217.403,
     "interest_expense": 376.93,
     "gSecYield": 3.69,
-    "cbGoldBuying": 4.738085616666667,
-    "goldPrice": 1196.74,
+    "cbGoldBuying": 24.31,
+    "goldPrice": 1200.98,
     "cpiInflation": 2.2067707525304403,
     "gdpGrowth": 2.91359502911801,
     "inflationVol": 0.8623180233093355,
     "realRate": -2.00677075253044,
     "debtStress": 1.5008316031742788,
-    "volatilityRatio": 0.43115901165466775
+    "volatilityRatio": 0.43115901165466775,
+    "sp500": 1004.99
   },
   {
     "date": "2010-05",
@@ -1920,17 +2246,18 @@
     "pceIndex": 90.339,
     "cpiIndex": 217.29,
     "gSecYield": 3.31,
-    "cbGoldBuying": 4.738085616666667,
+    "cbGoldBuying": 24.39,
     "gdpIndex": 16743.162,
     "debtToGDP": 88.12832,
     "interest_expense": 376.93,
-    "goldPrice": 1196.74,
+    "goldPrice": 1222.09,
     "cpiInflation": 2.003548929218568,
     "gdpGrowth": 2.91359502911801,
     "inflationVol": 0.8936080300645062,
     "realRate": -1.8035489292185682,
     "debtStress": 1.5008316031742788,
-    "volatilityRatio": 0.4468040150322531
+    "volatilityRatio": 0.4468040150322531,
+    "sp500": 1050.87
   },
   {
     "date": "2010-06",
@@ -1939,8 +2266,8 @@
     "pceIndex": 90.301,
     "cpiIndex": 217.199,
     "gSecYield": 2.97,
-    "cbGoldBuying": 8.01196016,
-    "goldPrice": 1226.75,
+    "cbGoldBuying": 25.37,
+    "goldPrice": 1268.46,
     "gdpIndex": 16743.162,
     "debtToGDP": 88.12832,
     "interest_expense": 376.93,
@@ -1949,7 +2276,8 @@
     "inflationVol": 0.5433090756786648,
     "realRate": -0.9415605940686269,
     "debtStress": 1.5008316031742788,
-    "volatilityRatio": 0.2716545378393324
+    "volatilityRatio": 0.2716545378393324,
+    "sp500": 1109.85
   },
   {
     "date": "2010-07",
@@ -1961,14 +2289,15 @@
     "cpiIndex": 217.605,
     "interest_expense": 389.247,
     "gSecYield": 2.94,
-    "cbGoldBuying": 8.01196016,
-    "goldPrice": 1226.75,
+    "cbGoldBuying": 25.38,
+    "goldPrice": 1280.5,
     "cpiInflation": 1.3407784804821077,
     "gdpGrowth": 3.344209253779229,
     "inflationVol": 0.5329561736804194,
     "realRate": -1.1607784804821077,
     "debtStress": 1.5380151071586947,
-    "volatilityRatio": 0.2664780868402097
+    "volatilityRatio": 0.2664780868402097,
+    "sp500": 1151.61
   },
   {
     "date": "2010-08",
@@ -1977,17 +2306,18 @@
     "pceIndex": 90.502,
     "cpiIndex": 217.923,
     "gSecYield": 2.47,
-    "cbGoldBuying": 8.01196016,
+    "cbGoldBuying": 26.42,
     "gdpIndex": 16872.266,
     "debtToGDP": 89.56528,
     "interest_expense": 389.247,
-    "goldPrice": 1226.75,
+    "goldPrice": 1296.41,
     "cpiInflation": 1.1501775395112546,
     "gdpGrowth": 3.344209253779229,
     "inflationVol": 0.4770275819524613,
     "realRate": -0.9601775395112546,
     "debtStress": 1.5380151071586947,
-    "volatilityRatio": 0.23851379097623066
+    "volatilityRatio": 0.23851379097623066,
+    "sp500": 1163.42
   },
   {
     "date": "2010-09",
@@ -1996,8 +2326,8 @@
     "pceIndex": 90.592,
     "cpiIndex": 218.275,
     "gSecYield": 2.53,
-    "cbGoldBuying": -6.269955163333333,
-    "goldPrice": 1366.78,
+    "cbGoldBuying": 26.41,
+    "goldPrice": 1344.59,
     "gdpIndex": 16872.266,
     "debtToGDP": 89.56528,
     "interest_expense": 389.247,
@@ -2006,7 +2336,8 @@
     "inflationVol": 0.47098450935146907,
     "realRate": -0.9283122472331775,
     "debtStress": 1.5380151071586947,
-    "volatilityRatio": 0.23549225467573454
+    "volatilityRatio": 0.23549225467573454,
+    "sp500": 1158.21
   },
   {
     "date": "2010-10",
@@ -2018,14 +2349,15 @@
     "cpiIndex": 219.035,
     "interest_expense": 399.514,
     "gSecYield": 2.63,
-    "cbGoldBuying": -6.269955163333333,
-    "goldPrice": 1366.78,
+    "cbGoldBuying": 27.44,
+    "goldPrice": 1361.39,
     "cpiInflation": 1.1666951489314625,
     "gdpGrowth": 2.7759609093124693,
     "inflationVol": 0.4958277163366668,
     "realRate": -0.9766951489314626,
     "debtStress": 1.5703366683835602,
-    "volatilityRatio": 0.2479138581683334
+    "volatilityRatio": 0.2479138581683334,
+    "sp500": 1165.73
   },
   {
     "date": "2010-11",
@@ -2034,17 +2366,18 @@
     "pceIndex": 91.062,
     "cpiIndex": 219.59,
     "gSecYield": 2.81,
-    "cbGoldBuying": -6.269955163333333,
+    "cbGoldBuying": 27.44,
     "gdpIndex": 16960.864,
     "debtToGDP": 91.61134,
     "interest_expense": 399.514,
-    "goldPrice": 1366.78,
+    "goldPrice": 1371.4,
     "cpiInflation": 1.084544776600338,
     "gdpGrowth": 2.7759609093124693,
     "inflationVol": 0.4584381122416449,
     "realRate": -0.894544776600338,
     "debtStress": 1.5703366683835602,
-    "volatilityRatio": 0.22921905612082244
+    "volatilityRatio": 0.22921905612082244,
+    "sp500": 1207.02
   },
   {
     "date": "2010-12",
@@ -2053,8 +2386,8 @@
     "pceIndex": 91.268,
     "cpiIndex": 220.472,
     "gSecYield": 3.3,
-    "cbGoldBuying": 47.487920386666666,
-    "goldPrice": 1386.27,
+    "cbGoldBuying": 28.44,
+    "goldPrice": 1418.77,
     "gdpIndex": 16960.864,
     "debtToGDP": 91.61134,
     "interest_expense": 399.514,
@@ -2063,7 +2396,8 @@
     "inflationVol": 0.5508439333082273,
     "realRate": -1.257793022217937,
     "debtStress": 1.5703366683835602,
-    "volatilityRatio": 0.27542196665411367
+    "volatilityRatio": 0.27542196665411367,
+    "sp500": 1269.42
   },
   {
     "date": "2011-01",
@@ -2082,7 +2416,8 @@
     "inflationVol": 0.583105023803877,
     "realRate": -1.5307834915029774,
     "debtStress": 1.6185565645538535,
-    "volatilityRatio": 0.2915525119019385
+    "volatilityRatio": 0.2915525119019385,
+    "sp500": 1311.17
   },
   {
     "date": "2011-02",
@@ -2101,7 +2436,8 @@
     "inflationVol": 0.5469119690272489,
     "realRate": -1.9648981733331452,
     "debtStress": 1.6185565645538535,
-    "volatilityRatio": 0.27345598451362446
+    "volatilityRatio": 0.27345598451362446,
+    "sp500": 1317.4
   },
   {
     "date": "2011-03",
@@ -2120,7 +2456,8 @@
     "inflationVol": 0.6190232974388585,
     "realRate": -2.479241510354109,
     "debtStress": 1.6185565645538535,
-    "volatilityRatio": 0.30951164871942927
+    "volatilityRatio": 0.30951164871942927,
+    "sp500": 1296.62
   },
   {
     "date": "2011-04",
@@ -2139,7 +2476,8 @@
     "inflationVol": 0.6282128814101762,
     "realRate": -2.9772344447868693,
     "debtStress": 1.6631803383685406,
-    "volatilityRatio": 0.3141064407050881
+    "volatilityRatio": 0.3141064407050881,
+    "sp500": 1284.87
   },
   {
     "date": "2011-05",
@@ -2158,7 +2496,8 @@
     "inflationVol": 0.5341637782543585,
     "realRate": -3.3689718808965,
     "debtStress": 1.6631803383685406,
-    "volatilityRatio": 0.26708188912717923
+    "volatilityRatio": 0.26708188912717923,
+    "sp500": 1306.67
   },
   {
     "date": "2011-06",
@@ -2177,7 +2516,8 @@
     "inflationVol": 0.5072657927650791,
     "realRate": -3.4123181506360414,
     "debtStress": 1.6631803383685406,
-    "volatilityRatio": 0.25363289638253955
+    "volatilityRatio": 0.25363289638253955,
+    "sp500": 1358.71
   },
   {
     "date": "2011-07",
@@ -2196,7 +2536,8 @@
     "inflationVol": 0.4964886156858139,
     "realRate": -3.5098809769996167,
     "debtStress": 1.693449393283223,
-    "volatilityRatio": 0.24824430784290696
+    "volatilityRatio": 0.24824430784290696,
+    "sp500": 1407.75
   },
   {
     "date": "2011-08",
@@ -2215,7 +2556,8 @@
     "inflationVol": 0.4697675325665994,
     "realRate": -3.6549960307080798,
     "debtStress": 1.693449393283223,
-    "volatilityRatio": 0.2348837662832997
+    "volatilityRatio": 0.2348837662832997,
+    "sp500": 1424.23
   },
   {
     "date": "2011-09",
@@ -2234,7 +2576,8 @@
     "inflationVol": 0.453904599466855,
     "realRate": -3.732621692818685,
     "debtStress": 1.693449393283223,
-    "volatilityRatio": 0.2269522997334275
+    "volatilityRatio": 0.2269522997334275,
+    "sp500": 1407.01
   },
   {
     "date": "2011-10",
@@ -2253,7 +2596,8 @@
     "inflationVol": 0.5127126574291228,
     "realRate": -3.4522681306640526,
     "debtStress": 1.6774487311223878,
-    "volatilityRatio": 0.2563563287145614
+    "volatilityRatio": 0.2563563287145614,
+    "sp500": 1386.35
   },
   {
     "date": "2011-11",
@@ -2272,7 +2616,8 @@
     "inflationVol": 0.5224068915044688,
     "realRate": -3.371432214581729,
     "debtStress": 1.6774487311223878,
-    "volatilityRatio": 0.2612034457522344
+    "volatilityRatio": 0.2612034457522344,
+    "sp500": 1397.52
   },
   {
     "date": "2011-12",
@@ -2291,7 +2636,8 @@
     "inflationVol": 0.5640037334844927,
     "realRate": -2.9920668384193863,
     "debtStress": 1.6774487311223878,
-    "volatilityRatio": 0.28200186674224637
+    "volatilityRatio": 0.28200186674224637,
+    "sp500": 1445.36
   },
   {
     "date": "2012-01",
@@ -2310,7 +2656,8 @@
     "inflationVol": 0.5590906604914714,
     "realRate": -2.9287663379855022,
     "debtStress": 1.644278433650928,
-    "volatilityRatio": 0.2795453302457357
+    "volatilityRatio": 0.2795453302457357,
+    "sp500": 1503.39
   },
   {
     "date": "2012-02",
@@ -2329,7 +2676,8 @@
     "inflationVol": 0.553891151572593,
     "realRate": -2.7981784423473877,
     "debtStress": 1.644278433650928,
-    "volatilityRatio": 0.2769455757862965
+    "volatilityRatio": 0.2769455757862965,
+    "sp500": 1530.26
   },
   {
     "date": "2012-03",
@@ -2348,7 +2696,8 @@
     "inflationVol": 0.46287882046894624,
     "realRate": -2.4528752813320978,
     "debtStress": 1.644278433650928,
-    "volatilityRatio": 0.23143941023447312
+    "volatilityRatio": 0.23143941023447312,
+    "sp500": 1516.28
   },
   {
     "date": "2012-04",
@@ -2367,7 +2716,8 @@
     "inflationVol": 0.36938909485590204,
     "realRate": -2.1331633741348566,
     "debtStress": 1.6216931482322772,
-    "volatilityRatio": 0.18469454742795102
+    "volatilityRatio": 0.18469454742795102,
+    "sp500": 1490.29
   },
   {
     "date": "2012-05",
@@ -2386,7 +2736,8 @@
     "inflationVol": 0.5122785381225726,
     "realRate": -1.577942937466075,
     "debtStress": 1.6216931482322772,
-    "volatilityRatio": 0.2561392690612863
+    "volatilityRatio": 0.2561392690612863,
+    "sp500": 1490.09
   },
   {
     "date": "2012-06",
@@ -2405,7 +2756,8 @@
     "inflationVol": 0.5433071206458094,
     "realRate": -1.4938704482976342,
     "debtStress": 1.6216931482322772,
-    "volatilityRatio": 0.2716535603229047
+    "volatilityRatio": 0.2716535603229047,
+    "sp500": 1532.53
   },
   {
     "date": "2012-07",
@@ -2424,7 +2776,8 @@
     "inflationVol": 0.5346941994235562,
     "realRate": -1.2575114798464784,
     "debtStress": 1.6064966002944152,
-    "volatilityRatio": 0.2673470997117781
+    "volatilityRatio": 0.2673470997117781,
+    "sp500": 1593.55
   },
   {
     "date": "2012-08",
@@ -2443,7 +2796,8 @@
     "inflationVol": 0.6863483609992626,
     "realRate": -1.5559349154821236,
     "debtStress": 1.6064966002944152,
-    "volatilityRatio": 0.3431741804996313
+    "volatilityRatio": 0.3431741804996313,
+    "sp500": 1632.95
   },
   {
     "date": "2012-09",
@@ -2462,7 +2816,8 @@
     "inflationVol": 0.7633147036581038,
     "realRate": -1.8097168982819611,
     "debtStress": 1.6064966002944152,
-    "volatilityRatio": 0.3816573518290519
+    "volatilityRatio": 0.3816573518290519,
+    "sp500": 1628.64
   },
   {
     "date": "2012-10",
@@ -2481,7 +2836,8 @@
     "inflationVol": 0.7630004175571793,
     "realRate": -1.9956780595369363,
     "debtStress": 1.5888604050699422,
-    "volatilityRatio": 0.38150020877858964
+    "volatilityRatio": 0.38150020877858964,
+    "sp500": 1598.7
   },
   {
     "date": "2012-11",
@@ -2500,7 +2856,8 @@
     "inflationVol": 0.8375228390689651,
     "realRate": -1.6360197033926263,
     "debtStress": 1.5888604050699422,
-    "volatilityRatio": 0.41876141953448254
+    "volatilityRatio": 0.41876141953448254,
+    "sp500": 1586.54
   },
   {
     "date": "2012-12",
@@ -2519,7 +2876,8 @@
     "inflationVol": 0.8441047510450318,
     "realRate": -1.5995049796895524,
     "debtStress": 1.5888604050699422,
-    "volatilityRatio": 0.4220523755225159
+    "volatilityRatio": 0.4220523755225159,
+    "sp500": 1618.28
   },
   {
     "date": "2013-01",
@@ -2538,7 +2896,8 @@
     "inflationVol": 0.8351587978419657,
     "realRate": -1.5440617620982988,
     "debtStress": 1.5515143279886463,
-    "volatilityRatio": 0.41757939892098284
+    "volatilityRatio": 0.41757939892098284,
+    "sp500": 1683.12
   },
   {
     "date": "2013-02",
@@ -2557,7 +2916,8 @@
     "inflationVol": 0.9269332959095609,
     "realRate": -1.8681404902574807,
     "debtStress": 1.5515143279886463,
-    "volatilityRatio": 0.46346664795478043
+    "volatilityRatio": 0.46346664795478043,
+    "sp500": 1733.43
   },
   {
     "date": "2013-03",
@@ -2576,7 +2936,8 @@
     "inflationVol": 1.026878323761216,
     "realRate": -1.3787472411246182,
     "debtStress": 1.5515143279886463,
-    "volatilityRatio": 0.513439161880608
+    "volatilityRatio": 0.513439161880608,
+    "sp500": 1737.42
   },
   {
     "date": "2013-04",
@@ -2595,7 +2956,8 @@
     "inflationVol": 1.0781028492311238,
     "realRate": -0.9888080475768669,
     "debtStress": 1.5528539933538763,
-    "volatilityRatio": 0.5390514246155619
+    "volatilityRatio": 0.5390514246155619,
+    "sp500": 1707.84
   },
   {
     "date": "2013-05",
@@ -2614,7 +2976,8 @@
     "inflationVol": 1.0298257109575726,
     "realRate": -1.2803888279197084,
     "debtStress": 1.5528539933538763,
-    "volatilityRatio": 0.5149128554787863
+    "volatilityRatio": 0.5149128554787863,
+    "sp500": 1684.8
   },
   {
     "date": "2013-06",
@@ -2633,7 +2996,8 @@
     "inflationVol": 1.0122846464611193,
     "realRate": -1.6257935271568724,
     "debtStress": 1.5528539933538763,
-    "volatilityRatio": 0.5061423232305596
+    "volatilityRatio": 0.5061423232305596,
+    "sp500": 1705.91
   },
   {
     "date": "2013-07",
@@ -2652,7 +3016,8 @@
     "inflationVol": 1.0056270727670096,
     "realRate": -1.7954718054158059,
     "debtStress": 1.5555487123784673,
-    "volatilityRatio": 0.5028135363835048
+    "volatilityRatio": 0.5028135363835048,
+    "sp500": 1766.87
   },
   {
     "date": "2013-08",
@@ -2671,7 +3036,8 @@
     "inflationVol": 0.9006818664999336,
     "realRate": -1.458809488600279,
     "debtStress": 1.5555487123784673,
-    "volatilityRatio": 0.4503409332499668
+    "volatilityRatio": 0.4503409332499668,
+    "sp500": 1827.94
   },
   {
     "date": "2013-09",
@@ -2690,7 +3056,8 @@
     "inflationVol": 0.8180843064840929,
     "realRate": -1.0147341081747996,
     "debtStress": 1.5555487123784673,
-    "volatilityRatio": 0.40904215324204646
+    "volatilityRatio": 0.40904215324204646,
+    "sp500": 1847.4
   },
   {
     "date": "2013-10",
@@ -2709,7 +3076,8 @@
     "inflationVol": 0.7948152620964086,
     "realRate": -0.7867991434911471,
     "debtStress": 1.5726670081011214,
-    "volatilityRatio": 0.3974076310482043
+    "volatilityRatio": 0.3974076310482043,
+    "sp500": 1821.39
   },
   {
     "date": "2013-11",
@@ -2728,7 +3096,8 @@
     "inflationVol": 0.7554165437954204,
     "realRate": -1.1528701961954457,
     "debtStress": 1.5726670081011214,
-    "volatilityRatio": 0.3777082718977102
+    "volatilityRatio": 0.3777082718977102,
+    "sp500": 1789.32
   },
   {
     "date": "2013-12",
@@ -2747,7 +3116,8 @@
     "inflationVol": 0.7602932874742203,
     "realRate": -1.4228383667573297,
     "debtStress": 1.5726670081011214,
-    "volatilityRatio": 0.38014664373711016
+    "volatilityRatio": 0.38014664373711016,
+    "sp500": 1795.26
   },
   {
     "date": "2014-01",
@@ -2766,7 +3136,8 @@
     "inflationVol": 0.7661855418436834,
     "realRate": -1.487758795574915,
     "debtStress": 1.603923454495367,
-    "volatilityRatio": 0.3830927709218417
+    "volatilityRatio": 0.3830927709218417,
+    "sp500": 1844.03
   },
   {
     "date": "2014-02",
@@ -2785,7 +3156,8 @@
     "inflationVol": 0.6193021912683183,
     "realRate": -1.0504746347724947,
     "debtStress": 1.603923454495367,
-    "volatilityRatio": 0.30965109563415916
+    "volatilityRatio": 0.30965109563415916,
+    "sp500": 1903.83
   },
   {
     "date": "2014-03",
@@ -2804,7 +3176,8 @@
     "inflationVol": 0.4720301514576401,
     "realRate": -1.5326949139408041,
     "debtStress": 1.603923454495367,
-    "volatilityRatio": 0.23601507572882005
+    "volatilityRatio": 0.23601507572882005,
+    "sp500": 1927
   },
   {
     "date": "2014-04",
@@ -2823,7 +3196,8 @@
     "inflationVol": 0.2895759600923192,
     "realRate": -1.9251253036061688,
     "debtStress": 1.6130692233858028,
-    "volatilityRatio": 0.1447879800461596
+    "volatilityRatio": 0.1447879800461596,
+    "sp500": 1900.37
   },
   {
     "date": "2014-05",
@@ -2842,7 +3216,8 @@
     "inflationVol": 0.25575770130450654,
     "realRate": -2.0769476870798123,
     "debtStress": 1.6130692233858028,
-    "volatilityRatio": 0.12787885065225327
+    "volatilityRatio": 0.12787885065225327,
+    "sp500": 1854.66
   },
   {
     "date": "2014-06",
@@ -2861,7 +3236,8 @@
     "inflationVol": 0.2508969758311042,
     "realRate": -1.9589816945944194,
     "debtStress": 1.6130692233858028,
-    "volatilityRatio": 0.1254484879155521
+    "volatilityRatio": 0.1254484879155521,
+    "sp500": 1839.84
   },
   {
     "date": "2014-07",
@@ -2880,7 +3256,8 @@
     "inflationVol": 0.255341113766235,
     "realRate": -1.8842378703305973,
     "debtStress": 1.601232926209738,
-    "volatilityRatio": 0.1276705568831175
+    "volatilityRatio": 0.1276705568831175,
+    "sp500": 1876.98
   },
   {
     "date": "2014-08",
@@ -2899,7 +3276,8 @@
     "inflationVol": 0.29671419654312026,
     "realRate": -1.6250983482969061,
     "debtStress": 1.601232926209738,
-    "volatilityRatio": 0.14835709827156013
+    "volatilityRatio": 0.14835709827156013,
+    "sp500": 1940.17
   },
   {
     "date": "2014-09",
@@ -2918,7 +3296,8 @@
     "inflationVol": 0.3096944367339801,
     "realRate": -1.5940509711232076,
     "debtStress": 1.601232926209738,
-    "volatilityRatio": 0.15484721836699006
+    "volatilityRatio": 0.15484721836699006,
+    "sp500": 1978.66
   },
   {
     "date": "2014-10",
@@ -2937,7 +3316,8 @@
     "inflationVol": 0.339126574583388,
     "realRate": -1.519541702151329,
     "debtStress": 1.5938099419040614,
-    "volatilityRatio": 0.169563287291694
+    "volatilityRatio": 0.169563287291694,
+    "sp500": 1964.08
   },
   {
     "date": "2014-11",
@@ -2956,7 +3336,8 @@
     "inflationVol": 0.46069738601200433,
     "realRate": -1.141524989320798,
     "debtStress": 1.5938099419040614,
-    "volatilityRatio": 0.23034869300600216
+    "volatilityRatio": 0.23034869300600216,
+    "sp500": 1917.37
   },
   {
     "date": "2014-12",
@@ -2975,7 +3356,8 @@
     "inflationVol": 0.5810253156495373,
     "realRate": -0.5331213919623191,
     "debtStress": 1.5938099419040614,
-    "volatilityRatio": 0.29051265782476865
+    "volatilityRatio": 0.29051265782476865,
+    "sp500": 1888.51
   },
   {
     "date": "2015-01",
@@ -2994,7 +3376,8 @@
     "inflationVol": 0.8661646309017652,
     "realRate": 0.33993097820542817,
     "debtStress": 1.5310358884270843,
-    "volatilityRatio": 0.4330823154508826
+    "volatilityRatio": 0.4330823154508826,
+    "sp500": 1913.71
   },
   {
     "date": "2015-02",
@@ -3013,7 +3396,8 @@
     "inflationVol": 0.9006379994609227,
     "realRate": 0.19703146293520535,
     "debtStress": 1.5310358884270843,
-    "volatilityRatio": 0.45031899973046136
+    "volatilityRatio": 0.45031899973046136,
+    "sp500": 1976.46
   },
   {
     "date": "2015-03",
@@ -3032,7 +3416,8 @@
     "inflationVol": 0.9194731385916277,
     "realRate": 0.13203128442387346,
     "debtStress": 1.5310358884270843,
-    "volatilityRatio": 0.45973656929581386
+    "volatilityRatio": 0.45973656929581386,
+    "sp500": 2025.56
   },
   {
     "date": "2015-04",
@@ -3051,7 +3436,8 @@
     "inflationVol": 0.9047045415119017,
     "realRate": 0.22403098939391064,
     "debtStress": 1.5116298942570388,
-    "volatilityRatio": 0.45235227075595086
+    "volatilityRatio": 0.45235227075595086,
+    "sp500": 2024.09
   },
   {
     "date": "2015-05",
@@ -3070,7 +3456,8 @@
     "inflationVol": 0.9478381117245762,
     "realRate": 0.08496678175570416,
     "debtStress": 1.5116298942570388,
-    "volatilityRatio": 0.4739190558622881
+    "volatilityRatio": 0.4739190558622881,
+    "sp500": 1979.56
   },
   {
     "date": "2015-06",
@@ -3089,7 +3476,8 @@
     "inflationVol": 0.9797971161637686,
     "realRate": -0.04957180975505249,
     "debtStress": 1.5116298942570388,
-    "volatilityRatio": 0.4898985580818843
+    "volatilityRatio": 0.4898985580818843,
+    "sp500": 1940.65
   },
   {
     "date": "2015-07",
@@ -3108,7 +3496,8 @@
     "inflationVol": 0.9858509294835983,
     "realRate": -0.09568611104094582,
     "debtStress": 1.5126885345597152,
-    "volatilityRatio": 0.49292546474179916
+    "volatilityRatio": 0.49292546474179916,
+    "sp500": 1950.45
   },
   {
     "date": "2015-08",
@@ -3127,7 +3516,8 @@
     "inflationVol": 0.9853677565454497,
     "realRate": -0.10130379853448679,
     "debtStress": 1.5126885345597152,
-    "volatilityRatio": 0.49268387827272486
+    "volatilityRatio": 0.49268387827272486,
+    "sp500": 2008.24
   },
   {
     "date": "2015-09",
@@ -3146,7 +3536,8 @@
     "inflationVol": 1.0156105269488604,
     "realRate": 0.13115703836582993,
     "debtStress": 1.5126885345597152,
-    "volatilityRatio": 0.5078052634744302
+    "volatilityRatio": 0.5078052634744302,
+    "sp500": 2068.44
   },
   {
     "date": "2015-10",
@@ -3165,7 +3556,8 @@
     "inflationVol": 1.0198742056857584,
     "realRate": -0.007616560670507089,
     "debtStress": 1.5339023933996911,
-    "volatilityRatio": 0.5099371028428792
+    "volatilityRatio": 0.5099371028428792,
+    "sp500": 2082.87
   },
   {
     "date": "2015-11",
@@ -3184,7 +3576,8 @@
     "inflationVol": 1.0005166888399455,
     "realRate": -0.3163182169185187,
     "debtStress": 1.5339023933996911,
-    "volatilityRatio": 0.5002583444199727
+    "volatilityRatio": 0.5002583444199727,
+    "sp500": 2045.77
   },
   {
     "date": "2015-12",
@@ -3203,7 +3596,8 @@
     "inflationVol": 0.9434574797706513,
     "realRate": -0.3987247515364791,
     "debtStress": 1.5339023933996911,
-    "volatilityRatio": 0.47172873988532565
+    "volatilityRatio": 0.47172873988532565,
+    "sp500": 1998.09
   },
   {
     "date": "2016-01",
@@ -3222,7 +3616,8 @@
     "inflationVol": 0.5907926338748927,
     "realRate": -0.8975025026943875,
     "debtStress": 1.5655625017213384,
-    "volatilityRatio": 0.29539631693744633
+    "volatilityRatio": 0.29539631693744633,
+    "sp500": 1929.34
   },
   {
     "date": "2016-02",

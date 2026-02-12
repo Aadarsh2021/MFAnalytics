@@ -11,7 +11,7 @@ import BacktestResults from './BacktestResults'
 import SixPillarsDashboard from './SixPillarsDashboard'
 
 import { supabase } from '../utils/supabase'
-import { fetchWithProxy } from '../utils/apiOptimized'
+import { fetchWithProxy, fetchBatch } from '../utils/apiOptimized'
 
 export default function Step4ARegimeViews({
     selectedFunds,
@@ -40,6 +40,7 @@ export default function Step4ARegimeViews({
     // Initial loading - only from Supabase if it's there, but don't force detection yet
     // unless we have solid data. Actually, let's just let the selection screen be 
     // the entry point as the user requested "Method Selection".
+    // Initial loading - only from Supabase if it's there
     useEffect(() => {
         const checkCloudCache = async () => {
             try {
@@ -54,31 +55,10 @@ export default function Step4ARegimeViews({
                     .maybeSingle();
 
                 if (!error && data) {
-                    // Map back to format expected by processMacroData
-                    const mappedData = [{
-                        date: data.date,
-                        wpiIndex: data.wpi_index,
-                        wpiInflation: data.wpi_inflation,
-                        cpiIndex: data.cpi_index,
-                        cpiInflation: data.cpi_inflation,
-                        repoRate: data.repo_rate,
-                        realRate: data.real_rate,
-                        nominalGDP: data.nominal_gdp,
-                        realGDP: data.real_gdp,
-                        gSecYield: data.gsec_yield,
-                        forexReserves: data.forex_reserves,
-                        inrUsd: data.inr_usd,
-                        bankCredit: data.bank_credit,
-                        valDate: data.date
-                    }];
-
-                    console.log(`✅ Supabase Cache found for ${selectedRegion}. Date: ${data.date}`);
-                    // Auto-load if we don't have macroData yet
-                    if (!macroData) {
-                        setMacroData(processMacroData(mappedData));
-                        if (data.updated_at) {
-                            setRegimeContext(prev => ({ ...prev, lastUpdated: data.updated_at }));
-                        }
+                    // Update context with last updated time but DON'T auto-load
+                    // This allows the user to still see Method 1/2 choice
+                    if (data.updated_at) {
+                        setRegimeContext(prev => ({ ...prev, lastUpdated: data.updated_at }));
                     }
                 }
             } catch (e) {
@@ -86,7 +66,7 @@ export default function Step4ARegimeViews({
             }
         };
         checkCloudCache();
-    }, [selectedRegion, macroData]);
+    }, [selectedRegion]);
 
     // --- Live US Data Fetching (Client-Side for Firebase Free Tier) ---
     const fetchLiveUSData = async () => {
@@ -107,8 +87,7 @@ export default function Step4ARegimeViews({
                 const diffHours = (now - lastUpdate) / (1000 * 60 * 60);
 
                 if (diffHours < 24) {
-                    console.log('⚡ Using fresh US Supabase cache (less than 24h old)');
-                    const mappedCache = [{
+                    const mappedCacheEntry = {
                         date: cache.date,
                         wpiIndex: cache.wpi_index,
                         wpiInflation: cache.wpi_inflation,
@@ -123,8 +102,14 @@ export default function Step4ARegimeViews({
                         inrUsd: cache.inr_usd,
                         bankCredit: cache.bank_credit,
                         valDate: cache.date
-                    }];
-                    setMacroData(processMacroData(mappedCache));
+                    };
+
+                    const merged = [...usMacroHistorical];
+                    if (!merged.find(d => d.date === mappedCacheEntry.date)) {
+                        merged.push(mappedCacheEntry);
+                    }
+
+                    setMacroData(processMacroData(merged));
                     setIsLiveUpdating(false);
                     return;
                 }
@@ -151,156 +136,102 @@ export default function Step4ARegimeViews({
             };
 
             const today = new Date();
-            const oneYearAgo = new Date();
-            oneYearAgo.setFullYear(today.getFullYear() - 1);
-            const startDateStr = oneYearAgo.toISOString().split('T')[0];
+            const fourMonthsAgo = new Date();
+            fourMonthsAgo.setMonth(today.getMonth() - 4);
+            const startDateStr = fourMonthsAgo.toISOString().split('T')[0];
 
-            // 1. Fetch latest data with Proxy Fallback
-            const fetchSeries = async (seriesId) => {
-                const targetUrl = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${API_KEY}&file_type=json&observation_start=${startDateStr}`;
-                const data = await fetchWithProxy(targetUrl);
-                return data.observations;
-            };
+            // 1. Fetch latest data with Proxy Fallback (Throttled Batching)
+            const seriesToFetch = Object.entries(FRED_SERIES_MAP);
 
-            // 2. Sequential Fetching with Short Delay (Balanced Approach)
-            const results = {};
-            const seriesEntries = Object.entries(FRED_SERIES_MAP);
-            const totalSeries = seriesEntries.length;
+            const { results: batchResults, errors: batchErrors } = await fetchBatch(
+                seriesToFetch,
+                async ([fredId, internalKey]) => {
+                    const targetUrl = `https://api.stlouisfed.org/fred/series/observations?series_id=${fredId}&api_key=${API_KEY}&file_type=json&observation_start=${startDateStr}`;
+                    const data = await fetchWithProxy(targetUrl);
+                    return { key: internalKey, observations: data.observations };
+                },
+                { concurrency: 4 }
+            );
 
-            const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-            for (let i = 0; i < totalSeries; i++) {
-                const [fredId, internalKey] = seriesEntries[i];
-                try {
-                    // Non-blocking log
-                    console.log(`Fetching ${fredId} (${i + 1}/${totalSeries})...`);
-
-                    // fetchSeries expects the FRED Series ID (e.g., 'FEDFUNDS')
-                    const observations = await fetchSeries(fredId);
-
-                    // valid observations?
-                    if (observations && Array.isArray(observations)) {
-                        results[internalKey] = observations;
-                    } else {
-                        console.warn(`No observations found for ${fredId}`);
-                    }
-
-                    // 500ms delay: Fast enough (~4s total) but avoids instant rate limits
-                    if (i < totalSeries - 1) await delay(500);
-
-                } catch (error) {
-                    console.error(`Failed to fetch ${fredId} (${internalKey})`, error);
-                }
+            if (batchErrors.length > 0) {
+                console.warn(`Some series failed to fetch: ${batchErrors.length}`);
             }
 
-            // 3. Merge into existing macroData
-            // valuable insight: FRED data is often lagged. We need to be careful merging.
-            // Simplest strategy: Duplicate the last known row, then update with any newer valuesfound.
-            // Or better: Re-build the last few months.
+            const results = {};
+            batchResults.forEach(res => {
+                if (res.success && res.data.observations) {
+                    results[res.data.key] = res.data.observations;
+                }
+            });
 
-            // Let's create a copy of the latest static data
+            // 2. Merge into existing macroData
             let newData = [...usMacroHistorical];
 
-            // Helper to find or create a month row
             const getRow = (dateStr) => {
                 const yyyyMm = dateStr.substring(0, 7);
                 let row = newData.find(r => r.date === yyyyMm);
                 if (!row) {
-                    row = { ...newData[newData.length - 1], date: yyyyMm, valDate: dateStr }; // Clone last known as base
+                    row = { ...newData[newData.length - 1], date: yyyyMm, valDate: dateStr };
                     newData.push(row);
                 }
                 return row;
             };
 
-            // Update with fetched values
             Object.entries(results).forEach(([key, obsList]) => {
                 obsList.forEach(obs => {
                     const val = parseFloat(obs.value);
                     if (!isNaN(val)) {
                         const row = getRow(obs.date);
                         row[key] = val;
-                        // Update valDate if newer
                         if (new Date(obs.date) > new Date(row.valDate)) row.valDate = obs.date;
                     }
                 });
             });
 
-            // 3. Forward-fill quarterly data for missing months
-            const quarterlyKeys = ['gdpIndex', 'gdpNominal', 'debtToGDP', 'interest_expense'];
-            newData.forEach((row, idx) => {
-                if (idx === 0) return;
-                const prev = newData[idx - 1];
-                quarterlyKeys.forEach(k => {
-                    if (row[k] === undefined || row[k] === null) {
-                        row[k] = prev[k];
-                    }
-                });
-            });
-
-            // 3. Re-calculate metrics for the affected rows
-            // We need to re-process the whole dataset to ensure volatility/YoY are correct
-            // processMacroData already handles this? 
-            // Yes, processMacroData (imported) likely recalculates derived metrics if raw data is there.
-            // But 'usMacroHistorical' usually comes pre-calculated.
-            // Let's manually ensure critical derived metrics are updated for the new tip.
-
-            // Re-sort by date
+            // 3. Re-calculate metrics
             newData.sort((a, b) => a.date.localeCompare(b.date));
-
-            // Recalculate derived for the last 12 months (crucial for pillars)
-            for (let i = newData.length - 12; i < newData.length; i++) {
-                if (i < 12) continue;
-                const cur = newData[i];
-                const prev12 = newData[i - 12];
-
-                // Inflation (from Index)
-                if (cur.cpiIndex && prev12.cpiIndex) {
-                    cur.cpiInflation = Number((((cur.cpiIndex / prev12.cpiIndex) - 1) * 100).toFixed(2));
-                }
-                // GDP Growth (from Index)
-                if (cur.gdpIndex && prev12.gdpIndex) {
-                    cur.gdpGrowth = Number((((cur.gdpIndex / prev12.gdpIndex) - 1) * 100).toFixed(2));
-                }
-                // Real Rate
-                cur.realRate = Number(((cur.repoRate || 0) - (cur.cpiInflation || 0)).toFixed(2));
-
-                // Debt Stress (Interest / Nominal GDP)
-                const nominalGDPValue = cur.gdpNominal || (cur.gdpIndex ? cur.gdpIndex * 1.5 : null);
-                if (cur.interest_expense && nominalGDPValue) {
-                    cur.debtStress = Number(((cur.interest_expense / nominalGDPValue) * 100).toFixed(2));
-                }
-            }
-
-            // 4. Update State Immediately (Remove Loading Indicator)
             const processed = processMacroData(newData);
             setMacroData(processed);
-            setIsLiveUpdating(false); // UI stops "Updating..." now
 
-            // 5. Save to Supabase (Non-blocking for the UI state)
+            // 4. Save to Supabase (Strict Schema Alignment)
             try {
-                // Ensure no 'undefined' values (standard requirement)
-                const serializableData = JSON.parse(JSON.stringify(processed));
+                const latestEntry = processed[processed.length - 1];
+                const supabaseData = {
+                    country: 'US',
+                    date: latestEntry.date.length === 7 ? `${latestEntry.date}-01` : latestEntry.date,
+                    wpi_index: latestEntry.wpiIndex || null,
+                    wpi_inflation: latestEntry.wpiInflation || null,
+                    cpi_index: latestEntry.cpiIndex || null,
+                    cpi_inflation: latestEntry.cpiInflation || null,
+                    repo_rate: latestEntry.repoRate || null,
+                    real_rate: latestEntry.realRate || null,
+                    nominal_gdp: latestEntry.gdpNominal || null,
+                    real_gdp: latestEntry.gdpReal || latestEntry.gdpIndex || null,
+                    gsec_yield: latestEntry.gSecYield || null,
+                    forex_reserves: latestEntry.forexReserves || null,
+                    inr_usd: 1.0,
+                    bank_credit: latestEntry.bankCredit || null,
+                    updated_at: new Date().toISOString()
+                };
 
-                const { error } = await supabase
+                const { error: syncError } = await supabase
                     .from('macro_data')
-                    .upsert({
-                        id: 'us_macro',
-                        data: serializableData,
-                        last_updated: new Date().toISOString()
-                    });
+                    .upsert(supabaseData, { onConflict: 'country,date' });
 
-                if (error) throw error;
-                console.log("Supabase Cloud Save Success!");
+                if (syncError) throw syncError;
+                console.log("🇺🇸 US Cloud Sync Success!");
             } catch (e) {
-                console.error("Error saving to Supabase", e);
+                console.error("Error syncing US data to Supabase:", e);
+                // Non-blocking for the UI but alerted in console
             }
 
         } catch (err) {
-            console.error('FRED Fetch failed:', err);
+            console.error('US Live Fetch failed:', err);
             setIsLiveUpdating(false);
-            alert('Live US Update failed. Falling back to static data.');
-            const data = usMacroHistorical;
-            setMacroData(processMacroData(data));
+            alert('Live US Update encountered issues. Please try again or use static data.');
+            setMacroData(processMacroData(usMacroHistorical));
+        } finally {
+            setIsLiveUpdating(false);
         }
     };
 
@@ -310,24 +241,47 @@ export default function Step4ARegimeViews({
             // 0. Check Supabase Cache First (Fastest)
             const { data: cache, error: cacheErr } = await supabase
                 .from('macro_data')
-                .select('data, last_updated')
-                .eq('id', 'india_macro')
+                .select('*')
+                .eq('country', 'India')
+                .order('date', { ascending: false })
+                .limit(1)
                 .maybeSingle();
 
-            if (!cacheErr && cache && cache.data) {
-                const lastUpdate = new Date(cache.last_updated);
+            if (!cacheErr && cache) {
+                const lastUpdate = new Date(cache.updated_at || cache.date);
                 const now = new Date();
                 const diffHours = (now - lastUpdate) / (1000 * 60 * 60);
 
                 if (diffHours < 24) {
-                    console.log('⚡ Using fresh India Supabase cache (less than 24h old)');
-                    setMacroData(processMacroData(cache.data));
+                    const mappedCacheEntry = {
+                        date: cache.date,
+                        wpiIndex: cache.wpi_index,
+                        wpiInflation: cache.wpi_inflation,
+                        cpiIndex: cache.cpi_index,
+                        cpiInflation: cache.cpi_inflation,
+                        repoRate: cache.repo_rate,
+                        realRate: cache.real_rate,
+                        nominalGDP: cache.nominal_gdp,
+                        realGDP: cache.real_gdp,
+                        gSecYield: cache.gsec_yield,
+                        forexReserves: cache.forex_reserves,
+                        inrUsd: cache.inr_usd,
+                        bankCredit: cache.bank_credit,
+                        valDate: cache.date
+                    };
+
+                    const merged = [...indiaMacroHistorical];
+                    if (!merged.find(d => d.date === mappedCacheEntry.date)) {
+                        merged.push(mappedCacheEntry);
+                    }
+
+                    setMacroData(processMacroData(merged));
                     setIsLiveUpdating(false);
                     return;
                 }
             }
 
-            // 1. Fallback to FRED API
+            // 1. Fallback to API
             console.log('📡 Cache stale or missing, fetching from India live service...');
             const currentData = indiaMacroHistorical;
             const updatedData = await getLiveIndianData(currentData);
@@ -335,20 +289,34 @@ export default function Step4ARegimeViews({
             setMacroData(processed);
             console.log('🇮🇳 India Macro Data Updated (Live)');
 
-            // Save to Supabase (Persistence)
+            // Save to Supabase (Persistence) - Alignment with updateSupabaseData.mjs
             try {
-                const serializableData = JSON.parse(JSON.stringify(processed));
-                const { error } = await supabase
+                const latestEntry = updatedData[updatedData.length - 1];
+                const supabaseData = {
+                    country: 'India',
+                    date: latestEntry.date.length === 7 ? `${latestEntry.date}-01` : latestEntry.date,
+                    wpi_index: latestEntry.wpiIndex || null,
+                    wpi_inflation: latestEntry.wpiInflation || null,
+                    cpi_index: latestEntry.cpiIndex || null,
+                    cpi_inflation: latestEntry.cpiInflation || null,
+                    repo_rate: latestEntry.repoRate || null,
+                    real_rate: latestEntry.realRate || null,
+                    nominal_gdp: latestEntry.nominalGDP || null,
+                    real_gdp: latestEntry.realGDP || null,
+                    gsec_yield: latestEntry.gSecYield || null,
+                    forex_reserves: latestEntry.forexReserves || null,
+                    inr_usd: latestEntry.inrUsd || null,
+                    bank_credit: latestEntry.bankCredit || null,
+                    updated_at: new Date().toISOString()
+                };
+
+                await supabase
                     .from('macro_data')
-                    .upsert({
-                        id: 'india_macro',
-                        data: serializableData,
-                        last_updated: new Date().toISOString()
-                    });
-                if (error) throw error;
-                console.log("🇮🇳 India Cloud Save Success!");
+                    .upsert(supabaseData, { onConflict: 'country,date' });
+
+                console.log("🇮🇳 India Cloud Sync Success!");
             } catch (e) {
-                console.error("Error saving India data to Supabase", e);
+                console.error("Error syncing India data to Supabase", e);
             }
         } catch (err) {
             console.error('India Fetch failed:', err);
@@ -611,15 +579,13 @@ export default function Step4ARegimeViews({
                                 </span>
                             </div>
                             <div className="flex gap-2">
-                                {selectedRegion === 'US' && (
-                                    <button
-                                        onClick={fetchLiveUSData}
-                                        disabled={isLiveUpdating}
-                                        className="text-sm px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 font-bold flex items-center gap-1"
-                                    >
-                                        {isLiveUpdating ? 'Updating...' : 'Update (Live)'}
-                                    </button>
-                                )}
+                                <button
+                                    onClick={selectedRegion === 'US' ? fetchLiveUSData : fetchLiveIndiaData}
+                                    disabled={isLiveUpdating}
+                                    className="text-sm px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 font-bold flex items-center gap-1"
+                                >
+                                    {isLiveUpdating ? 'Updating...' : 'Update (Live)'}
+                                </button>
                                 <button
                                     onClick={() => setMacroData(null)}
                                     className="text-sm text-green-700 hover:text-green-900 font-bold"

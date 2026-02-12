@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { LogOut, Activity } from 'lucide-react'
+import { supabase } from '../utils/supabase'
 import Header from '../components/Header'
 import Sidebar from '../components/Sidebar'
 import MessageBox from '../components/MessageBox'
@@ -23,6 +24,7 @@ import Step4ChooseOptimizationPath from '../components/Step4ChooseOptimizationPa
 import Step4ARegimeViews from '../components/Step4ARegimeViews'
 import Step4BBlackLittermanViews from '../components/Step4BBlackLittermanViews'
 import Step5ARegimeOptimization from '../components/Step5ARegimeOptimization'
+import PastAnalysisModal from '../components/PastAnalysisModal'
 
 function OptimizerApp() {
     const [currentStep, setCurrentStep] = useState(1)
@@ -58,8 +60,35 @@ function OptimizerApp() {
     const [weightMethod, setWeightMethod] = useState('market_cap')
     const [customWeights, setCustomWeights] = useState({})
     const [isDashboardOpen, setIsDashboardOpen] = useState(false)
+    const [showHistoryModal, setShowHistoryModal] = useState(false)
+    const [history, setHistory] = useState([])
+    const [historyLoading, setHistoryLoading] = useState(false)
 
     // --- State Persistence ---
+
+    // 2. Load History from Supabase (Centralized for speed)
+    const loadHistory = async () => {
+        setHistoryLoading(true)
+        try {
+            const { data, error } = await supabase
+                .from('analyses')
+                .select('*')
+                .order('created_at', { ascending: false })
+
+            if (error) throw error
+            setHistory(data || [])
+        } catch (e) {
+            console.error("Error loading centralized history:", e)
+        } finally {
+            setHistoryLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        loadHistory()
+        window.addEventListener('mfp-history-update', loadHistory)
+        return () => window.removeEventListener('mfp-history-update', loadHistory)
+    }, [])
 
     // 1. Initial Load from LocalStorage
     useEffect(() => {
@@ -332,6 +361,9 @@ function OptimizerApp() {
                             isOpen={isSidebarOpen}
                             toggleSidebar={toggleSidebar}
                             optimizationPath={optimizationPath}
+                            onOpenHistory={() => setShowHistoryModal(true)}
+                            history={history}
+                            historyLoading={historyLoading}
                         />
                     </div>
 
@@ -421,6 +453,17 @@ function OptimizerApp() {
                     </div>
                 </div>
             </div>
+
+            <PastAnalysisModal
+                isOpen={showHistoryModal}
+                onClose={() => setShowHistoryModal(false)}
+                history={history}
+                loading={historyLoading}
+                onLoadHistory={(item) => {
+                    onLoadHistory(item);
+                    setShowHistoryModal(false);
+                }}
+            />
         </div>
     )
 }
