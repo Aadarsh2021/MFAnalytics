@@ -1,0 +1,1734 @@
+[
+  {
+    "observation_date": 32874,
+    "USD Real Policy Rate": null
+  },
+  {
+    "observation_date": 32905,
+    "USD Real Policy Rate": 8.24
+  },
+  {
+    "observation_date": 32933,
+    "USD Real Policy Rate": 8.28
+  },
+  {
+    "observation_date": 32964,
+    "USD Real Policy Rate": 8.26
+  },
+  {
+    "observation_date": 32994,
+    "USD Real Policy Rate": 8.18
+  },
+  {
+    "observation_date": 33025,
+    "USD Real Policy Rate": 8.28
+  },
+  {
+    "observation_date": 33055,
+    "USD Real Policy Rate": 8.15
+  },
+  {
+    "observation_date": 33086,
+    "USD Real Policy Rate": 8.12
+  },
+  {
+    "observation_date": 33117,
+    "USD Real Policy Rate": 8.19
+  },
+  {
+    "observation_date": 33147,
+    "USD Real Policy Rate": 8.1
+  },
+  {
+    "observation_date": 33178,
+    "USD Real Policy Rate": 7.81
+  },
+  {
+    "observation_date": 33208,
+    "USD Real Policy Rate": 7.31
+  },
+  {
+    "observation_date": 33239,
+    "USD Real Policy Rate": 6.91
+  },
+  {
+    "observation_date": 33270,
+    "USD Real Policy Rate": 6.25
+  },
+  {
+    "observation_date": 33298,
+    "USD Real Policy Rate": 6.12
+  },
+  {
+    "observation_date": 33329,
+    "USD Real Policy Rate": 5.91
+  },
+  {
+    "observation_date": 33359,
+    "USD Real Policy Rate": 5.78
+  },
+  {
+    "observation_date": 33390,
+    "USD Real Policy Rate": 5.9
+  },
+  {
+    "observation_date": 33420,
+    "USD Real Policy Rate": 5.82
+  },
+  {
+    "observation_date": 33451,
+    "USD Real Policy Rate": 5.66
+  },
+  {
+    "observation_date": 33482,
+    "USD Real Policy Rate": 5.45
+  },
+  {
+    "observation_date": 33512,
+    "USD Real Policy Rate": 5.21
+  },
+  {
+    "observation_date": 33543,
+    "USD Real Policy Rate": 4.81
+  },
+  {
+    "observation_date": 33573,
+    "USD Real Policy Rate": 4.43
+  },
+  {
+    "observation_date": 33604,
+    "USD Real Policy Rate": 4.03
+  },
+  {
+    "observation_date": 33635,
+    "USD Real Policy Rate": 4.06
+  },
+  {
+    "observation_date": 33664,
+    "USD Real Policy Rate": 3.98
+  },
+  {
+    "observation_date": 33695,
+    "USD Real Policy Rate": 3.73
+  },
+  {
+    "observation_date": 33725,
+    "USD Real Policy Rate": 3.82
+  },
+  {
+    "observation_date": 33756,
+    "USD Real Policy Rate": 3.76
+  },
+  {
+    "observation_date": 33786,
+    "USD Real Policy Rate": 3.25
+  },
+  {
+    "observation_date": 33817,
+    "USD Real Policy Rate": 3.3
+  },
+  {
+    "observation_date": 33848,
+    "USD Real Policy Rate": 3.22
+  },
+  {
+    "observation_date": 33878,
+    "USD Real Policy Rate": 3.1
+  },
+  {
+    "observation_date": 33909,
+    "USD Real Policy Rate": 3.09
+  },
+  {
+    "observation_date": 33939,
+    "USD Real Policy Rate": 2.92
+  },
+  {
+    "observation_date": 33970,
+    "USD Real Policy Rate": 3.02
+  },
+  {
+    "observation_date": 34001,
+    "USD Real Policy Rate": 3.03
+  },
+  {
+    "observation_date": 34029,
+    "USD Real Policy Rate": 3.07
+  },
+  {
+    "observation_date": 34060,
+    "USD Real Policy Rate": 2.96
+  },
+  {
+    "observation_date": 34090,
+    "USD Real Policy Rate": 3
+  },
+  {
+    "observation_date": 34121,
+    "USD Real Policy Rate": 3.04
+  },
+  {
+    "observation_date": 34151,
+    "USD Real Policy Rate": 3.06
+  },
+  {
+    "observation_date": 34182,
+    "USD Real Policy Rate": 3.03
+  },
+  {
+    "observation_date": 34213,
+    "USD Real Policy Rate": 3.09
+  },
+  {
+    "observation_date": 34243,
+    "USD Real Policy Rate": 2.99
+  },
+  {
+    "observation_date": 34274,
+    "USD Real Policy Rate": 3.02
+  },
+  {
+    "observation_date": 34304,
+    "USD Real Policy Rate": 2.96
+  },
+  {
+    "observation_date": 34335,
+    "USD Real Policy Rate": 3.05
+  },
+  {
+    "observation_date": 34366,
+    "USD Real Policy Rate": 3.25
+  },
+  {
+    "observation_date": 34394,
+    "USD Real Policy Rate": 3.34
+  },
+  {
+    "observation_date": 34425,
+    "USD Real Policy Rate": 3.56
+  },
+  {
+    "observation_date": 34455,
+    "USD Real Policy Rate": 4.01
+  },
+  {
+    "observation_date": 34486,
+    "USD Real Policy Rate": 4.25
+  },
+  {
+    "observation_date": 34516,
+    "USD Real Policy Rate": 4.26
+  },
+  {
+    "observation_date": 34547,
+    "USD Real Policy Rate": 4.47
+  },
+  {
+    "observation_date": 34578,
+    "USD Real Policy Rate": 4.73
+  },
+  {
+    "observation_date": 34608,
+    "USD Real Policy Rate": 4.76
+  },
+  {
+    "observation_date": 34639,
+    "USD Real Policy Rate": 5.29
+  },
+  {
+    "observation_date": 34669,
+    "USD Real Policy Rate": 5.45
+  },
+  {
+    "observation_date": 34700,
+    "USD Real Policy Rate": 5.53
+  },
+  {
+    "observation_date": 34731,
+    "USD Real Policy Rate": 5.92
+  },
+  {
+    "observation_date": 34759,
+    "USD Real Policy Rate": 5.98
+  },
+  {
+    "observation_date": 34790,
+    "USD Real Policy Rate": 6.05
+  },
+  {
+    "observation_date": 34820,
+    "USD Real Policy Rate": 6.01
+  },
+  {
+    "observation_date": 34851,
+    "USD Real Policy Rate": 6
+  },
+  {
+    "observation_date": 34881,
+    "USD Real Policy Rate": 5.85
+  },
+  {
+    "observation_date": 34912,
+    "USD Real Policy Rate": 5.74
+  },
+  {
+    "observation_date": 34943,
+    "USD Real Policy Rate": 5.8
+  },
+  {
+    "observation_date": 34973,
+    "USD Real Policy Rate": 5.76
+  },
+  {
+    "observation_date": 35004,
+    "USD Real Policy Rate": 5.8
+  },
+  {
+    "observation_date": 35034,
+    "USD Real Policy Rate": 5.6
+  },
+  {
+    "observation_date": 35065,
+    "USD Real Policy Rate": 5.55
+  },
+  {
+    "observation_date": 35096,
+    "USD Real Policy Rate": 5.22
+  },
+  {
+    "observation_date": 35125,
+    "USD Real Policy Rate": 5.31
+  },
+  {
+    "observation_date": 35156,
+    "USD Real Policy Rate": 5.22
+  },
+  {
+    "observation_date": 35186,
+    "USD Real Policy Rate": 5.24
+  },
+  {
+    "observation_date": 35217,
+    "USD Real Policy Rate": 5.27
+  },
+  {
+    "observation_date": 35247,
+    "USD Real Policy Rate": 5.4
+  },
+  {
+    "observation_date": 35278,
+    "USD Real Policy Rate": 5.22
+  },
+  {
+    "observation_date": 35309,
+    "USD Real Policy Rate": 5.3
+  },
+  {
+    "observation_date": 35339,
+    "USD Real Policy Rate": 5.24
+  },
+  {
+    "observation_date": 35370,
+    "USD Real Policy Rate": 5.31
+  },
+  {
+    "observation_date": 35400,
+    "USD Real Policy Rate": 5.29
+  },
+  {
+    "observation_date": 35431,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 35462,
+    "USD Real Policy Rate": 5.19
+  },
+  {
+    "observation_date": 35490,
+    "USD Real Policy Rate": 5.39
+  },
+  {
+    "observation_date": 35521,
+    "USD Real Policy Rate": 5.51
+  },
+  {
+    "observation_date": 35551,
+    "USD Real Policy Rate": 5.5
+  },
+  {
+    "observation_date": 35582,
+    "USD Real Policy Rate": 5.56
+  },
+  {
+    "observation_date": 35612,
+    "USD Real Policy Rate": 5.52
+  },
+  {
+    "observation_date": 35643,
+    "USD Real Policy Rate": 5.54
+  },
+  {
+    "observation_date": 35674,
+    "USD Real Policy Rate": 5.54
+  },
+  {
+    "observation_date": 35704,
+    "USD Real Policy Rate": 5.5
+  },
+  {
+    "observation_date": 35735,
+    "USD Real Policy Rate": 5.52
+  },
+  {
+    "observation_date": 35765,
+    "USD Real Policy Rate": 5.5
+  },
+  {
+    "observation_date": 35796,
+    "USD Real Policy Rate": 5.56
+  },
+  {
+    "observation_date": 35827,
+    "USD Real Policy Rate": 5.51
+  },
+  {
+    "observation_date": 35855,
+    "USD Real Policy Rate": 5.49
+  },
+  {
+    "observation_date": 35886,
+    "USD Real Policy Rate": 5.45
+  },
+  {
+    "observation_date": 35916,
+    "USD Real Policy Rate": 5.49
+  },
+  {
+    "observation_date": 35947,
+    "USD Real Policy Rate": 5.56
+  },
+  {
+    "observation_date": 35977,
+    "USD Real Policy Rate": 5.54
+  },
+  {
+    "observation_date": 36008,
+    "USD Real Policy Rate": 5.55
+  },
+  {
+    "observation_date": 36039,
+    "USD Real Policy Rate": 5.51
+  },
+  {
+    "observation_date": 36069,
+    "USD Real Policy Rate": 5.07
+  },
+  {
+    "observation_date": 36100,
+    "USD Real Policy Rate": 4.83
+  },
+  {
+    "observation_date": 36130,
+    "USD Real Policy Rate": 4.68
+  },
+  {
+    "observation_date": 36161,
+    "USD Real Policy Rate": 4.63
+  },
+  {
+    "observation_date": 36192,
+    "USD Real Policy Rate": 4.76
+  },
+  {
+    "observation_date": 36220,
+    "USD Real Policy Rate": 4.81
+  },
+  {
+    "observation_date": 36251,
+    "USD Real Policy Rate": 4.73
+  },
+  {
+    "observation_date": 36281,
+    "USD Real Policy Rate": 4.74
+  },
+  {
+    "observation_date": 36312,
+    "USD Real Policy Rate": 4.76
+  },
+  {
+    "observation_date": 36342,
+    "USD Real Policy Rate": 4.99
+  },
+  {
+    "observation_date": 36373,
+    "USD Real Policy Rate": 5.07
+  },
+  {
+    "observation_date": 36404,
+    "USD Real Policy Rate": 5.22
+  },
+  {
+    "observation_date": 36434,
+    "USD Real Policy Rate": 5.2
+  },
+  {
+    "observation_date": 36465,
+    "USD Real Policy Rate": 5.42
+  },
+  {
+    "observation_date": 36495,
+    "USD Real Policy Rate": 5.3
+  },
+  {
+    "observation_date": 36526,
+    "USD Real Policy Rate": 5.45
+  },
+  {
+    "observation_date": 36557,
+    "USD Real Policy Rate": 5.73
+  },
+  {
+    "observation_date": 36586,
+    "USD Real Policy Rate": 5.84
+  },
+  {
+    "observation_date": 36617,
+    "USD Real Policy Rate": 6.02
+  },
+  {
+    "observation_date": 36647,
+    "USD Real Policy Rate": 6.27
+  },
+  {
+    "observation_date": 36678,
+    "USD Real Policy Rate": 6.52
+  },
+  {
+    "observation_date": 36708,
+    "USD Real Policy Rate": 6.54
+  },
+  {
+    "observation_date": 36739,
+    "USD Real Policy Rate": 6.5
+  },
+  {
+    "observation_date": 36770,
+    "USD Real Policy Rate": 6.51
+  },
+  {
+    "observation_date": 36800,
+    "USD Real Policy Rate": 6.51
+  },
+  {
+    "observation_date": 36831,
+    "USD Real Policy Rate": 6.51
+  },
+  {
+    "observation_date": 36861,
+    "USD Real Policy Rate": 6.4
+  },
+  {
+    "observation_date": 36892,
+    "USD Real Policy Rate": 5.97
+  },
+  {
+    "observation_date": 36923,
+    "USD Real Policy Rate": 5.49
+  },
+  {
+    "observation_date": 36951,
+    "USD Real Policy Rate": 5.31
+  },
+  {
+    "observation_date": 36982,
+    "USD Real Policy Rate": 4.8
+  },
+  {
+    "observation_date": 37012,
+    "USD Real Policy Rate": 4.2
+  },
+  {
+    "observation_date": 37043,
+    "USD Real Policy Rate": 3.97
+  },
+  {
+    "observation_date": 37073,
+    "USD Real Policy Rate": 3.77
+  },
+  {
+    "observation_date": 37104,
+    "USD Real Policy Rate": 3.65
+  },
+  {
+    "observation_date": 37135,
+    "USD Real Policy Rate": 3.07
+  },
+  {
+    "observation_date": 37165,
+    "USD Real Policy Rate": 2.49
+  },
+  {
+    "observation_date": 37196,
+    "USD Real Policy Rate": 2.09
+  },
+  {
+    "observation_date": 37226,
+    "USD Real Policy Rate": 1.82
+  },
+  {
+    "observation_date": 37257,
+    "USD Real Policy Rate": 1.73
+  },
+  {
+    "observation_date": 37288,
+    "USD Real Policy Rate": 1.74
+  },
+  {
+    "observation_date": 37316,
+    "USD Real Policy Rate": 1.73
+  },
+  {
+    "observation_date": 37347,
+    "USD Real Policy Rate": 1.75
+  },
+  {
+    "observation_date": 37377,
+    "USD Real Policy Rate": 1.75
+  },
+  {
+    "observation_date": 37408,
+    "USD Real Policy Rate": 1.75
+  },
+  {
+    "observation_date": 37438,
+    "USD Real Policy Rate": 1.73
+  },
+  {
+    "observation_date": 37469,
+    "USD Real Policy Rate": 1.74
+  },
+  {
+    "observation_date": 37500,
+    "USD Real Policy Rate": 1.75
+  },
+  {
+    "observation_date": 37530,
+    "USD Real Policy Rate": 1.75
+  },
+  {
+    "observation_date": 37561,
+    "USD Real Policy Rate": 1.34
+  },
+  {
+    "observation_date": 37591,
+    "USD Real Policy Rate": 1.24
+  },
+  {
+    "observation_date": 37622,
+    "USD Real Policy Rate": 1.24
+  },
+  {
+    "observation_date": 37653,
+    "USD Real Policy Rate": 1.25
+  },
+  {
+    "observation_date": 37681,
+    "USD Real Policy Rate": 1.25
+  },
+  {
+    "observation_date": 37712,
+    "USD Real Policy Rate": 1.26
+  },
+  {
+    "observation_date": 37742,
+    "USD Real Policy Rate": 1.26
+  },
+  {
+    "observation_date": 37773,
+    "USD Real Policy Rate": 1.22
+  },
+  {
+    "observation_date": 37803,
+    "USD Real Policy Rate": 1.01
+  },
+  {
+    "observation_date": 37834,
+    "USD Real Policy Rate": 1.03
+  },
+  {
+    "observation_date": 37865,
+    "USD Real Policy Rate": 1.01
+  },
+  {
+    "observation_date": 37895,
+    "USD Real Policy Rate": 1.01
+  },
+  {
+    "observation_date": 37926,
+    "USD Real Policy Rate": 1
+  },
+  {
+    "observation_date": 37956,
+    "USD Real Policy Rate": 0.98
+  },
+  {
+    "observation_date": 37987,
+    "USD Real Policy Rate": 1
+  },
+  {
+    "observation_date": 38018,
+    "USD Real Policy Rate": 1.01
+  },
+  {
+    "observation_date": 38047,
+    "USD Real Policy Rate": 1
+  },
+  {
+    "observation_date": 38078,
+    "USD Real Policy Rate": 1
+  },
+  {
+    "observation_date": 38108,
+    "USD Real Policy Rate": 1
+  },
+  {
+    "observation_date": 38139,
+    "USD Real Policy Rate": 1.03
+  },
+  {
+    "observation_date": 38169,
+    "USD Real Policy Rate": 1.26
+  },
+  {
+    "observation_date": 38200,
+    "USD Real Policy Rate": 1.43
+  },
+  {
+    "observation_date": 38231,
+    "USD Real Policy Rate": 1.61
+  },
+  {
+    "observation_date": 38261,
+    "USD Real Policy Rate": 1.75
+  },
+  {
+    "observation_date": 38292,
+    "USD Real Policy Rate": 1.93
+  },
+  {
+    "observation_date": 38322,
+    "USD Real Policy Rate": 2.16
+  },
+  {
+    "observation_date": 38353,
+    "USD Real Policy Rate": 2.28
+  },
+  {
+    "observation_date": 38384,
+    "USD Real Policy Rate": 2.5
+  },
+  {
+    "observation_date": 38412,
+    "USD Real Policy Rate": 2.63
+  },
+  {
+    "observation_date": 38443,
+    "USD Real Policy Rate": 2.79
+  },
+  {
+    "observation_date": 38473,
+    "USD Real Policy Rate": 3
+  },
+  {
+    "observation_date": 38504,
+    "USD Real Policy Rate": 3.04
+  },
+  {
+    "observation_date": 38534,
+    "USD Real Policy Rate": 3.25
+  },
+  {
+    "observation_date": 38565,
+    "USD Real Policy Rate": 3.49
+  },
+  {
+    "observation_date": 38596,
+    "USD Real Policy Rate": 3.61
+  },
+  {
+    "observation_date": 38626,
+    "USD Real Policy Rate": 3.78
+  },
+  {
+    "observation_date": 38657,
+    "USD Real Policy Rate": 4.01
+  },
+  {
+    "observation_date": 38687,
+    "USD Real Policy Rate": 4.16
+  },
+  {
+    "observation_date": 38718,
+    "USD Real Policy Rate": 4.28
+  },
+  {
+    "observation_date": 38749,
+    "USD Real Policy Rate": 4.49
+  },
+  {
+    "observation_date": 38777,
+    "USD Real Policy Rate": 4.59
+  },
+  {
+    "observation_date": 38808,
+    "USD Real Policy Rate": 4.78
+  },
+  {
+    "observation_date": 38838,
+    "USD Real Policy Rate": 4.94
+  },
+  {
+    "observation_date": 38869,
+    "USD Real Policy Rate": 4.99
+  },
+  {
+    "observation_date": 38899,
+    "USD Real Policy Rate": 5.23
+  },
+  {
+    "observation_date": 38930,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 38961,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 38991,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 39022,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 39052,
+    "USD Real Policy Rate": 5.23
+  },
+  {
+    "observation_date": 39083,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 39114,
+    "USD Real Policy Rate": 5.26
+  },
+  {
+    "observation_date": 39142,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 39173,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 39203,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 39234,
+    "USD Real Policy Rate": 5.25
+  },
+  {
+    "observation_date": 39264,
+    "USD Real Policy Rate": 5.26
+  },
+  {
+    "observation_date": 39295,
+    "USD Real Policy Rate": 5.02
+  },
+  {
+    "observation_date": 39326,
+    "USD Real Policy Rate": 4.94
+  },
+  {
+    "observation_date": 39356,
+    "USD Real Policy Rate": 4.76
+  },
+  {
+    "observation_date": 39387,
+    "USD Real Policy Rate": 4.48
+  },
+  {
+    "observation_date": 39417,
+    "USD Real Policy Rate": 4.24
+  },
+  {
+    "observation_date": 39448,
+    "USD Real Policy Rate": 3.94
+  },
+  {
+    "observation_date": 39479,
+    "USD Real Policy Rate": 2.98
+  },
+  {
+    "observation_date": 39508,
+    "USD Real Policy Rate": 2.61
+  },
+  {
+    "observation_date": 39539,
+    "USD Real Policy Rate": 2.28
+  },
+  {
+    "observation_date": 39569,
+    "USD Real Policy Rate": 1.97
+  },
+  {
+    "observation_date": 39600,
+    "USD Real Policy Rate": 1.99
+  },
+  {
+    "observation_date": 39630,
+    "USD Real Policy Rate": 2
+  },
+  {
+    "observation_date": 39661,
+    "USD Real Policy Rate": 2
+  },
+  {
+    "observation_date": 39692,
+    "USD Real Policy Rate": 1.81
+  },
+  {
+    "observation_date": 39722,
+    "USD Real Policy Rate": 0.98
+  },
+  {
+    "observation_date": 39753,
+    "USD Real Policy Rate": 0.41
+  },
+  {
+    "observation_date": 39783,
+    "USD Real Policy Rate": 0.17
+  },
+  {
+    "observation_date": 39814,
+    "USD Real Policy Rate": 0.15
+  },
+  {
+    "observation_date": 39845,
+    "USD Real Policy Rate": 0.22
+  },
+  {
+    "observation_date": 39873,
+    "USD Real Policy Rate": 0.18
+  },
+  {
+    "observation_date": 39904,
+    "USD Real Policy Rate": 0.15
+  },
+  {
+    "observation_date": 39934,
+    "USD Real Policy Rate": 0.18
+  },
+  {
+    "observation_date": 39965,
+    "USD Real Policy Rate": 0.2
+  },
+  {
+    "observation_date": 39995,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 40026,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 40057,
+    "USD Real Policy Rate": 0.15
+  },
+  {
+    "observation_date": 40087,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 40118,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 40148,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 40179,
+    "USD Real Policy Rate": 0.11
+  },
+  {
+    "observation_date": 40210,
+    "USD Real Policy Rate": 0.13
+  },
+  {
+    "observation_date": 40238,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 40269,
+    "USD Real Policy Rate": 0.2
+  },
+  {
+    "observation_date": 40299,
+    "USD Real Policy Rate": 0.2
+  },
+  {
+    "observation_date": 40330,
+    "USD Real Policy Rate": 0.18
+  },
+  {
+    "observation_date": 40360,
+    "USD Real Policy Rate": 0.18
+  },
+  {
+    "observation_date": 40391,
+    "USD Real Policy Rate": 0.19
+  },
+  {
+    "observation_date": 40422,
+    "USD Real Policy Rate": 0.19
+  },
+  {
+    "observation_date": 40452,
+    "USD Real Policy Rate": 0.19
+  },
+  {
+    "observation_date": 40483,
+    "USD Real Policy Rate": 0.19
+  },
+  {
+    "observation_date": 40513,
+    "USD Real Policy Rate": 0.18
+  },
+  {
+    "observation_date": 40544,
+    "USD Real Policy Rate": 0.17
+  },
+  {
+    "observation_date": 40575,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 40603,
+    "USD Real Policy Rate": 0.13
+  },
+  {
+    "observation_date": 40634,
+    "USD Real Policy Rate": 0.1
+  },
+  {
+    "observation_date": 40664,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 40695,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 40725,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 40756,
+    "USD Real Policy Rate": 0.1
+  },
+  {
+    "observation_date": 40787,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 40817,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 40848,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 40878,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 40909,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 40940,
+    "USD Real Policy Rate": 0.1
+  },
+  {
+    "observation_date": 40969,
+    "USD Real Policy Rate": 0.13
+  },
+  {
+    "observation_date": 41000,
+    "USD Real Policy Rate": 0.14
+  },
+  {
+    "observation_date": 41030,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 41061,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 41091,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 41122,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 41153,
+    "USD Real Policy Rate": 0.14
+  },
+  {
+    "observation_date": 41183,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 41214,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 41244,
+    "USD Real Policy Rate": 0.16
+  },
+  {
+    "observation_date": 41275,
+    "USD Real Policy Rate": 0.14
+  },
+  {
+    "observation_date": 41306,
+    "USD Real Policy Rate": 0.14
+  },
+  {
+    "observation_date": 41334,
+    "USD Real Policy Rate": 0.14
+  },
+  {
+    "observation_date": 41365,
+    "USD Real Policy Rate": 0.15
+  },
+  {
+    "observation_date": 41395,
+    "USD Real Policy Rate": 0.11
+  },
+  {
+    "observation_date": 41426,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41456,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41487,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 41518,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 41548,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41579,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 41609,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41640,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 41671,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 41699,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 41730,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41760,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41791,
+    "USD Real Policy Rate": 0.1
+  },
+  {
+    "observation_date": 41821,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41852,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41883,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41913,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41944,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 41974,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 42005,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 42036,
+    "USD Real Policy Rate": 0.11
+  },
+  {
+    "observation_date": 42064,
+    "USD Real Policy Rate": 0.11
+  },
+  {
+    "observation_date": 42095,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 42125,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 42156,
+    "USD Real Policy Rate": 0.13
+  },
+  {
+    "observation_date": 42186,
+    "USD Real Policy Rate": 0.13
+  },
+  {
+    "observation_date": 42217,
+    "USD Real Policy Rate": 0.14
+  },
+  {
+    "observation_date": 42248,
+    "USD Real Policy Rate": 0.14
+  },
+  {
+    "observation_date": 42278,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 42309,
+    "USD Real Policy Rate": 0.12
+  },
+  {
+    "observation_date": 42339,
+    "USD Real Policy Rate": 0.24
+  },
+  {
+    "observation_date": 42370,
+    "USD Real Policy Rate": 0.34
+  },
+  {
+    "observation_date": 42401,
+    "USD Real Policy Rate": 0.38
+  },
+  {
+    "observation_date": 42430,
+    "USD Real Policy Rate": 0.36
+  },
+  {
+    "observation_date": 42461,
+    "USD Real Policy Rate": 0.37
+  },
+  {
+    "observation_date": 42491,
+    "USD Real Policy Rate": 0.37
+  },
+  {
+    "observation_date": 42522,
+    "USD Real Policy Rate": 0.38
+  },
+  {
+    "observation_date": 42552,
+    "USD Real Policy Rate": 0.39
+  },
+  {
+    "observation_date": 42583,
+    "USD Real Policy Rate": 0.4
+  },
+  {
+    "observation_date": 42614,
+    "USD Real Policy Rate": 0.4
+  },
+  {
+    "observation_date": 42644,
+    "USD Real Policy Rate": 0.4
+  },
+  {
+    "observation_date": 42675,
+    "USD Real Policy Rate": 0.41
+  },
+  {
+    "observation_date": 42705,
+    "USD Real Policy Rate": 0.54
+  },
+  {
+    "observation_date": 42736,
+    "USD Real Policy Rate": 0.65
+  },
+  {
+    "observation_date": 42767,
+    "USD Real Policy Rate": 0.66
+  },
+  {
+    "observation_date": 42795,
+    "USD Real Policy Rate": 0.79
+  },
+  {
+    "observation_date": 42826,
+    "USD Real Policy Rate": 0.9
+  },
+  {
+    "observation_date": 42856,
+    "USD Real Policy Rate": 0.91
+  },
+  {
+    "observation_date": 42887,
+    "USD Real Policy Rate": 1.04
+  },
+  {
+    "observation_date": 42917,
+    "USD Real Policy Rate": 1.15
+  },
+  {
+    "observation_date": 42948,
+    "USD Real Policy Rate": 1.16
+  },
+  {
+    "observation_date": 42979,
+    "USD Real Policy Rate": 1.14
+  },
+  {
+    "observation_date": 43009,
+    "USD Real Policy Rate": 1.15
+  },
+  {
+    "observation_date": 43040,
+    "USD Real Policy Rate": 1.16
+  },
+  {
+    "observation_date": 43070,
+    "USD Real Policy Rate": 1.3
+  },
+  {
+    "observation_date": 43101,
+    "USD Real Policy Rate": 1.41
+  },
+  {
+    "observation_date": 43132,
+    "USD Real Policy Rate": 1.42
+  },
+  {
+    "observation_date": 43160,
+    "USD Real Policy Rate": 1.51
+  },
+  {
+    "observation_date": 43191,
+    "USD Real Policy Rate": 1.69
+  },
+  {
+    "observation_date": 43221,
+    "USD Real Policy Rate": 1.7
+  },
+  {
+    "observation_date": 43252,
+    "USD Real Policy Rate": 1.82
+  },
+  {
+    "observation_date": 43282,
+    "USD Real Policy Rate": 1.91
+  },
+  {
+    "observation_date": 43313,
+    "USD Real Policy Rate": 1.91
+  },
+  {
+    "observation_date": 43344,
+    "USD Real Policy Rate": 1.95
+  },
+  {
+    "observation_date": 43374,
+    "USD Real Policy Rate": 2.19
+  },
+  {
+    "observation_date": 43405,
+    "USD Real Policy Rate": 2.2
+  },
+  {
+    "observation_date": 43435,
+    "USD Real Policy Rate": 2.27
+  },
+  {
+    "observation_date": 43466,
+    "USD Real Policy Rate": 2.4
+  },
+  {
+    "observation_date": 43497,
+    "USD Real Policy Rate": 2.4
+  },
+  {
+    "observation_date": 43525,
+    "USD Real Policy Rate": 2.41
+  },
+  {
+    "observation_date": 43556,
+    "USD Real Policy Rate": 2.42
+  },
+  {
+    "observation_date": 43586,
+    "USD Real Policy Rate": 2.39
+  },
+  {
+    "observation_date": 43617,
+    "USD Real Policy Rate": 2.38
+  },
+  {
+    "observation_date": 43647,
+    "USD Real Policy Rate": 2.4
+  },
+  {
+    "observation_date": 43678,
+    "USD Real Policy Rate": 2.13
+  },
+  {
+    "observation_date": 43709,
+    "USD Real Policy Rate": 2.04
+  },
+  {
+    "observation_date": 43739,
+    "USD Real Policy Rate": 1.83
+  },
+  {
+    "observation_date": 43770,
+    "USD Real Policy Rate": 1.55
+  },
+  {
+    "observation_date": 43800,
+    "USD Real Policy Rate": 1.55
+  },
+  {
+    "observation_date": 43831,
+    "USD Real Policy Rate": 1.55
+  },
+  {
+    "observation_date": 43862,
+    "USD Real Policy Rate": 1.58
+  },
+  {
+    "observation_date": 43891,
+    "USD Real Policy Rate": 0.65
+  },
+  {
+    "observation_date": 43922,
+    "USD Real Policy Rate": 0.06
+  },
+  {
+    "observation_date": 43952,
+    "USD Real Policy Rate": 0.05
+  },
+  {
+    "observation_date": 43983,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 44013,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 44044,
+    "USD Real Policy Rate": 0.1
+  },
+  {
+    "observation_date": 44075,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 44105,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 44136,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 44166,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 44197,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 44228,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 44256,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 44287,
+    "USD Real Policy Rate": 0.06
+  },
+  {
+    "observation_date": 44317,
+    "USD Real Policy Rate": 0.05
+  },
+  {
+    "observation_date": 44348,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 44378,
+    "USD Real Policy Rate": 0.1
+  },
+  {
+    "observation_date": 44409,
+    "USD Real Policy Rate": 0.09
+  },
+  {
+    "observation_date": 44440,
+    "USD Real Policy Rate": 0.08
+  },
+  {
+    "observation_date": 44470,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 44501,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 44531,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 44562,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 44593,
+    "USD Real Policy Rate": 0.07
+  },
+  {
+    "observation_date": 44621,
+    "USD Real Policy Rate": 0.19
+  },
+  {
+    "observation_date": 44652,
+    "USD Real Policy Rate": 0.33
+  },
+  {
+    "observation_date": 44682,
+    "USD Real Policy Rate": 0.76
+  },
+  {
+    "observation_date": 44713,
+    "USD Real Policy Rate": 1.2
+  },
+  {
+    "observation_date": 44743,
+    "USD Real Policy Rate": 1.68
+  },
+  {
+    "observation_date": 44774,
+    "USD Real Policy Rate": 2.33
+  },
+  {
+    "observation_date": 44805,
+    "USD Real Policy Rate": 2.56
+  },
+  {
+    "observation_date": 44835,
+    "USD Real Policy Rate": 3.07
+  },
+  {
+    "observation_date": 44866,
+    "USD Real Policy Rate": 3.78
+  },
+  {
+    "observation_date": 44896,
+    "USD Real Policy Rate": 4.1
+  },
+  {
+    "observation_date": 44927,
+    "USD Real Policy Rate": 4.32
+  },
+  {
+    "observation_date": 44958,
+    "USD Real Policy Rate": 4.57
+  },
+  {
+    "observation_date": 44986,
+    "USD Real Policy Rate": 4.65
+  },
+  {
+    "observation_date": 45017,
+    "USD Real Policy Rate": 4.83
+  },
+  {
+    "observation_date": 45047,
+    "USD Real Policy Rate": 5.06
+  },
+  {
+    "observation_date": 45078,
+    "USD Real Policy Rate": 5.08
+  },
+  {
+    "observation_date": 45108,
+    "USD Real Policy Rate": 5.12
+  },
+  {
+    "observation_date": 45139,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45170,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45200,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45231,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45261,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45292,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45323,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45352,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45383,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45413,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45444,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45474,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45505,
+    "USD Real Policy Rate": 5.33
+  },
+  {
+    "observation_date": 45536,
+    "USD Real Policy Rate": 5.13
+  },
+  {
+    "observation_date": 45566,
+    "USD Real Policy Rate": 4.83
+  },
+  {
+    "observation_date": 45597,
+    "USD Real Policy Rate": 4.64
+  },
+  {
+    "observation_date": 45627,
+    "USD Real Policy Rate": 4.48
+  },
+  {
+    "observation_date": 45658,
+    "USD Real Policy Rate": 4.33
+  },
+  {
+    "observation_date": 45689,
+    "USD Real Policy Rate": 4.33
+  },
+  {
+    "observation_date": 45717,
+    "USD Real Policy Rate": 4.33
+  },
+  {
+    "observation_date": 45748,
+    "USD Real Policy Rate": 4.33
+  },
+  {
+    "observation_date": 45778,
+    "USD Real Policy Rate": 4.33
+  },
+  {
+    "observation_date": 45809,
+    "USD Real Policy Rate": 4.33
+  },
+  {
+    "observation_date": 45839,
+    "USD Real Policy Rate": 4.33
+  },
+  {
+    "observation_date": 45870,
+    "USD Real Policy Rate": 4.33
+  },
+  {
+    "observation_date": 45901,
+    "USD Real Policy Rate": 4.22
+  },
+  {
+    "observation_date": 45931,
+    "USD Real Policy Rate": 4.09
+  },
+  {
+    "observation_date": 45962,
+    "USD Real Policy Rate": 3.88
+  },
+  {
+    "observation_date": 45992,
+    "USD Real Policy Rate": 3.72
+  },
+  {
+    "observation_date": 46023,
+    "USD Real Policy Rate": "-"
+  }
+]

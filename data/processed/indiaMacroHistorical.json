@@ -5006,5 +5006,21 @@
     "debtToGDP": 66.94,
     "cpiInflation": 3,
     "realRate": 1
+  },
+  {
+    "date": "2026-02",
+    "valDate": "2026-02-01",
+    "repoRate": 6.5,
+    "inrUsd": 91.91,
+    "nifty": 25590,
+    "cpiIndex": 163.93,
+    "wpiIndex": 180.2,
+    "gSecYield": 6.78,
+    "forexReserves": 719.54,
+    "nominalGDP": 348982939633,
+    "bankCredit": 139017440631,
+    "debtToGDP": 66.94,
+    "cpiInflation": 3,
+    "realRate": 1
   }
 ]
