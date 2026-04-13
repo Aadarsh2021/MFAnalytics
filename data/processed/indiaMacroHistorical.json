@@ -6052,7 +6052,7 @@
     "cpiInflation": 0,
     "wpiInflation": 0,
     "realRate": 4.25,
-    "valDate": "2026-03-27"
+    "valDate": "2026-03-31"
   },
   {
     "date": "2026-03-02",
@@ -6069,5 +6069,22 @@
     "cpiInflation": 0,
     "wpiInflation": 0,
     "realRate": 6.75
+  },
+  {
+    "date": "2026-04",
+    "inrUsd": 93.21,
+    "repoRate": 6.75,
+    "cpiIndex": 157.5517,
+    "wpiIndex": 136.303904538932,
+    "nominalGDP": 3909891533858.08,
+    "realGDP": 48633401.7,
+    "gdpGrowth": -42.47,
+    "gSecYield": 6.73,
+    "forexReserves": 576.45,
+    "bankCredit": 319253.725,
+    "cpiInflation": 2.95,
+    "wpiInflation": 0,
+    "realRate": 3.8,
+    "valDate": "2026-04-03"
   }
 ]
