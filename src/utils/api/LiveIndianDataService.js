@@ -2,7 +2,7 @@
 import { fetchWithCache, fetchWithProxy } from './apiOptimized'
 
 // FRED API Key (Public key from existing python script)
-const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY
+const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY || '5e1b06fcd9ed77b5a46c643fd982a485'
 
 // FRED Series IDs
 const SERIES = {

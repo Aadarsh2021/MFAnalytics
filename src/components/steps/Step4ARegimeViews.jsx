@@ -122,7 +122,7 @@ export default function Step4ARegimeViews({
             console.log('📡 Cache stale or missing, fetching from FRED...');
             // FRED API Key (Public/Free Tier Key - exposing in frontend is acceptable for free/personal apps)
             // FRED API Key (Moved to env var)
-            const API_KEY = import.meta.env.VITE_FRED_API_KEY;
+            const API_KEY = import.meta.env.VITE_FRED_API_KEY || '5e1b06fcd9ed77b5a46c643fd982a485';
             const FRED_SERIES_MAP = {
                 'FEDFUNDS': 'repoRate',
                 'GDP': 'gdpNominal',
