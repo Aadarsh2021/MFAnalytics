@@ -6104,7 +6104,7 @@
   },
   {
     "date": "2026-06",
-    "inrUsd": 95.35,
+    "inrUsd": 94.62,
     "repoRate": 4.25,
     "cpiIndex": 153.0345,
     "wpiIndex": 114.643909070312,
@@ -6150,7 +6150,7 @@
     "cpiInflation": 0,
     "wpiInflation": 0,
     "realRate": 4.25,
-    "valDate": "2026-07-10"
+    "valDate": "2026-07-17"
   },
   {
     "date": "2026-07-01",
