@@ -6111,7 +6111,7 @@
     "nominalGDP": 514939140318.756,
     "realGDP": 43429583.4,
     "gdpGrowth": 0,
-    "gSecYield": 6.272,
+    "gSecYield": 6.89,
     "forexReserves": 566,
     "bankCredit": 345910.779,
     "cpiInflation": 0,
@@ -6137,7 +6137,7 @@
   },
   {
     "date": "2026-07",
-    "inrUsd": 94.97,
+    "inrUsd": 96.2,
     "repoRate": 4.25,
     "cpiIndex": 153.0345,
     "wpiIndex": 114.643909070312,
@@ -6170,7 +6170,7 @@
   },
   {
     "date": "2026-08",
-    "inrUsd": 95.91,
+    "inrUsd": 95.34,
     "repoRate": 4.25,
     "cpiIndex": 153.0345,
     "wpiIndex": 114.643909070312,
@@ -6183,7 +6183,7 @@
     "cpiInflation": 0,
     "wpiInflation": 0,
     "realRate": 4.25,
-    "valDate": "2026-08-07"
+    "valDate": "2026-08-14"
   },
   {
     "date": "2026-08-03",
