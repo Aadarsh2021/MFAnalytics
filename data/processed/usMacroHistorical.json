@@ -6353,8 +6353,8 @@
   {
     "date": "2026-09",
     "valDate": "2026-09-30",
-    "gSecYield": 4.79,
-    "sp500": 7631.47,
+    "gSecYield": 4.8,
+    "sp500": 7673.52,
     "repoRate": 3.75,
     "gdpIndex": 24026.834,
     "debtToGDP": 121.02875,
@@ -6370,11 +6370,11 @@
     "realRate": 3.2,
     "debtStress": 3.33,
     "volatilityRatio": 0.25803300806924906,
-    "vix": 16.34
+    "vix": 15.3
   },
   {
     "date": "2026-10",
-    "valDate": "2026-10-02",
+    "valDate": "2026-10-09",
     "gSecYield": 5.24,
     "sp500": 7666.45,
     "repoRate": 3.75,
