@@ -4865,7 +4865,7 @@
     "valDate": "2021-01-29",
     "repoRate": 0.09,
     "gdpIndex": 21106.619,
-    "debtToGDP": 124.03752,
+    "debtToGDP": 123.90664,
     "pceIndex": 106.147,
     "cpiIndex": 262.639,
     "interest_expense": 532.362,
@@ -4929,7 +4929,7 @@
     "valDate": "2021-04-30",
     "repoRate": 0.07,
     "gdpIndex": 21474.077,
-    "debtToGDP": 121.78582,
+    "debtToGDP": 121.62592,
     "pceIndex": 107.618,
     "cpiIndex": 266.625,
     "interest_expense": 559.508,
@@ -4993,7 +4993,7 @@
     "valDate": "2021-07-30",
     "repoRate": 0.1,
     "gdpIndex": 21641.672,
-    "debtToGDP": 118.54086,
+    "debtToGDP": 118.45953,
     "pceIndex": 109.256,
     "cpiIndex": 271.965,
     "interest_expense": 586.694,
@@ -5057,7 +5057,7 @@
     "valDate": "2021-10-29",
     "repoRate": 0.08,
     "gdpIndex": 22001.64,
-    "debtToGDP": 119.3588,
+    "debtToGDP": 119.31269,
     "pceIndex": 110.762,
     "cpiIndex": 276.528,
     "interest_expense": 610.825,
@@ -5121,7 +5121,7 @@
     "valDate": "2022-01-31",
     "repoRate": 0.08,
     "gdpIndex": 21945.682,
-    "debtToGDP": 120.39819,
+    "debtToGDP": 120.35222,
     "pceIndex": 112.805,
     "cpiIndex": 282.542,
     "interest_expense": 635.216,
@@ -5185,7 +5185,7 @@
     "valDate": "2022-04-29",
     "repoRate": 0.33,
     "gdpIndex": 21976.292,
-    "debtToGDP": 118.20207,
+    "debtToGDP": 118.16524,
     "pceIndex": 114.812,
     "cpiIndex": 288.582,
     "interest_expense": 683.051,
@@ -5249,7 +5249,7 @@
     "valDate": "2022-07-29",
     "repoRate": 1.68,
     "gdpIndex": 22124.384,
-    "debtToGDP": 117.43832,
+    "debtToGDP": 117.44246,
     "pceIndex": 116.631,
     "cpiIndex": 294.94,
     "interest_expense": 750.826,
@@ -5313,7 +5313,7 @@
     "valDate": "2022-10-31",
     "repoRate": 3.08,
     "gdpIndex": 22272.546,
-    "debtToGDP": 117.36678,
+    "debtToGDP": 117.35098,
     "pceIndex": 117.919,
     "cpiIndex": 297.979,
     "interest_expense": 822.708,
@@ -5377,7 +5377,7 @@
     "valDate": "2023-01-31",
     "repoRate": 4.33,
     "gdpIndex": 22456.938,
-    "debtToGDP": 115.58614,
+    "debtToGDP": 115.48075,
     "pceIndex": 119.018,
     "cpiIndex": 300.456,
     "interest_expense": 861.849,
@@ -5441,7 +5441,7 @@
     "valDate": "2023-04-28",
     "repoRate": 4.83,
     "gdpIndex": 22577.556,
-    "debtToGDP": 117.44355,
+    "debtToGDP": 117.42704,
     "pceIndex": 119.951,
     "cpiIndex": 302.858,
     "interest_expense": 894.443,
@@ -5505,7 +5505,7 @@
     "valDate": "2023-07-31",
     "repoRate": 5.12,
     "gdpIndex": 22828.796,
-    "debtToGDP": 118.13897,
+    "debtToGDP": 118.18449,
     "pceIndex": 120.607,
     "cpiIndex": 304.615,
     "interest_expense": 965.482,
@@ -5569,7 +5569,7 @@
     "valDate": "2023-10-31",
     "repoRate": 5.33,
     "gdpIndex": 23033.25,
-    "debtToGDP": 119.61944,
+    "debtToGDP": 119.45309,
     "pceIndex": 121.484,
     "cpiIndex": 307.653,
     "interest_expense": 1026.798,
@@ -5633,7 +5633,7 @@
     "valDate": "2024-01-31",
     "repoRate": 5.33,
     "gdpIndex": 23115.975,
-    "debtToGDP": 120.47631,
+    "debtToGDP": 120.12053,
     "pceIndex": 122.23,
     "cpiIndex": 309.794,
     "interest_expense": 1062.76,
@@ -5700,7 +5700,7 @@
     "valDate": "2024-04-30",
     "repoRate": 5.33,
     "gdpIndex": 23320.074,
-    "debtToGDP": 119.50314,
+    "debtToGDP": 119.15191,
     "pceIndex": 123.341,
     "cpiIndex": 313.023,
     "interest_expense": 1095.97,
@@ -5767,7 +5767,7 @@
     "valDate": "2024-07-31",
     "repoRate": 5.33,
     "gdpIndex": 23501.76,
-    "debtToGDP": 120.17172,
+    "debtToGDP": 119.94172,
     "pceIndex": 123.736,
     "cpiIndex": 313.569,
     "interest_expense": 1145.002,
@@ -5834,7 +5834,7 @@
     "valDate": "2024-10-31",
     "repoRate": 4.83,
     "gdpIndex": 23641.759,
-    "debtToGDP": 121.43633,
+    "debtToGDP": 121.01285,
     "pceIndex": 124.482,
     "cpiIndex": 315.631,
     "interest_expense": 1166.444,
@@ -5850,7 +5850,7 @@
     "debtStress": 3.266314607146171,
     "volatilityRatio": 0.21145739299171562,
     "gdpNominal": 29929.552,
-    "m2Money": 21336.6
+    "m2Money": 21311.1
   },
   {
     "date": "2024-11",
@@ -5872,7 +5872,7 @@
     "realRate": 1.925831599515715,
     "debtStress": 3.266314607146171,
     "volatilityRatio": 0.21021052352508582,
-    "m2Money": 21454.7
+    "m2Money": 21429.3
   },
   {
     "date": "2024-12",
@@ -5894,14 +5894,14 @@
     "realRate": 1.6076337311934195,
     "debtStress": 3.266314607146171,
     "volatilityRatio": 0.2214420181663017,
-    "m2Money": 21487.6
+    "m2Money": 21462
   },
   {
     "date": "2025-01",
     "valDate": "2025-01-31",
     "repoRate": 4.33,
     "gdpIndex": 23650.213,
-    "debtToGDP": 120.54515,
+    "debtToGDP": 120.0263,
     "pceIndex": 125.423,
     "cpiIndex": 318.961,
     "interest_expense": 1170.484,
@@ -5917,7 +5917,7 @@
     "debtStress": 3.239346005492562,
     "volatilityRatio": 0.24512431766945453,
     "gdpNominal": 30171.979,
-    "m2Money": 21539.3
+    "m2Money": 21513.6
   },
   {
     "date": "2025-02",
@@ -5939,7 +5939,7 @@
     "realRate": 1.5157296268431315,
     "debtStress": 3.239346005492562,
     "volatilityRatio": 0.23127886686873023,
-    "m2Money": 21607.2
+    "m2Money": 21581.1
   },
   {
     "date": "2025-03",
@@ -5961,14 +5961,14 @@
     "realRate": 1.95,
     "debtStress": 3.24,
     "volatilityRatio": 0.2603147722060032,
-    "m2Money": 21684.1
+    "m2Money": 21657.4
   },
   {
     "date": "2025-04",
     "valDate": "2025-04-30",
     "repoRate": 4.33,
     "gdpIndex": 23884.563,
-    "debtToGDP": 118.78171,
+    "debtToGDP": 118.22156,
     "pceIndex": 126.163,
     "cpiIndex": 320.302,
     "interest_expense": 1197.132,
@@ -5984,7 +5984,7 @@
     "debtStress": 3.81,
     "volatilityRatio": 0.255808327771973,
     "gdpNominal": 30630.174,
-    "m2Money": 21770.8
+    "m2Money": 21743.3
   },
   {
     "date": "2025-05",
@@ -6006,7 +6006,7 @@
     "realRate": 1.95,
     "debtStress": 3.26,
     "volatilityRatio": 0.24984641863202195,
-    "m2Money": 21836.1
+    "m2Money": 21808.8
   },
   {
     "date": "2025-06",
@@ -6028,14 +6028,14 @@
     "realRate": 1.65,
     "debtStress": 3.26,
     "volatilityRatio": 0.228013265349109,
-    "m2Money": 21942.6
+    "m2Money": 21916.1
   },
   {
     "date": "2025-07",
     "valDate": "2025-07-31",
     "repoRate": 4.33,
     "gdpIndex": 24112.966,
-    "debtToGDP": 121.02875,
+    "debtToGDP": 120.70865,
     "pceIndex": 126.906,
     "cpiIndex": 322.169,
     "interest_expense": 1238.252,
@@ -6051,7 +6051,7 @@
     "debtStress": 3.86,
     "volatilityRatio": 0.22420391403198195,
     "gdpNominal": 31180.493,
-    "m2Money": 22025.6
+    "m2Money": 21998.1
   },
   {
     "date": "2025-08",
@@ -6073,7 +6073,7 @@
     "realRate": 1.39,
     "debtStress": 3.33,
     "volatilityRatio": 0.23571023603119043,
-    "m2Money": 22092.6
+    "m2Money": 22065.9
   },
   {
     "date": "2025-09",
@@ -6095,7 +6095,7 @@
     "realRate": 1.2,
     "debtStress": 3.33,
     "volatilityRatio": 0.23801976182721013,
-    "m2Money": 22176.1
+    "m2Money": 22149.2
   },
   {
     "date": "2025-10",
@@ -6105,7 +6105,7 @@
     "gSecYield": 4.11,
     "sp500": 6840.2,
     "gdpIndex": 24125.479,
-    "debtToGDP": 122.56815,
+    "debtToGDP": 122.41233,
     "cpiIndex": 324.368,
     "interest_expense": 1265.05,
     "cbGoldBuying": 73.28452566666667,
@@ -6117,7 +6117,7 @@
     "realRate": 1.32,
     "debtStress": 3.91,
     "volatilityRatio": 0.26870726648284576,
-    "m2Money": 22249.8,
+    "m2Money": 22223.1,
     "gdpNominal": 31462.523
   },
   {
@@ -6140,7 +6140,7 @@
     "realRate": 1.18,
     "debtStress": 3.33,
     "volatilityRatio": 0.2674763579418617,
-    "m2Money": 22279.8
+    "m2Money": 22253.2
   },
   {
     "date": "2025-12",
@@ -6162,7 +6162,7 @@
     "realRate": 1.07,
     "debtStress": 3.33,
     "volatilityRatio": 0.26066555573185646,
-    "m2Money": 22355.3
+    "m2Money": 22328.8
   },
   {
     "date": "2026-01",
@@ -6171,7 +6171,7 @@
     "gSecYield": 4.22,
     "sp500": 6978.6,
     "gdpIndex": 24274.383,
-    "debtToGDP": 122.59387,
+    "debtToGDP": 122.43805,
     "pceIndex": 128.845,
     "cpiIndex": 326.588,
     "interest_expense": 1252.858,
@@ -6185,7 +6185,7 @@
     "debtStress": 3.93,
     "volatilityRatio": 0.24330380556816705,
     "vix": 16.15,
-    "m2Money": 22413.4,
+    "m2Money": 22386.6,
     "gdpNominal": 31906.274
   },
   {
@@ -6209,7 +6209,7 @@
     "debtStress": 3.33,
     "volatilityRatio": 0.25803300806924906,
     "vix": 19.86,
-    "m2Money": 22598.7
+    "m2Money": 22572.3
   },
   {
     "date": "2026-03",
@@ -6232,7 +6232,7 @@
     "debtStress": 3.33,
     "volatilityRatio": 0.25803300806924906,
     "vix": 30.61,
-    "m2Money": 22640.3
+    "m2Money": 22613.9
   },
   {
     "date": "2026-04",
@@ -6241,7 +6241,7 @@
     "sp500": 7064.01,
     "repoRate": 3.64,
     "gdpIndex": 24408.011,
-    "debtToGDP": 121.02875,
+    "debtToGDP": 121.18773,
     "pceIndex": 130.672,
     "cpiIndex": 332.407,
     "interest_expense": 1279.734,
@@ -6255,7 +6255,7 @@
     "debtStress": 3.93,
     "volatilityRatio": 0.25803300806924906,
     "vix": 18.87,
-    "m2Money": 22756.6,
+    "m2Money": 22728,
     "gdpNominal": 32563.03
   },
   {
@@ -6279,7 +6279,7 @@
     "debtStress": 3.33,
     "volatilityRatio": 0.25803300806924906,
     "vix": 15.32,
-    "m2Money": 23013.7
+    "m2Money": 22980.9
   },
   {
     "date": "2026-06",
@@ -6302,7 +6302,7 @@
     "debtStress": 3.33,
     "volatilityRatio": 0.25803300806924906,
     "vix": 17.65,
-    "m2Money": 23114.9
+    "m2Money": 23077.7
   },
   {
     "date": "2026-07",
@@ -6310,22 +6310,23 @@
     "gSecYield": 4.65,
     "sp500": 7428.78,
     "repoRate": 3.63,
-    "gdpIndex": 24026.834,
+    "gdpIndex": 24611.077,
     "debtToGDP": 121.02875,
-    "pceIndex": 131.172,
+    "pceIndex": 131.187,
     "cpiIndex": 332.813,
-    "interest_expense": 1199.189,
+    "interest_expense": 1328.827,
     "cbGoldBuying": 73.28452566666667,
     "goldPrice": 5030.4,
     "cpiInflation": 3.3,
-    "gdpGrowth": -0.36,
+    "gdpGrowth": 2.07,
     "inflationVol": 0.5160660161384981,
     "volatility": 0.10582180240708713,
     "realRate": 0.33,
-    "debtStress": 3.33,
+    "debtStress": 4.03,
     "volatilityRatio": 0.25803300806924906,
     "vix": 18.67,
-    "m2Money": 23217.9
+    "m2Money": 23177.4,
+    "gdpNominal": 33010.036
   },
   {
     "date": "2026-08",
@@ -6335,7 +6336,7 @@
     "repoRate": 3.63,
     "gdpIndex": 24026.834,
     "debtToGDP": 121.02875,
-    "pceIndex": 131.579,
+    "pceIndex": 131.611,
     "cpiIndex": 334.131,
     "interest_expense": 1199.189,
     "cbGoldBuying": 73.28452566666667,
@@ -6348,17 +6349,17 @@
     "debtStress": 3.33,
     "volatilityRatio": 0.25803300806924906,
     "vix": 14.92,
-    "m2Money": 23342.8
+    "m2Money": 23300.9
   },
   {
     "date": "2026-09",
     "valDate": "2026-09-30",
-    "gSecYield": 4.96,
-    "sp500": 7650.5,
+    "gSecYield": 5.24,
+    "sp500": 7743.41,
     "repoRate": 3.75,
     "gdpIndex": 24026.834,
     "debtToGDP": 121.02875,
-    "pceIndex": 128.093,
+    "pceIndex": 132.257,
     "cpiIndex": 336.298,
     "interest_expense": 1199.189,
     "cbGoldBuying": 73.28452566666667,
@@ -6370,11 +6371,12 @@
     "realRate": 0.03,
     "debtStress": 3.33,
     "volatilityRatio": 0.25803300806924906,
-    "vix": 14.87
+    "vix": 16.07,
+    "m2Money": 23413.9
   },
   {
     "date": "2026-10",
-    "valDate": "2026-10-22",
+    "valDate": "2026-10-29",
     "gSecYield": 5.24,
     "sp500": 7666.45,
     "repoRate": 3.75,
